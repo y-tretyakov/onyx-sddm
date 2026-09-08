@@ -1,15 +1,15 @@
-import QtQuick 2.0
+import QtQuick
 
 Rectangle {
     id: root
-    width: 800
-    height: 600
-    color: "#000000"
+    width: Screen.width
+    height: Screen.height
+    color: state.bgColor
 
-    Text {
-        anchors.centerIn: parent
-        color: "#ffffff"
-        text: "Onyx"
-        font.pixelSize: 32
+    readonly property real s: Screen.height / 768
+
+    ThemeState {
+        id: state
+        s: root.s
     }
 }
