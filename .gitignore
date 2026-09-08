@@ -1,0 +1,21 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# build / packaging
+pkg/
+src/
+*.pkg.tar.zst
+*.tar.gz
+
+# runtime / logs
+*.log
+qmlcache/
+
+# test artifacts
+tst_*.qml.result
+build/
