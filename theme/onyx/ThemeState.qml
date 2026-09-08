@@ -1,7 +1,15 @@
-import QtQuick 2.0
+import QtQuick
 
 QtObject {
     id: themeState
 
-    readonly property real s: Screen.height / 768
+    property real s: 1
+
+    readonly property bool isPreview: typeof sddm === "undefined" || sddm.hostName === undefined
+
+    readonly property color bgColor: {
+        if (!isPreview && typeof config !== "undefined" && config.bgColor)
+            return config.bgColor
+        return "#000000"
+    }
 }
