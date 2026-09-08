@@ -5,6 +5,33 @@
 
 ---
 
+## [0.1.0-mvp] — stage 1.1 · hotfix preview/ARCHITECTURE · 2026-09-08
+
+**Версия:** без bump (горячий фикс после follow-up pass; версия остаётся `0.1.0-mvp`)
+
+### Статус и следующий шаг
+
+- Сделано: явный `import QtQuick.Window` в генерируемом wrapper'е `scripts/preview.sh` (риск `Window is not a type` на части Qt6-сборок); честная семантика `-W/-H`/`-o` (тема рендерится по `Screen`, а не по окну; скриншот — натуральный размер theme root); ARCHITECTURE.md синхронизирован на `qml6`/`qml` (убраны `qmlscene`/`QuickShell`).
+- Следующее: **stage 1.2 — Digital clock + indicator pill** (`0.1.1-mvp`).
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- `scripts/preview.sh` — wrapper-heredoc: `import QtQuick` + `import QtQuick.Window`; usage/Notes: `-W/-H` = размер viewing window, theme root следует `Screen.width/height`; `-o` = grabToImage в натуральном размере item (= Screen). Xvfb для честных разрешений — tech debt.
+- `docs/ARCHITECTURE.md:28,257,263` — замены `QuickShell`/`qmlscene` → `qml6`/`qml`; версия док. 0.2.2.
+- Код темы не менялся.
+
+### Тех. долг
+
+- Честный рендер конкретного разрешения (1920×1080 / 2560×1440) в превью требует Xvfb или greeter на дисплее нужного разрешения — отложено (R4/CR-4 related; естественный дом stage 3.8 HiDPI & multi-monitor).
+
+### Принятые решения
+
+- Хотя на локальной машине (Qt 6.11.2) `import QtQuick` один даёт `Window` работоспособным (за счёт depends-модуля), явный импорт обязателен для переносимости — принято, реализовано.
+- `-W/-H` НЕ позиционируются как «изменение разрешения темы» — честно задокументировано в `--help`.
+
+---
+
 ## [0.1.0-mvp] — stage 1.1 · review follow-ups (CR-1…CR-5) · 2026-09-08
 
 **Версия:** без bump (не этап по ROADMAP — follow-up pass к stage 1.1; версия остаётся `0.1.0-mvp`)
