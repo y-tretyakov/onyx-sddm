@@ -95,14 +95,29 @@ done
 if [[ -z "${QMLINT}" ]]; then
     echo "WARNING: qmllint not found; skipping QML syntax check" >&2
 else
+    # Locate Qt6 QML module root so qmllint can resolve builtins (QtQuick, Timer, ...).
+    # qmllint does not always know the distro's Qt6 module path (e.g. Debian/Ubuntu
+    # install under /usr/lib/<triplet>/qt6/qml), so pass -I when found.
+    QML_IMPORT_ROOTS=()
+    for cand in \
+        "${QT6_QML_DIR:-}" \
+        /usr/lib/qt6/qml \
+        /usr/lib/x86_64-linux-gnu/qt6/qml \
+        /usr/lib/aarch64-linux-gnu/qt6/qml; do
+        if [[ -n "${cand}" ]] && [[ -f "${cand}/QtQuick/qmldir" ]]; then
+            QML_IMPORT_ROOTS+=("-I" "${cand}")
+            break
+        fi
+    done
+
     for f in "${QML_FILES[@]}"; do
         ok=1
-        out="$("${QMLINT}" "${f}" 2>&1)" || ok=0
+        out="$("${QMLINT}" "${QML_IMPORT_ROOTS[@]}" "${f}" 2>&1)" || ok=0
         if [[ ${ok} -eq 1 ]]; then
             continue
         fi
         ok2=1
-        out2="$("${QMLINT}" --unqualified=info --import=info "${f}" 2>&1)" || ok2=0
+        out2="$("${QMLINT}" "${QML_IMPORT_ROOTS[@]}" --unqualified=info --import=info "${f}" 2>&1)" || ok2=0
         if [[ ${ok2} -eq 1 ]]; then
             continue
         fi
