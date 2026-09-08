@@ -14,9 +14,17 @@ Rectangle {
         s: root.s
     }
 
+    Clock.OrbitalRing {
+        s: root.s
+        themeState: state
+        currentIndex: clock.timeProvider.curMinute
+        anchors.centerIn: parent
+    }
+
     Clock.DigitalClock {
         id: clock
         s: root.s
+        themeState: state
         anchors.centerIn: parent
     }
 }

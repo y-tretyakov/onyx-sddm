@@ -14,7 +14,6 @@ Item {
 
     property int tickCount: 60
     property real majorFontSize: 13
-    property real minorFontSize: 13
     property real spotlightFontSize: 18
     property real majorTickLen: 20
     property real minorTickLen: 12
