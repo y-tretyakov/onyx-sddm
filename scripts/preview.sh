@@ -13,16 +13,26 @@ Usage: $0 [options]
 Preview the Onyx SDDM theme with a Qt6 QML runner (qml6, falls back to qml).
 
   --mock            best-effort injection of sddm/config mocks (see note)
-  -W, --width N     window width  (via temp wrapper; qml6 has no CLI flag)
-  -H, --height N    window height (via temp wrapper; qml6 has no CLI flag)
+  -W, --width N     viewing window width  (via temp wrapper; qml6 has no CLI flag)
+  -H, --height N    viewing window height (via temp wrapper; qml6 has no CLI flag)
   -o, --output FILE.png
                     save a screenshot (via temp grabToImage wrapper)
   -h, --help        show this help and exit
 
 Notes:
+  - -W/-H set the *viewing window* size, not the theme render resolution.
+    Main.qml binds to Screen.width/height, so if -W/-H differ from the
+    display resolution the theme renders at Screen size and the window
+    shows a cropped or empty view. Without -W/-H the theme fills the
+    current screen.
+  - -o saves a screenshot at the theme root's natural size
+    (= current Screen.width × Screen.height), regardless of -W/-H.
+  - True resolution QA at a specific size (1920×1080 / 2560×1440)
+    requires a matching display or Xvfb — out of scope for this script
+    (tech debt → stage 3.8).
   - qml6/qml expose no --width/--height or --output flags, so size and
     screenshots are produced with temporary wrapper .qml files (in /tmp,
-    removed on exit). Without -W/-H the size follows the current screen.
+    removed on exit).
   - qml6 cannot inject sddm/config context-properties from the CLI (they
     are provided by the greeter). --mock only warns; the theme degrades
     gracefully via ThemeState.isPreview (background #000000). Fixtures:
@@ -92,6 +102,7 @@ build_wrapper() {
     local qml
     read -r -d '' qml <<EOF || true
 import QtQuick
+import QtQuick.Window
 
 Window {
     width: ${w}
