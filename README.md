@@ -1,36 +1,34 @@
 # Onyx SDDM Theme
 
 [![Version](https://img.shields.io/badge/version-0.1.1--mvp-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
+[![CI](https://img.shields.io/github/actions/workflow/status/y-tretyakov/onyx-sddm/ci.yml?branch=dev&label=CI)](https://github.com/y-tretyakov/onyx-sddm/actions)
+[![OS](https://img.shields.io/badge/OS-Arch%7CCachyOS%7CFedora%7CNobara%7CUbuntu%7CDebian%7CopenSUSE%7CRHEL9-41CD52.svg?style=flat)](.github/workflows/ci.yml)
 [![Qt6](https://img.shields.io/badge/Qt-6-41CD52.svg?logo=qt&logoColor=white&style=flat)](https://doc.qt.io/qt-6/)
 [![QML](https://img.shields.io/badge/QML-Qt__Quick-41CD52.svg?style=flat)](https://doc.qt.io/qt-6/qtquick-index.html)
 [![SDDM](https://img.shields.io/badge/SDDM-greeter-FF6B6B.svg?style=flat)](https://github.com/sddm/sddm)
-[![Linux](https://img.shields.io/badge/Linux-Arch--Linux--CachyOS-E34F26.svg?logo=linux&logoColor=white&style=flat)](https://archlinux.org/)
+[![Linux](https://img.shields.io/badge/Linux-Linux-E34F26.svg?logo=linux&logoColor=white&style=flat)](https://www.kernel.org/)
 [![Wayland](https://img.shields.io/badge/Wayland-primary-1a73e8.svg?style=flat)](https://wayland.freedesktop.org/)
 [![License](https://img.shields.io/badge/License-GPL--3.0-41CD52.svg?style=flat)](LICENSE)
 
-**Onyx** — новый экран входа (SDDM greeter) с орбитальным clockwork-дизайном.
+**Onyx** — экран входа (SDDM greeter) с орбитальным clockwork-дизайном и общей
+мерой масштабирования. Проект создан с нуля на основе визуального языка
+оригинальной темы *clockwork/orbital* (Ryoku / Darkkal44), но с полностью
+переработанной архитектурой, чистым кодом и чёткой дорожной картой.
 
-Проект создан с нуля на основе визуального языка оригинальной темы *clockwork/orbital* (Ryoku / Darkkal44), но с полностью переработанной архитектурой, чистым кодом и чёткой дорожной картой.
+Статус: **MVP в процессе** (Phase 1). Уже реализовано: цифровые часы +
+indicator pill на орбитально-часовом фоне, валидировано на 8 дистрибутивах
+в CI.
 
 ## Текущий статус
 
-**Phase 1 / MVP** — stage 1.2 закрыт:
-- цифровые часы (TimeProvider, 1s timer) + indicator pill (мин|сек) + интеграция в Main.qml
-- весь масштаб через `s`; шрифт Sans Serif; проверено: `validate.sh` OK, `qmllint` exit 0, preview-рендер часов + pill
-- CI: полная 8-контейнерная матрица (arch, cachyos, fedora, nobara, ubuntu, debian, opensuse, rhel9) зелёная; opensuse/rhel9 исправлены (PR #12→#13)
-- версия **0.1.1-mvp** · [CHANGELOG](CHANGELOG.md)
-
-**Phase 1 / MVP** — stage 1.1 закрыт:
-- верификация root/scaling/background по спеке 1.1 (full-screen root, `s = Screen.height/768`, `bgColor`)
-- нет QML errors; `validate.sh` OK; `qmllint` exit 0
-
-**Phase 0 / Foundation** — stage 0.1–0.3 закрыты:
-- каркас темы `theme/onyx/` (Main.qml, ThemeState.qml со scale `s`, translations.js, PROVENANCE.txt)
-- скрипты `install.sh` / `uninstall.sh` / `validate.sh`
-- installable-файлы для SDDM: `metadata.desktop` (QtVersion=6) + `theme.conf`
-- CI skeleton (validate + qmllint)
-
-**Следующий шаг:** Phase 1 / stage 1.3 — Minute orbital (static + spotlight).
+- **Версия:** `0.1.1-mvp` · Phase 1 / MVP — stage 1.1 и 1.2 закрыты.
+- **Что сделано:** цифровые часы (TimeProvider, 1s timer) + indicator pill
+  (мин|сек), интеграция в Main.qml; весь масштаб через `s`; шрифт Sans Serif;
+  `validate.sh` OK, `qmllint` exit 0; preview-рендер часов + pill.
+- **CI:** полная 8-контейнерная матрица (arch, cachyos, fedora, nobara,
+  ubuntu, debian, opensuse, rhel9) зелёная.
+- **Следующий шаг:** stage 1.3 — Minute orbital (static + spotlight).
+- Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
 
 ## Документация
 
@@ -54,9 +52,31 @@
 
 ## Целевые платформы
 
-- Arch Linux / CachyOS
-- Wayland (primary, Weston kiosk)
-- X11 (secondary, с полным паритетом)
+- Wayland (primary, Weston kiosk) · X11 (secondary, с паритетом)
+- Проверено в CI на 8 дистрибутивах: **Arch, CachyOS, Fedora, Nobara,
+  Ubuntu, Debian, openSUSE Tumbleweed, RHEL9-семейство**.
+
+> Примечание об RHEL9: семейство RHEL9 проверяется в CI через **AlmaLinux 9**
+> (бинарный ребилд RHEL9), а не через сам RHEL9/UBI9, потому что в UBI9
+> отсутствуют X11/xcb/GL рантайм-зависимости EPEL Qt6 (`qt6-qtbase-gui`):
+> `libxkbcommon-x11`, `xcb-util-*`, `libinput`, `mesa-libGL`. AlmaLinux 9 даёт
+> полный AppStream + работающий EPEL Qt6.
+
+## Разработка / локальные проверки
+
+| Команда | Назначение |
+|---------|-----------|
+| `./validate.sh` | Слоёная валидация темы: required-файлы, `metadata.desktop`, `theme.conf`, QML-линт (`qmllint`, hard-fail) |
+| `./scripts/smoke.sh` | Headless-смоук: offscreen/software загрузка `Main.qml` на 15s без краша (exit 0/1) |
+| `./scripts/preview.sh` | Превью-раннер (qml6/qml): `-W/-H` окно, `-o FILE.png` скриншот, `--mock` |
+| `./install.sh` | Установка темы в `/usr/share/sddm/themes/onyx` (`--dest` для тестов) |
+| `./uninstall.sh` | Удаление темы (идемпотентно) |
+
+## Contributing / Workflow
+
+Вся работа ведётся на ветках `stage/*` → Pull Request в `dev`; `main` — только
+для вех стабильности (теги/релизы). CI обязателен: на PR гейт — `validate` +
+`validate-arch`, на merge в `dev` — полная 8-дистрибутивная матрица.
 
 ## Лицензия
 
