@@ -5,6 +5,48 @@
 
 ---
 
+## [0.1.1-mvp] — stage 1.2 · review follow-ups (CR-F1…F6) · 2026-09-08
+
+**Версия:** без bump (не этап по ROADMAP — follow-up pass к stage 1.2; версия остаётся `0.1.1-mvp`)
+
+### Статус и следующий шаг
+
+- Сделано: закрыты 6 замечаний ревью Stage 1.2 — CR-F1 (TimeProvider владеет 1s-таймером через `property Timer tickTimer`), CR-F2 (реальный Qt6 QML type-check в CI: `qt6-declarative-dev` + `qml6-module-qtqml`, hard-fail при отсутствии `jsroot.qmltypes`, authority-проверка Qt 6.11), CR-F3 (явный checked-SHA в CI-отчётах), CR-F4 (честный тех.долг в CHANGELOG), CR-F5 (честная семантика preview `-W/-H` vs `Screen`), CR-F6 (явное вертикальное центрирование в DigitalClock вместо baseline-on-Rect).
+- Следующее: **stage 1.3 — Minute Orbital** (`0.1.2-mvp`).
+- Блокеры: нет (после закрытия F1..F6).
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅ (follow-up F1..F6 в этом hotfix)
+- [ ] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp`
+- [ ] 1.4 Second orbital (smooth) — `0.1.3-mvp`
+- [ ] 1.5 Login panel (minimal) — `0.1.4-mvp`
+- [ ] 1.6 Basic auth feedback — `0.1.5-mvp`
+- [ ] 1.7 MVP freeze — `0.1.9-mvp`
+
+### Детали изменений (для агентов)
+
+- `components/clock/TimeProvider.qml` — CR-F1: `import QtQml` (QtObject и Timer — тип модуля QtQml, НЕ QtQuick); `property Timer tickTimer: Timer{interval:1000; running:true; repeat:true; onTriggered: provider.update()}` — TimeProvider стал владельцем таймера.
+- `components/clock/DigitalClock.qml` — CR-F1: inline `Timer {}` удалён (DigitalClock только потребляет `_time.update()`); CR-F6: `anchors.baseline: pillItem.baseline` → `anchors.verticalCenter: parent.verticalCenter` (запрет baseline на Rect).
+- `validate.sh:98-133` — Layer 4: QML root через `qtpaths6 --query QT_INSTALL_QML` (distro-aware) + find-фолбэк на `jsroot.qmltypes` (locals без bin от qtpaths6); jsroot обязателен → hard FAIL; degraded-skip удалён.
+- `.github/workflows/ci.yml` — install: `qt6-declarative-dev` (jsroot.qmltypes + транзитивно qmllint/qtpaths6) + `qml6-module-qtqml` (Timer) + `qml6-module-qtquick`; шаг «QML syntax check (hard)» через `QT_INSTALL_QML`; добавлен job `qt6-authority` (Qt 6.11 контейнер `ghcr.io/onyx-sddm/qt6.11-qmltooling:latest`, runtime-smoke + qmllint; warning, если образ не существует).
+- `scripts/preview.sh` — CR-F5: проверена честная семантика в `--help` Notes (`-W/-H` задают только wrapper-окно; рендер по `Screen.width/height`; `-o` = натуральный размер).
+- Проверено: qmllint Qt6.11 (exit 0), `./validate.sh` (OK), preview-smoke (PNG создаётся), тик живых секунд (md5 двух скриншотов различаются).
+
+### Тех. долг
+
+- Контейнерный образ `ghcr.io/onyx-sddm/qt6.11-qmltooling:latest` НЕ собран — job `qt6-authority` пока в warning-режиме. Построить образ (Qt 6.11 + qmltooling + qtpaths6) = следующий follow-up.
+- Полный исторический тех.долг stage 1.1/1.2 — в записях ниже и в `docs/ARCHITECTURE.md`.
+
+### Принятые решения
+
+- `property Timer tickTimer: Timer{}` в TimeProvider — итоговое решение F1 (одобрено пользователем): Qt 6.11 runtime-ориентир; прямой child `Timer{}` внутри `QtObject` в Qt 6.11.2 фатален («Cannot assign to non-existent default property»).
+- Ubuntu Qt 6.4 в CI остаётся primary compatibility-lint; authority-проверка Qt 6.11 — контейнерный job (не блокер при отсутствии образа).
+- Baseline текста поверх прямоугольника-пилла запрещён: вертикальное центрирование в Row-предке (F6) — pixel-perfect и предсказуемо.
+
+---
+
 ## [0.1.1-mvp] — stage 1.2 · Digital clock + indicator pill · 2026-09-08
 
 **Версия:** `0.1.1-mvp` (PATCH bump после stage 1.2; тег/релиз НЕ ставится — это stage, не веха)
@@ -35,7 +77,9 @@
 
 ### Тех. долг
 
-- Нет (clean stage).
+- На момент закрытия 1.2: CI on Ubuntu 6.4 не мог резолвить `Timer` (отсутствие `jsroot.qmltypes` / `qml6-module-qtqml`); закрыто в hotfix CR-F2.
+- Baseline `Text`↔`Rectangle` в `DigitalClock.qml` — заменён на явное вертикальное центрирование (CR-F6).
+- Authority-проверка Qt 6.11 (контейнер `qt6.11-qmltooling`) — образ ещё не собран, job в warning-режиме (CR-F2/тех. долг).
 
 ### Принятые решения
 
