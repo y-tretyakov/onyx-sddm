@@ -1,10 +1,11 @@
 import QtQuick
+import "../.."
 
 Item {
     id: clock
 
     required property real s
-    required property QtObject themeState
+    required property ThemeState themeState
     property alias timeProvider: _time
 
     width: row.width

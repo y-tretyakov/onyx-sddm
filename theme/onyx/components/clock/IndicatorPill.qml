@@ -1,4 +1,5 @@
 import QtQuick
+import "../.."
 
 Rectangle {
     id: pill
@@ -6,7 +7,7 @@ Rectangle {
     required property string curM
     required property string curS
     required property real s
-    required property QtObject themeState
+    required property ThemeState themeState
 
     width: 330 * s
     height: 90 * s
