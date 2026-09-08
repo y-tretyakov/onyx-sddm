@@ -11,36 +11,59 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install qmllint
+      # qt6-declarative-dev gives jsroot.qmltypes + transitively qmllint (dev-tools)
+      # and qtpaths6 (base-dev-tools); qml6-module-qtqml registers Timer; qml6-module-qtquick is QtQuick types.
+      - name: Install Qt6 QML tooling
         run: |
           sudo apt-get update
-          sudo apt-get install -y qt6-declarative-dev-tools qml6-module-qtquick
+          sudo apt-get install -y --no-install-recommends \
+            qt6-declarative-dev \
+            qml6-module-qtquick \
+            qml6-module-qtqml
 
       - name: Validate theme file set
         run: ./validate.sh
 
-      - name: QML syntax check
+      - name: QML syntax check (hard)
         run: |
           set -euo pipefail
-          QML_ROOT=""
-          for cand in /usr/lib/x86_64-linux-gnu/qt6/qml /usr/lib/aarch64-linux-gnu/qt6/qml /usr/lib/qt6/qml; do
-            if [ -d "$cand" ]; then QML_ROOT="$cand"; break; fi
-          done
+          command -v qtpaths6 >/dev/null || { echo "::error::qtpaths6 not found" >&2; exit 1; }
+          QML_ROOT="$(qtpaths6 --query QT_INSTALL_QML)"
+          [ -n "$QML_ROOT" ] || { echo "::error::QT_INSTALL_QML empty" >&2; exit 1; }
+          if [ ! -f "$QML_ROOT/jsroot.qmltypes" ]; then
+            echo "::error::Missing $QML_ROOT/jsroot.qmltypes" >&2
+            exit 1
+          fi
+          echo "QML_ROOT=$QML_ROOT"
           QMLLINT=""
           for c in qmllint6 /usr/lib/qt6/bin/qmllint qmllint; do
-            if command -v "$c" >/dev/null 2>&1 || [ -x "$c" ]; then
-              QMLLINT="$c"
-              break
-            fi
+            if command -v "$c" >/dev/null 2>&1 || [ -x "$c" ]; then QMLLINT="$c"; break; fi
           done
-          [ -n "$QMLLINT" ] || { echo "qmllint not found" >&2; exit 1; }
-          # Debian/Ubuntu Qt6 packages can omit QtQuick/jsroot.qmltypes, making
-          # QtQuick types (e.g. Timer) unresolvable -> false positives. This is an
-          # environment gap, not a code defect; degrade this check to a warning.
-          if [ -n "$QML_ROOT" ] && [ ! -f "$QML_ROOT/jsroot.qmltypes" ] && [ ! -f "$QML_ROOT/QtQuick/jsroot.qmltypes" ]; then
-            echo "WARNING: jsroot.qmltypes missing in $QML_ROOT; skipping QML type check (environment gap)" >&2
+          [ -n "$QMLLINT" ] || { echo "::error::qmllint not found" >&2; exit 1; }
+          while IFS= read -r f; do
+            "$QMLLINT" -I "$QML_ROOT" --unqualified=info --import=info "$f"
+          done < <(find theme/onyx -name '*.qml' -type f)
+
+  qt6-authority:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: QML type check + runtime smoke on Qt 6.11 container
+        run: |
+          set -euo pipefail
+          IMAGE="ghcr.io/onyx-sddm/qt6.11-qmltooling:latest"
+          if ! docker pull "$IMAGE" 2>/dev/null; then
+            echo "::warning::qt6.11-qmltooling container unavailable; using host qmllint instead"
+            qtpaths6 --query QT_INSTALL_QML 2>/dev/null || find /usr -name jsroot.qmltypes 2>/dev/null | head
             exit 0
           fi
-          while IFS= read -r f; do
-            "$QMLLINT" ${QML_ROOT:+-I "$QML_ROOT"} --unqualified=info --import=info "$f"
-          done < <(find theme/onyx -name '*.qml' -type f)
+          docker run --rm -v "$PWD":/ws -w /ws "$IMAGE" bash -c '
+            set -euo pipefail
+            QML_ROOT="$(qtpaths6 --query QT_INSTALL_QML)"
+            echo "Qt: $(qmlscene --version 2>/dev/null || qml6 --version 2>/dev/null || echo n/a)"
+            echo "QML_ROOT=$QML_ROOT"
+            test -f "$QML_ROOT/jsroot.qmltypes" || { echo "::error::no jsroot" >&2; exit 1; }
+            find theme/onyx -name "*.qml" -print0 | xargs -0 -n1 qmllint -I "$QML_ROOT" --unqualified=info --import=info
+            echo "qmllint 6.11: OK"
+          '
