@@ -26,6 +26,7 @@ jobs:
             qt6-qmllint-plugins \
             qml-qt6 \
             qml6-module-qtquick \
+            qml6-module-qtqml \
             qt6-svg-dev
 
       - name: Validate theme (structural + qmllint hard)
@@ -80,10 +81,10 @@ jobs:
             install: dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg
           - distro: ubuntu
             image: ubuntu:24.04
-            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qt6-svg-dev
+            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qml6-module-qtqml qt6-svg-dev
           - distro: debian
             image: debian:bookworm
-            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qt6-svg-dev
+            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qml6-module-qtqml qt6-svg-dev
           - distro: rhel9
             image: registry.access.redhat.com/ubi9/ubi:latest
             install: dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtsvg
