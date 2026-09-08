@@ -16,6 +16,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qt6-declarative-dev-tools qml6-module-qtquick
 
+      - name: Diagnostic - Qt6 QML layout
+        run: |
+          echo "=== qmllint ==="; command -v qmllint qmllint6; qmllint --version 2>&1 | head -1
+          echo "=== find QtQuick qmldir ==="; find /usr -name qmldir -path '*QtQuick*' 2>/dev/null | head
+          echo "=== find jsroot.qmltypes ==="; find /usr -name 'jsroot.qmltypes' 2>/dev/null | head
+          echo "=== find builtins.qmltypes ==="; find /usr -name 'builtins.qmltypes' 2>/dev/null | head
+          echo "=== qmldir content (if any) ==="; find /usr -name qmldir -path '*QtQuick*' -exec sh -c 'echo "--- {}"; head -20 {}' \; 2>/dev/null | head -40
+
       - name: Validate theme file set
         run: ./validate.sh
 
