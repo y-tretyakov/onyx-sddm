@@ -6,12 +6,11 @@ QtObject {
     property string curH: "00"
     property string curM: "00"
     property string curS: "00"
+    readonly property int curMinute: Number(curM)
     readonly property string curTime: curH + ":" + curM
 
     property Timer tickTimer: Timer {
-        interval: 1000
-        running: true
-        repeat: true
+        repeat: false
         onTriggered: provider.update()
     }
 
@@ -26,5 +25,14 @@ QtObject {
         curS = _pad(d.getSeconds());
     }
 
-    Component.onCompleted: update()
+    // Перепланирование тика ровно на начало следующей целой секунды.
+    function syncTick() {
+        tickTimer.interval = 1000 - new Date().getMilliseconds();
+        tickTimer.start();
+    }
+
+    Component.onCompleted: {
+        update();
+        syncTick();
+    }
 }
