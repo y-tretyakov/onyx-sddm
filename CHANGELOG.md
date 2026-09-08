@@ -5,6 +5,48 @@
 
 ---
 
+## [0.0.2] — stage 0.2 · Install/uninstall/validate scripts · 2026-09-08
+
+**Версия:** `0.0.2` (PATCH bump после stage 0.2; тег/релиз не ставился — это stage, не веха)
+
+### Тик-лист (копия ROADMAP — Phase 0)
+
+| Stage | Version | Deliverables                                      | Done |
+|-------|---------|---------------------------------------------------|------|
+| 0.1   | 0.0.1   | Репозиторий, ARCHITECTURE, ROADMAP, SPECS skeleton | [x]  |
+| 0.2   | 0.0.2   | install/uninstall/validate scripts skeleton        | [x]  |
+| 0.3   | 0.0.3   | CI skeleton + metadata.desktop + theme.conf        | [ ]  |
+
+### Статус и следующий шаг
+
+- Сделано: три скрипта-каркаса в корне репо, протестированы на /tmp (install/uninstall) и на ошибках (validate).
+- Следующее: **stage 0.3 — CI skeleton + metadata.desktop + theme.conf**.
+- Подготовить до старта: выбрать суть CI-работ (validate.sh + qmllint в GitHub Actions), определить содержимое metadata.desktop (Desktop Entry для SDDM).
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- `install.sh:1-36` — копирует `theme/onyx/.` → `--dest`/`/usr/share/sddm/themes/onyx`; поддержка `--dest`, `-h/--help`; exit 0/1/2.
+- `uninstall.sh:1-34` — удаляет каталог темы; идемпотентный exit 0.
+- `validate.sh:1-46` — проверка required-набора `Main.qml`, `ThemeState.qml`, `translations.js`, `PROVENANCE.txt`; exit 0/1; дефолт `theme/onyx`.
+- Общий паттерн: `set -euo pipefail`, `BASH_SOURCE[0]` для относительных путей, messages на английском.
+- `metadata.desktop`/`theme.conf` сознательно НЕ в required (stage 0.3 добавит их в validate и установит дефолт SDDM-темы).
+- Git: commits stage 0.2, PR → merge в `dev` (история в git log).
+
+### Тех. долг
+
+- Нет обработки многопользовательской установки/бэкапа конфигов SDDM (потом: stage 4.1 packaging).
+- validate.sh НЕ проверяет `metadata.desktop`/`theme.conf` до stage 0.3.
+- install.sh не перезаписывает `sddm.conf` `Current=` (дефолт-тема — вне scope до 0.3).
+
+### Принятые решения
+
+- Скрипты — bash, `set -euo pipefail`, без зависимостей, английские сообщения.
+- `--dest` для тестируемости в CI/tmp; дефолт `/usr/share/sddm/themes/onyx` (стандарт SDDM).
+- `scripts/verify-theme.sh`/`checksums.sha256` перенесены в stage 4.3 (CI completeness).
+
+---
+
 ## [0.0.1] — stage 0.1 · Theme skeleton · 2026-09-08
 
 **Версия:** `0.0.1` (PATCH bump после stage 0.1; тег/релиз не ставился — это stage, не веха)
