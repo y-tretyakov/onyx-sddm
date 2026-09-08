@@ -4,7 +4,7 @@
 **Codename:** Onyx (formerly Ryoku / clockwork/orbital)  
 **Type:** Qt6 / QML greeter theme for SDDM  
 **Target platforms:** Arch Linux / CachyOS (Wayland primary via Weston kiosk, X11 secondary)  
-**Version of this document:** 0.2.1 · 2026-09-08  
+**Version of this document:** 0.2.2 · 2026-09-08  
 
 ---
 
@@ -25,7 +25,7 @@ Onyx — это полный redesign экрана входа с нуля, со�
 3. **Zero external runtime deps** кроме SDDM + Qt6 (declarative, 5compat, svg).
 4. **Wayland-first** — корректный виртуальный курсор ✦, отсутствие hover-слоя, который ворует события.
 5. **Offline-first** — тема полностью вендорится, install/uninstall не требует сети.
-6. **Graceful degradation** — работает в preview-режиме (QuickShell / qmlscene) без `sddm` объекта.
+6. **Graceful degradation** — работает в preview-режиме через Qt6 `qml6`/`qml` без `sddm` объекта.
 7. **Multilingual by design** — 9+ языков из коробки, auto-detect + manual override.
 8. **Clear ownership** — каждый компонент имеет одну ответственность и минимальный публичный API.
 
@@ -254,13 +254,13 @@ Main.qml
 3. **Fingerprint** props существуют только в lock-shim.
 4. **CJK / Arabic** — system font fallback.
 5. **HiDPI** — всё через `s`, проверять 2×/3×.
-6. **Import paths** — компоненты должны корректно резолвиться и в greeter, и в preview (`qmlscene` / QuickShell).
+6. **Import paths** — компоненты должны корректно резолвиться и в greeter, и в preview (`qml6` / `qml`).
 
 ---
 
 ## 9. Development & Testing Strategy
 
-- **Preview:** `qmlscene` / `qml` / QuickShell с mock `sddm`.
+- **Preview:** `qml6` / `qml` с mock `sddm`.
 - **Real greeter:** `sddm-greeter-qt6 --test-mode` или VT / spare X display.
 - **CI:** validate.sh + checksums + qml syntax check.
 - **Visual regression:** screenshot-based (будущее).
