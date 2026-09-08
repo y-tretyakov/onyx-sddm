@@ -5,6 +5,46 @@
 
 ---
 
+## [0.1.1-mvp] — stage 1.2 · Digital clock + indicator pill · 2026-09-08
+
+**Версия:** `0.1.1-mvp` (PATCH bump после stage 1.2; тег/релиз НЕ ставится — это stage, не веха)
+
+### Статус и следующий шаг
+
+- Сделано: TimeProvider (1s timer, curH/curM/curS), DigitalClock (hours 110×s, Sans Serif Black), IndicatorPill (330×90×s, min|sec, divider), Main.qml integration (centered).
+- Следующее: **stage 1.3 — Minute Orbital** (`0.1.2-mvp`).
+- Блокеры: нет.
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅ THIS
+- [ ] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp`
+- [ ] 1.4 Second orbital (smooth) — `0.1.3-mvp`
+- [ ] 1.5 Login panel (minimal) — `0.1.4-mvp`
+- [ ] 1.6 Basic auth feedback — `0.1.5-mvp`
+- [ ] 1.7 MVP freeze — `0.1.9-mvp`
+
+### Детали изменений (для агентов)
+
+- `components/clock/TimeProvider.qml` — QtObject, Timer 1000ms, `curH`/`curM`/`curS` (zero-padded strings), `curTime` ("HH:MM"). Created Task 1.
+- `components/clock/IndicatorPill.qml` — Rectangle 330×90×s, left=minText, center=divider, right=secText. Created Task 2.
+- `components/clock/DigitalClock.qml` — Row container: hourText (110×s, Sans Serif Black, #FFFFFF) + IndicatorPill. Created Task 3.
+- `Main.qml:17-21` — DigitalClock instance (Clock.DigitalClock namespaced directory import), anchored `centerIn: parent`, `s=root.s`. Task 4.
+- Отклонение от плана: Timer в TimeProvider объявлен как `property Timer tickTimer` — в runtime Qt 6.11.2 прямой child `Timer {}` внутри `QtObject` фатален («Cannot assign to non-existent default property»), компонент не грузится; плановый `import "X.qml" as X` не работает в Qt6.11 для компонентов theme — используем namespaced directory import (Main) и sibling-resolution (DigitalClock).
+
+### Тех. долг
+
+- Нет (clean stage).
+
+### Принятые решения
+
+- TimeProvider — отдельный QtObject (не в ThemeState), потому что время ортогонально конфигурации темы.
+- Шрифт `"Sans Serif"` (Qt generic fallback) для всех текстовых элементов — Inter не bundled и недоступен на целевых системах как системный; Inter bundling — отдельный этап (stage 2.x+). `"Sans Serif"` гарантирует работу в preview и в greeter на любом дистрибутиве.
+- pill color: фон `#1A1A1A`, минуты `#CCCCCC`, секунды `#888888` — достаточно контрастно на чёрном фоне, не отвлекая от основных часов.
+
+---
+
 ## [0.1.0-mvp] — stage 1.1 · hotfix preview/ARCHITECTURE · 2026-09-08
 
 **Версия:** без bump (горячий фикс после follow-up pass; версия остаётся `0.1.0-mvp`)
