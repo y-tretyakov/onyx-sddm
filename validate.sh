@@ -103,7 +103,7 @@ if [[ -z "${QMLINT}" ]]; then
     fail "qmllint not found (looked for qmllint6/qmllint-qt6/qmllint + Qt6 libexec paths); cannot validate QML"
     exit 1
 fi
-    # Resolve the active Qt6 installation (distro-independent).
+# Resolve the active Qt6 installation (distro-independent).
 QML_ROOT=""
 QT_VERSION=""
 if command -v qtpaths6 >/dev/null 2>&1; then
