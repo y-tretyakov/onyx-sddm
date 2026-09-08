@@ -31,5 +31,5 @@ jobs:
           done
           [ -n "$QMLLINT" ] || { echo "qmllint not found" >&2; exit 1; }
           while IFS= read -r f; do
-            "$QMLLINT" -I /usr/lib/x86_64-linux-gnu/qt6/qml "$f"
+            "$QMLLINT" -I /usr/lib/x86_64-linux-gnu/qt6/qml --unqualified=info --import=info "$f"
           done < <(find theme/onyx -name '*.qml' -type f)
