@@ -10,6 +10,13 @@ QtObject {
 
     readonly property var _now: new Date()
 
+    property Timer tickTimer: Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: provider._update()
+    }
+
     function _pad(n) {
         return n < 10 ? "0" + n : "" + n;
     }
@@ -22,11 +29,4 @@ QtObject {
     }
 
     Component.onCompleted: _update()
-
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: provider._update()
-    }
 }
