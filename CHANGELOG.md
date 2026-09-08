@@ -5,6 +5,113 @@
 
 ---
 
+## [0.1.1-mvp] — stage 1.2 · review follow-ups (CR-F7…F11) · 2026-09-08
+
+**Версия:** без bump (follow-up-запись CR-F7…F11; не ROADMAP-этап; версия остаётся `0.1.1-mvp`)
+
+### Статус и следующий шаг
+
+- Сделано: **НИЧЕГО по коду** — только зафиксированы в CHANGELOG замечания
+  пользователя по коду stage 1.2 (CR-F7…F11) как тех. долга / follow-up'ов для
+  будущих этапов. Изменён ТОЛЬКО `CHANGELOG.md` (ветка `stage/1.2-followup-notes`);
+  код, скрипты, README, `.github/`, `docs/` и `docs/code-reviews/` НЕ трогались.
+- Следующее: **stage 1.3 — Minute Orbital** (`0.1.2-mvp`).
+- **Follow-up'ы CR-F7…F11 ОБЯЗАТЕЛЬНО входят в план stage 1.3** (AGENTS.md §3.3:
+  «follow-up из ревью обязаны попасть в план СЛЕДУЮЩЕГО этапа»): F7/F8 — быстрый
+  UX-pass по `install.sh`; F11 — выбор варианта A/B (первый в очереди); F9/F10 —
+  только проверка/учёт без кода (детали в «Принятые решения»).
+- Блокеры: нет.
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅ (matrix fix: opensuse/rhel9 green)
+- [ ] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp`
+- [ ] 1.4 Second orbital (smooth) — `0.1.3-mvp`
+- [ ] 1.5 Login panel (minimal) — `0.1.4-mvp`
+- [ ] 1.6 Basic auth feedback — `0.1.5-mvp`
+- [ ] 1.7 MVP freeze — `0.1.9-mvp`
+
+### Детали изменений (для агентов)
+
+- Изменён ТОЛЬКО `CHANGELOG.md` (эта запись). Commits / push НЕ делались.
+- Замечания пользователя касаются следующих файлов (для будущих агентов):
+  - `install.sh:6` — дефолтный `DEST="/usr/share/sddm/themes"` без явной
+    EUID-проверки; `install.sh:35` — `cp -r "${SRC_DIR}/." "${DEST}/"`.
+  - `theme/onyx/Main.qml:10` — `readonly property real s: Screen.height / 768`
+    (масштаб только по высоте; НЕ менять сейчас).
+  - `scripts/smoke.sh` — offscreen-загрузка QML-рантайма, а не настоящий SDDM
+    greeter (осознанный компромисс MVP).
+  - `scripts/preview.sh:15,37-38,62,83` + `preview/MockSddm.qml` +
+    `preview/MockConfig.qml` — `--mock` только предупреждает, моки не
+    инжектируются.
+- Полные формулировки и варианты решений по каждому CR — в «Тех. долг» и
+  «Принятые решения».
+
+### Тех. долг
+
+- 🟡 **CR-F7 (низкий, UX):** `install.sh` требует root при дефолтном пути
+  `/usr/share/sddm/themes`, но явно EUID не проверяет — обычный пользователь
+  сейчас получит просто ошибку от `mkdir`. Рекомендация пользователя — явная
+  проверка:
+  ```bash
+  if [[ "${DEST}" == "/usr/share/sddm/themes" ]] && [[ "${EUID}" -ne 0 ]]; then
+      echo "error: root privileges required for system installation" >&2
+      exit 1
+  fi
+  ```
+  UX-улучшение, не критично, но лучше. Чинить: quick-pass в stage 1.3.
+
+- 🟡 **CR-F8 (низкий, UX):** `install.sh:35` — `cp -r "${SRC_DIR}/." "${DEST}/"`
+  работает, но для установщика предпочтительнее `cp -a` (предсказуемо сохраняет
+  атрибуты). Не must-have. Чинить: quick-pass в stage 1.3.
+
+- 🟡 **CR-F9 (отложено; INFO-forwarded, аналогично CR-5; НЕ трогать сейчас):**
+  `theme/onyx/Main.qml:10` — `s = Screen.height / 768` масштабирует ТОЛЬКО по
+  высоте; на ультрашироких/нестандартных экранах могут появиться вопросы
+  композиции. Будущее решение-кандидат:
+  `s = Math.min(Screen.width/1366, Screen.height/768)`. Вопрос следующего этапа,
+  когда появятся реальные HUD/login-панели; перепроверить также на stage 3.8
+  (HiDPI & multi-monitor) и при multi-monitor-задачах. Не блокер.
+
+- 🟡 **CR-F10 (отложено; осознанный компромисс MVP):** `scripts/smoke.sh`
+  проверяет загрузку QML-рантайма (offscreen), но не настоящий SDDM greeter.
+  Для MVP решение хорошее — компенсируется graceful preview через
+  `typeof sddm === "undefined"` (ThemeState.isPreview). Позже нужен отдельный
+  реальный SDDM integration test (с появлением login/интерактива, ~1.5+).
+  Сейчас НЕ усложнять. Не блокер.
+
+- ⚠️ **CR-F11 (средний; ПЕРВЫЙ в очереди):** `scripts/preview.sh --mock`
+  фактически ничего не мокает: флаг только выводит warning и идёт в graceful
+  preview (README/--help честно говорят «--mock only warns»), но имя флага
+  misleading — звучит как функция. `preview/MockSddm.qml` и
+  `preview/MockConfig.qml` существуют как подготовленная инфраструктура, но
+  реально не инжектируются (полная инжекция `sddm`/`config` требует C++-хендла
+  или кастомного runner — context-properties создаёт greeter). Это не баг, а
+  несостыковка интерфейса. Оба варианта решения зафиксированы, выбор — при
+  планировании следующего затронутого этапа:
+  - **Вариант A (лучший сейчас):** убрать `--mock` до появления настоящего
+    harness.
+  - **Вариант B:** переименовать в `--preview-mode` или `--graceful-preview`.
+
+### Принятые решения
+
+- **CR-F9 (формула масштаба):** `Screen.height / 768` — осознанный выбор до
+  появления HUD/login-панелей; без них нельзя обоснованно выбрать формулу
+  (`min`-кандидат отмечен на будущее). Изменение сейчас отклонено.
+- **CR-F10 (smoke-test вместо реального greeter):** осознанный компромисс MVP;
+  реальный SDDM integration test — на будущее (после появления интерактивных
+  панелей login).
+- **CR-F11 (`--mock`):** правка отложена осознанно — решение (вариант A или B)
+  принимается при планировании stage 1.3, где F11 первым в очереди. Оба варианта
+  зафиксированы в «Тех. долг».
+- **CR-F7…F11 в план stage 1.3:** по AGENTS.md §3.3 follow-up'ы из ревью
+  обязаны попасть в план СЛЕДУЮЩЕГО этапа. Распределение по 1.3: F7/F8 — UX-pass
+  по `install.sh`; F11 — выбор варианта A/B; F9/F10 — учёт в дизайне орбиталей
+  без кода (после появления детальной композиции).
+
+---
+
 ## [0.1.1-mvp] — stage 1.2 · CI distro-matrix fix (opensuse/rhel9) · 2026-09-08
 
 **Версия:** без bump (follow-up к stage 1.2; не ROADMAP-этап)
