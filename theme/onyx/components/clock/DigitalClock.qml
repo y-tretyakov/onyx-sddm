@@ -11,6 +11,13 @@ Item {
 
     TimeProvider { id: _time }
 
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: _time.update()
+    }
+
     Row {
         id: row
 
