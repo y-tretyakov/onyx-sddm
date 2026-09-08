@@ -3,8 +3,6 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 THEME_QML="${ROOT_DIR}/theme/onyx/Main.qml"
-MOCK_SDDM="${ROOT_DIR}/preview/MockSddm.qml"
-MOCK_CONFIG="${ROOT_DIR}/preview/MockConfig.qml"
 
 usage() {
     cat <<EOF
@@ -12,7 +10,6 @@ Usage: $0 [options]
 
 Preview the Onyx SDDM theme with a Qt6 QML runner (qml6, falls back to qml).
 
-  --mock            best-effort injection of sddm/config mocks (see note)
   -W, --width N     viewing window width  (via temp wrapper; qml6 has no CLI flag)
   -H, --height N    viewing window height (via temp wrapper; qml6 has no CLI flag)
   -o, --output FILE.png
@@ -34,9 +31,10 @@ Notes:
     screenshots are produced with temporary wrapper .qml files (in /tmp,
     removed on exit).
   - qml6 cannot inject sddm/config context-properties from the CLI (they
-    are provided by the greeter). --mock only warns; the theme degrades
-    gracefully via ThemeState.isPreview (background #000000). Fixtures:
-    preview/MockSddm.qml + preview/MockConfig.qml for a future harness.
+    are provided by the greeter). The theme degrades gracefully via
+    ThemeState.isPreview (background #000000). preview/MockSddm.qml +
+    preview/MockConfig.qml are fixtures for a future harness and are not
+    loaded by this script.
 EOF
 }
 
@@ -55,11 +53,9 @@ detect_runner() {
 WIDTH=""
 HEIGHT=""
 OUTPUT=""
-MOCK=0
 
 while (( $# )); do
     case "$1" in
-        --mock) MOCK=1 ;;
         -W|--width)
             [[ $# -ge 2 ]] || { echo "$0: $1 requires an argument" >&2; exit 1; }
             WIDTH="$2"; shift ;;
@@ -76,12 +72,6 @@ while (( $# )); do
 done
 
 detect_runner
-
-if [[ "${MOCK}" -eq 1 ]]; then
-    echo "WARNING: full sddm injection requires the greeter context; " \
-         "mocks provided at ${MOCK_SDDM} + ${MOCK_CONFIG} for future harness. " \
-         "Running graceful preview (ThemeState.isPreview)." >&2
-fi
 
 [[ -f "${THEME_QML}" ]] || { echo "ERROR: theme not found at ${THEME_QML}" >&2; exit 1; }
 

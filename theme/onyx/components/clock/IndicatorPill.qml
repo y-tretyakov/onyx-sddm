@@ -1,4 +1,5 @@
 import QtQuick
+import "../.."
 
 Rectangle {
     id: pill
@@ -6,12 +7,13 @@ Rectangle {
     required property string curM
     required property string curS
     required property real s
+    required property ThemeState themeState
 
     width: 330 * s
     height: 90 * s
     radius: 12 * s
-    color: "#1A1A1A"
-    border.color: "#333333"
+    color: themeState.pillBgColor
+    border.color: themeState.pillBorderColor
     border.width: 1 * s
 
     // Minutes — left half
@@ -23,10 +25,10 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
 
         text: pill.curM
-        font.family: "Sans Serif"
+        font.family: pill.themeState.fontFamily
         font.pixelSize: 36 * pill.s
         font.weight: Font.DemiBold
-        color: "#CCCCCC"
+        color: pill.themeState.pillMinutesColor
     }
 
     // Vertical divider
@@ -34,7 +36,7 @@ Rectangle {
         width: 1 * pill.s
         height: 40 * pill.s
         anchors.centerIn: parent
-        color: "#444444"
+        color: pill.themeState.pillDividerColor
     }
 
     // Seconds — right half
@@ -46,9 +48,9 @@ Rectangle {
         anchors.verticalCenter: parent.verticalCenter
 
         text: pill.curS
-        font.family: "Sans Serif"
+        font.family: pill.themeState.fontFamily
         font.pixelSize: 36 * pill.s
         font.weight: Font.DemiBold
-        color: "#888888"
+        color: pill.themeState.pillSecondsColor
     }
 }

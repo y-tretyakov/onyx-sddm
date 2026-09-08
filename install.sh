@@ -26,11 +26,16 @@ done
 
 DEST="${DEST}/${THEME_NAME}"
 
+if [[ "${DEST}" == "/usr/share/sddm/themes/onyx" ]] && [[ "${EUID}" -ne 0 ]]; then
+    echo "error: root privileges required for system installation" >&2
+    exit 1
+fi
+
 if [[ ! -d "${SRC_DIR}" ]]; then
     echo "error: theme source not found at ${SRC_DIR}" >&2
     exit 1
 fi
 
 mkdir -p "${DEST}"
-cp -r "${SRC_DIR}/." "${DEST}/"
+cp -a "${SRC_DIR}/." "${DEST}/"
 echo "installed: ${DEST}"
