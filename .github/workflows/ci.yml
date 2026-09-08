@@ -11,10 +11,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install qmlint
+      - name: Install qmllint
         run: |
           sudo apt-get update
-          sudo apt-get install -y qml6-module-qtquick qmllint6
+          sudo apt-get install -y qt6-declarative-dev-tools
 
       - name: Validate theme file set
         run: ./validate.sh
@@ -23,5 +23,5 @@ jobs:
         run: |
           set -euo pipefail
           while IFS= read -r f; do
-            qmllint6 "$f"
+            /usr/lib/qt6/bin/qmllint "$f"
           done < <(find theme/onyx -name '*.qml' -type f)
