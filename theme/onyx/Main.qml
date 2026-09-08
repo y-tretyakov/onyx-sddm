@@ -1,4 +1,5 @@
 import QtQuick
+import "components/clock" as Clock
 
 Rectangle {
     id: root
@@ -11,5 +12,11 @@ Rectangle {
     ThemeState {
         id: state
         s: root.s
+    }
+
+    Clock.DigitalClock {
+        id: clock
+        s: root.s
+        anchors.centerIn: parent
     }
 }

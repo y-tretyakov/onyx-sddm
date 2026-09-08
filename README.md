@@ -1,6 +1,6 @@
 # Onyx SDDM Theme
 
-[![Version](https://img.shields.io/badge/version-0.1.0--mvp-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.1--mvp-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
 [![Qt6](https://img.shields.io/badge/Qt-6-41CD52.svg?logo=qt&logoColor=white&style=flat)](https://doc.qt.io/qt-6/)
 [![QML](https://img.shields.io/badge/QML-Qt__Quick-41CD52.svg?style=flat)](https://doc.qt.io/qt-6/qtquick-index.html)
 [![SDDM](https://img.shields.io/badge/SDDM-greeter-FF6B6B.svg?style=flat)](https://github.com/sddm/sddm)
@@ -14,10 +14,14 @@
 
 ## Текущий статус
 
+**Phase 1 / MVP** — stage 1.2 закрыт:
+- цифровые часы (TimeProvider, 1s timer) + indicator pill (мин|сек) + интеграция в Main.qml
+- весь масштаб через `s`; шрифт Sans Serif; проверено: `validate.sh` OK, `qmllint` exit 0, preview-рендер часов + pill
+- версия **0.1.1-mvp** · [CHANGELOG](CHANGELOG.md)
+
 **Phase 1 / MVP** — stage 1.1 закрыт:
 - верификация root/scaling/background по спеке 1.1 (full-screen root, `s = Screen.height/768`, `bgColor`)
 - нет QML errors; `validate.sh` OK; `qmllint` exit 0
-- версия **0.1.0-mvp** · [CHANGELOG](CHANGELOG.md)
 
 **Phase 0 / Foundation** — stage 0.1–0.3 закрыты:
 - каркас темы `theme/onyx/` (Main.qml, ThemeState.qml со scale `s`, translations.js, PROVENANCE.txt)
@@ -25,7 +29,7 @@
 - installable-файлы для SDDM: `metadata.desktop` (QtVersion=6) + `theme.conf`
 - CI skeleton (validate + qmllint)
 
-**Следующий шаг:** Phase 1 / stage 1.2 — Digital clock + indicator pill.
+**Следующий шаг:** Phase 1 / stage 1.3 — Minute orbital (static + spotlight).
 
 ## Документация
 
