@@ -96,11 +96,19 @@ if [[ -z "${QMLINT}" ]]; then
     echo "WARNING: qmllint not found; skipping QML syntax check" >&2
 else
     for f in "${QML_FILES[@]}"; do
-        if ! "${QMLINT}" "${f}" >/dev/null 2>&1; then
-            if ! "${QMLINT}" --unqualified=info --import=info "${f}" >/dev/null 2>&1; then
-                fail "QML syntax/type error in ${f}"
-            fi
+        ok=1
+        out="$("${QMLINT}" "${f}" 2>&1)" || ok=0
+        if [[ ${ok} -eq 1 ]]; then
+            continue
         fi
+        ok2=1
+        out2="$("${QMLINT}" --unqualified=info --import=info "${f}" 2>&1)" || ok2=0
+        if [[ ${ok2} -eq 1 ]]; then
+            continue
+        fi
+        fail "QML syntax/type error in ${f}"
+        if [[ -n "${out}" ]]; then printf '      %s\n' "${out}" >&2; fi
+        if [[ -n "${out2}" ]]; then printf '      %s\n' "${out2}" >&2; fi
     done
 fi
 
