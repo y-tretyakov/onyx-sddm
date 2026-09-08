@@ -18,11 +18,12 @@ jobs:
 
       - name: Diagnostic - Qt6 QML layout
         run: |
-          echo "=== qmllint ==="; command -v qmllint qmllint6; qmllint --version 2>&1 | head -1
+          echo "arch: $(uname -m)"
+          echo "=== qmllint ==="; command -v qmllint || true; command -v qmllint6 || true; qmllint --version 2>&1 | head -1 || true
           echo "=== find QtQuick qmldir ==="; find /usr -name qmldir -path '*QtQuick*' 2>/dev/null | head
           echo "=== find jsroot.qmltypes ==="; find /usr -name 'jsroot.qmltypes' 2>/dev/null | head
           echo "=== find builtins.qmltypes ==="; find /usr -name 'builtins.qmltypes' 2>/dev/null | head
-          echo "=== qmldir content (if any) ==="; find /usr -name qmldir -path '*QtQuick*' -exec sh -c 'echo "--- {}"; head -20 {}' \; 2>/dev/null | head -40
+          echo "=== Qt qml dirs ==="; ls -d /usr/lib/*/qt6/qml /usr/lib/qt6/qml 2>/dev/null || true
 
       - name: Validate theme file set
         run: ./validate.sh
