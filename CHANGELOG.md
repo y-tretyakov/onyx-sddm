@@ -5,6 +5,41 @@
 
 ---
 
+## [0.1.0-mvp] — stage 1.1 · review follow-ups (CR-1…CR-5) · 2026-09-08
+
+**Версия:** без bump (не этап по ROADMAP — follow-up pass к stage 1.1; версия остаётся `0.1.0-mvp`)
+
+### Статус и следующий шаг
+
+- Сделано: применены замечания ревью Stage 1.1 (veredict APPROVED WITH MINOR FINDINGS): CR-1 (scale ownership синхронизирован в ARCHITECTURE), CR-2 (validate.sh — 4 слоя проверки, включая qmllint), CR-3 (в AGENTS.md §8 — правило явных CI-доказательств), CR-4 (scripts/preview.sh + моки sddm/config), ревью-файл переименован по конвенции `YYYY-MM-DD-stage-X-Y.md` (2026-09-08-stage-1.1.md).
+- Следующее: **stage 1.2 — Digital clock + indicator pill** (`0.1.1-mvp`). CR-5 (multi-screen Screen.width/height) — INFO, проверить при stage 3.8 (HiDPI/multi-monitor) или раньше по возможности.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- `docs/ARCHITECTURE.md:5.1` — scale ownership: scale считает ТОЛЬКО `Main.qml`; `ThemeState` получает `s`; компоненты потребляют через composition/state (CR-1). Версия документа → 0.2.1.
+- `validate.sh:1-113` — слоёная валидация: required files → metadata.desktop (QtVersion exact 6, MainScript/ConfigFile existence) → theme.conf keys (type/color/bgColor) → qmllint (приоритет Qt6 бинаря: `qmllint6` → `/usr/lib/qt6/bin/qmllint` → `qmllint`; fallback-флаги `--unqualified=info --import=info`) (CR-2).
+- `scripts/preview.sh:1-151` — превью-раннер Qt6 (qml6 auto-detect, не qmlscene); `--mock`, `-W/-H` (временный wrapper-Window), `-o` (grabToImage-скриншот через временный wrapper); trap cleanup EXIT INT TERM (CR-4).
+- `preview/MockSddm.qml` — QtObject-заглушка `sddm` (hostName + стабы login/powerOff/reboot); `preview/MockConfig.qml` — QtObject `bgColor` (CR-4).
+- `AGENTS.md:§8` — требование явных CI-доказательств в отчёте закрытия этапа (workflow name, commit SHA, run ID, jobs PASS/FAIL) (CR-3).
+- `docs/code-reviews/2026-09-08-stage-1.1.md` — ревью Stage 1.1 (переименовано из `Stage 1.1 Code Review.md`).
+- Код темы `theme/onyx/**` НЕ менялся (CR-5 — на будущее, INFO).
+- Git: commits follow-up pass (7 коммитов), PR → merge в `dev`.
+
+### Тех. долг
+
+- Полная инжекция `sddm`/`config` в превью требует C++-хендла или кастомного qml runner (context-properties создаёт greeter). Сейчас `--mock` — best-effort с warning (CR-4, частично).
+- CR-5 (multi-screen `Screen.width/height`) — проверить при stage 3.8. Вопрос открыт: один greeter на экран или нет.
+- `preview.png` — появится с первым визуалом (stage 1.2+).
+
+### Принятые решения
+
+- Follow-up pass к Stage 1.1 выполнен сразу после ревью, до старта Stage 1.2 (AGENTS.md §3.3 — follow-up'ы из ревью обязаны войти в план следующего этапа).
+- Для превью используем `qml6`/`qml`; `qmlscene` (Qt5.15) исключён.
+- validate.sh: приоритет Qt6-qmllint выше голого `qmllint` (на CachyOS `qmllint` = Qt5.15, чтобы не давать ложный FAIL на валидном Qt6-коде).
+
+---
+
 ## [0.1.0-mvp] — stage 1.1 · Root + scaling + background · 2026-09-08
 
 **Версия:** `0.1.0-mvp` (MINOR bump после stage 1.1; тег/релиз НЕ ставится — это stage, не веха)
