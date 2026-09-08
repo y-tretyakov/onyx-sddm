@@ -104,6 +104,11 @@ else
         QML_ROOT="$(dirname "$(find /usr/lib /usr/local/lib -type f -name jsroot.qmltypes 2>/dev/null | head -n1)")"
     fi
 
+    if [[ -z "${QML_ROOT}" ]] || [[ ! -d "${QML_ROOT}" ]]; then
+        fail "Unable to resolve Qt6 QML root (qtpaths6 missing and no jsroot.qmltypes found); cannot type-check"
+        exit 1
+    fi
+
     QML_IMPORT_ROOTS=()
     if [[ -n "${QML_ROOT}" ]] && [[ -d "${QML_ROOT}" ]]; then
         QML_IMPORT_ROOTS+=("-I" "${QML_ROOT}")
