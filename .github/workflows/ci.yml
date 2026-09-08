@@ -1,0 +1,27 @@
+name: ci
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install qmlint
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qml6-module-qtquick qmllint6
+
+      - name: Validate theme file set
+        run: ./validate.sh
+
+      - name: QML syntax check
+        run: |
+          set -euo pipefail
+          while IFS= read -r f; do
+            qmllint6 "$f"
+          done < <(find theme/onyx -name '*.qml' -type f)
