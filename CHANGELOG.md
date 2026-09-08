@@ -5,6 +5,69 @@
 
 ---
 
+## [0.1.1-mvp] — stage 1.2 · CI distro-matrix rework · 2026-09-08
+
+**Версия:** без bump (follow-up к stage 1.2; не ROADMAP-этап)
+
+### Статус и следующий шаг
+
+- Сделано: `validate.sh` переведён на дистрибутив-независимую детекцию активного Qt
+  (qtpaths6 `QT_INSTALL_QML`, фолбэк find по `*.qmltypes`); qmllint и QML-метаданные
+  обязательны — нет веток «WARNING skip»; добавлен `scripts/smoke.sh` (headless
+  offscreen load Main.qml); CI переписан на distro-матрицу: PR = Ubuntu (compat) +
+  Arch (authoritative, Qt 6.11, offscreen smoke), merge в dev = Arch/CachyOS/Fedora/
+  Nobara/Ubuntu/Debian/RHEL9/openSUSE.
+- Следующее: **stage 1.3 — Minute Orbital** (`0.1.2-mvp`).
+- Блокеры: нет.
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅
+- [ ] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp`
+- [ ] 1.4 Second orbital (smooth) — `0.1.3-mvp`
+- [ ] 1.5 Login panel (minimal) — `0.1.4-mvp`
+- [ ] 1.6 Basic auth feedback — `0.1.5-mvp`
+- [ ] 1.7 MVP freeze — `0.1.9-mvp`
+
+### Детали изменений (для агентов)
+
+- `validate.sh` — qmllint candidates: `qmllint6`, `qmllint-qt6`, `qmllint`,
+  `/usr/lib/qt6/bin/qmllint`, `/usr/lib/qt6/libexec/qmllint`,
+  `/usr/lib64/qt6/{bin,libexec}/qmllint`; QML root через `qtpaths6 --query
+  QT_INSTALL_QML` + фолбэк find `*.qmltypes`; hard-fail при отсутствии qmllint,
+  root или `*.qmltypes` (приём ≥1 файла: Fedora даёт `plugins.qmltypes`, Arch/etc
+  `builtins.qmltypes`/`jsroot.qmltypes`).
+- `scripts/smoke.sh` — новый; `QT_QPA_PLATFORM=offscreen` +
+  `QT_QUICK_BACKEND=software`; grace 15s (`SMOKE_SECS`); exit 0 при timeout/clean,
+  FAIL при раннем краше.
+- `.github/workflows/ci.yml` — rewrite: `validate` (Ubuntu hosted, Qt 6.4),
+  `validate-arch` (archlinux:latest, Qt 6.11, smoke), `distro-matrix` (push-only,
+  matrix: arch, cachyos, fedora, nobara→fedora, ubuntu 24.04, debian bookworm,
+  ubi9+EPEL, opensuse tumbleweed; smoke только arch/cachyos).
+- Research facts: qmltypes живут в runtime-пакетах; SDDM headless требует оба env;
+  Qt spread 6.4 (Deb/Ubuntu)…6.11 (Arch/CachyOS/openSUSE); Nobara — нет образа;
+  Leap 15.6 без Qt6.
+
+### Тех. долг
+
+- RHEL 10 (UBI10, Qt6 в базовом AppStream) не в матрице — добавить при необходимости.
+- Полноценный `sddm-greeter-qt6 --test-mode` runtime — отложен до этапа с реальным
+  Wayland/сессиями (1.3+/1.5); `scripts/smoke.sh` пока заменяет.
+- Git-agnostic хранилище: контейнер-образ `qt6.11-qmltooling` из прошлого hotfix
+  больше не нужен (заменён archlinux:latest) — запись о нём в нижней записи
+  остаётся исторической.
+
+### Принятые решения
+
+- PRIMARY/authoritative = Arch + CachyOS (rolling, Qt 6.11, реальная эксплуатация
+  SDDM); COMPATIBILITY = Fedora/Nobara/Ubuntu/Debian/RHEL/openSUSE.
+- PR-гейт = 2 джоба (быстро); merge-в-dev = полная матрица (дёшево, раз на merge).
+- Отказ от WARNING-skip в validate.sh: отсутствие CI-тулинга = дефект окружения,
+  а не причина молчать.
+
+---
+
 ## [0.1.1-mvp] — stage 1.2 · review follow-ups (CR-F1…F6) · 2026-09-08
 
 **Версия:** без bump (не этап по ROADMAP — follow-up pass к stage 1.2; версия остаётся `0.1.1-mvp`)

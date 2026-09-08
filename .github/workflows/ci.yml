@@ -6,6 +6,7 @@ on:
   pull_request:
 
 jobs:
+  # --- PR gate: fast hosted compatibility (Ubuntu, Qt 6.4) ---
   validate:
     runs-on: ubuntu-latest
     steps:
@@ -16,59 +17,96 @@ jobs:
           echo "Checked SHA (PR head): ${GITHUB_SHA}"
           echo "Ref: ${GITHUB_REF}"
 
-      # qt6-declarative-dev gives jsroot.qmltypes + transitively qmllint (dev-tools)
-      # and qtpaths6 (base-dev-tools); qml6-module-qtqml registers Timer; qml6-module-qtquick is QtQuick types.
       - name: Install Qt6 QML tooling
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             qt6-declarative-dev \
+            qt6-declarative-dev-tools \
+            qt6-qmllint-plugins \
+            qml-qt6 \
             qml6-module-qtquick \
-            qml6-module-qtqml
+            qml6-module-qtqml \
+            qt6-svg-dev
 
-      - name: Validate theme file set
+      - name: Validate theme (structural + qmllint hard)
         run: ./validate.sh
 
-      - name: QML syntax check (hard)
-        run: |
-          set -euo pipefail
-          command -v qtpaths6 >/dev/null || { echo "::error::qtpaths6 not found" >&2; exit 1; }
-          QML_ROOT="$(qtpaths6 --query QT_INSTALL_QML)"
-          [ -n "$QML_ROOT" ] || { echo "::error::QT_INSTALL_QML empty" >&2; exit 1; }
-          if [ ! -f "$QML_ROOT/jsroot.qmltypes" ]; then
-            echo "::error::Missing $QML_ROOT/jsroot.qmltypes" >&2
-            exit 1
-          fi
-          echo "QML_ROOT=$QML_ROOT"
-          QMLLINT=""
-          for c in qmllint6 /usr/lib/qt6/bin/qmllint qmllint; do
-            if command -v "$c" >/dev/null 2>&1 || [ -x "$c" ]; then QMLLINT="$c"; break; fi
-          done
-          [ -n "$QMLLINT" ] || { echo "::error::qmllint not found" >&2; exit 1; }
-          while IFS= read -r f; do
-            "$QMLLINT" -I "$QML_ROOT" --unqualified=info --import=info "$f"
-          done < <(find theme/onyx -name '*.qml' -type f)
-
-  qt6-authority:
+  # --- PR gate: authoritative Arch container (Qt 6.11 + offscreen smoke) ---
+  validate-arch:
     runs-on: ubuntu-latest
+    container: archlinux:latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: QML type check + runtime smoke on Qt 6.11 container
+      - name: Print checked SHA
         run: |
-          set -euo pipefail
-          IMAGE="ghcr.io/onyx-sddm/qt6.11-qmltooling:latest"
-          if ! docker pull "$IMAGE" 2>/dev/null; then
-            echo "::warning::qt6.11-qmltooling container unavailable; using host qmllint instead"
-            qtpaths6 --query QT_INSTALL_QML 2>/dev/null || find /usr -name jsroot.qmltypes 2>/dev/null | head
-            exit 0
-          fi
-          docker run --rm -v "$PWD":/ws -w /ws "$IMAGE" bash -c '
-            set -euo pipefail
-            QML_ROOT="$(qtpaths6 --query QT_INSTALL_QML)"
-            echo "Qt: $(qmlscene --version 2>/dev/null || qml6 --version 2>/dev/null || echo n/a)"
-            echo "QML_ROOT=$QML_ROOT"
-            test -f "$QML_ROOT/jsroot.qmltypes" || { echo "::error::no jsroot" >&2; exit 1; }
-            find theme/onyx -name "*.qml" -print0 | xargs -0 -n1 qmllint -I "$QML_ROOT" --unqualified=info --import=info
-            echo "qmllint 6.11: OK"
-          '
+          echo "Checked SHA (PR head): ${GITHUB_SHA}"
+          echo "Ref: ${GITHUB_REF}"
+
+      - name: Install Qt6 QML tooling (Arch)
+        run: >
+          pacman -Syu --noconfirm
+          git qt6-base qt6-declarative qt6-svg
+
+      - name: Validate theme (structural + qmllint hard)
+        run: ./validate.sh
+
+      - name: Offscreen smoke (authoritative runtime)
+        run: ./scripts/smoke.sh
+
+  # --- Full distro matrix: run on merge to dev/main (push event) ---
+  distro-matrix:
+    if: github.event_name == 'push'
+    needs: [validate, validate-arch]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: arch
+            image: archlinux:latest
+            install: pacman -Syu --noconfirm git qt6-base qt6-declarative qt6-svg
+          - distro: cachyos
+            image: cachyos/cachyos:latest
+            install: pacman -Syu --noconfirm git qt6-base qt6-declarative qt6-svg
+          - distro: fedora
+            image: fedora:latest
+            install: dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg
+          # Nobara has no official container image; it is Fedora-derived and
+          # shares package names. Runtime-specific QA (Wayland/gaming) is done
+          # on physical hardware outside CI.
+          - distro: nobara
+            image: fedora:latest
+            install: dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg
+          - distro: ubuntu
+            image: ubuntu:24.04
+            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qml6-module-qtqml qt6-svg-dev
+          - distro: debian
+            image: debian:bookworm
+            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qml6-module-qtqml qt6-svg-dev
+          - distro: rhel9
+            image: registry.access.redhat.com/ubi9/ubi:latest
+            install: dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtsvg
+          - distro: opensuse
+            image: opensuse/tumbleweed:latest
+            install: zypper --non-interactive install git qt6-base qt6-declarative qt6-declarative-tools qt6-svg
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Print checked SHA
+        run: |
+          echo "Checked SHA (PR head): ${GITHUB_SHA}"
+          echo "Ref: ${GITHUB_REF}"
+
+      - name: Install Qt6 QML tooling (${{ matrix.distro }})
+        run: ${{ matrix.install }}
+
+      - name: Validate theme (structural + qmllint hard)
+        run: ./validate.sh
+
+      - name: Offscreen smoke (authoritative only)
+        if: matrix.distro == 'arch' || matrix.distro == 'cachyos'
+        run: ./scripts/smoke.sh

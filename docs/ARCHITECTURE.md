@@ -4,7 +4,7 @@
 **Codename:** Onyx (formerly Ryoku / clockwork/orbital)  
 **Type:** Qt6 / QML greeter theme for SDDM  
 **Target platforms:** Arch Linux / CachyOS (Wayland primary via Weston kiosk, X11 secondary)  
-**Version of this document:** 0.2.2 · 2026-09-08  
+**Version of this document:** 0.2.3 · 2026-09-08  
 
 ---
 
@@ -262,7 +262,10 @@ Main.qml
 
 - **Preview:** `qml6` / `qml` с mock `sddm`.
 - **Real greeter:** `sddm-greeter-qt6 --test-mode` или VT / spare X display.
-- **CI:** validate.sh + checksums + qml syntax check.
+- **CI:** validate.sh (distro-independent, qmllint hard) + scripts/smoke.sh (offscreen).
+  Матрица JSON: Arch/CachyOS authoritative (Qt 6.11), Fedora/Nobara/Ubuntu/Debian/
+  RHEL9/openSUSE compatibility (Qt 6.4…6.10). PR — быстрая пара (Arch+Ubuntu),
+  merge в dev — полная матрица. Подробности: .github/workflows/ci.yml.
 - **Visual regression:** screenshot-based (будущее).
 
 ---

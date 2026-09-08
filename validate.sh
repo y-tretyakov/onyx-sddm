@@ -12,7 +12,7 @@ Validates the Onyx theme file set (layered):
   1. required files present
   2. metadata.desktop fields valid
   3. theme.conf keys present
-  4. QML syntax (qmllint, if available)
+  4. QML syntax (qmllint, hard-fail if tooling/metadata missing)
 
   THEME_DIR  theme directory to check (default: theme/onyx)
   -h, --help  show this help and exit
@@ -85,7 +85,14 @@ if [[ ${#QML_FILES[@]} -eq 0 ]]; then
 fi
 
 QMLINT=""
-for cand in qmllint6 /usr/lib/qt6/bin/qmllint qmllint; do
+for cand in \
+    qmllint6 \
+    qmllint-qt6 \
+    qmllint \
+    /usr/lib/qt6/bin/qmllint \
+    /usr/lib/qt6/libexec/qmllint \
+    /usr/lib64/qt6/bin/qmllint \
+    /usr/lib64/qt6/libexec/qmllint; do
     if command -v "${cand}" >/dev/null 2>&1 || [[ -x "${cand}" ]]; then
         QMLINT="${cand}"
         break
@@ -93,49 +100,55 @@ for cand in qmllint6 /usr/lib/qt6/bin/qmllint qmllint; do
 done
 
 if [[ -z "${QMLINT}" ]]; then
-    echo "WARNING: qmllint not found; skipping QML syntax check" >&2
-else
-    # Resolve Qt6 QML root via qtpaths6 (distro-aware), fallback to find.
-    QML_ROOT=""
-    if command -v qtpaths6 >/dev/null 2>&1; then
-        QML_ROOT="$(qtpaths6 --query QT_INSTALL_QML 2>/dev/null)"
-    fi
-    if [[ -z "${QML_ROOT}" ]] || [[ ! -d "${QML_ROOT}" ]]; then
-        QML_ROOT="$(dirname "$(find /usr/lib /usr/local/lib -type f -name jsroot.qmltypes 2>/dev/null | head -n1)")"
-    fi
-
-    if [[ -z "${QML_ROOT}" ]] || [[ ! -d "${QML_ROOT}" ]]; then
-        fail "Unable to resolve Qt6 QML root (qtpaths6 missing and no jsroot.qmltypes found); cannot type-check"
-        exit 1
-    fi
-
-    QML_IMPORT_ROOTS=()
-    if [[ -n "${QML_ROOT}" ]] && [[ -d "${QML_ROOT}" ]]; then
-        QML_IMPORT_ROOTS+=("-I" "${QML_ROOT}")
-    fi
-
-    # jsroot.qmltypes обязателен для реальной проверки типов QtQuick/QtQml.
-    # Если нет — это сломанное окружение, а не причина молчать: hard FAIL.
-    if [[ -n "${QML_ROOT}" ]] && [[ ! -f "${QML_ROOT}/jsroot.qmltypes" ]]; then
-        fail "Qt6 QML root '${QML_ROOT}' lacks jsroot.qmltypes (incomplete Qt6 -dev install); cannot type-check"
-    fi
-
-    for f in "${QML_FILES[@]}"; do
-        ok=1
-        out="$("${QMLINT}" "${QML_IMPORT_ROOTS[@]}" "${f}" 2>&1)" || ok=0
-        if [[ ${ok} -eq 1 ]]; then
-            continue
-        fi
-        ok2=1
-        out2="$("${QMLINT}" "${QML_IMPORT_ROOTS[@]}" --unqualified=info --import=info "${f}" 2>&1)" || ok2=0
-        if [[ ${ok2} -eq 1 ]]; then
-            continue
-        fi
-        fail "QML syntax/type error in ${f}"
-        if [[ -n "${out}" ]]; then printf '      %s\n' "${out}" >&2; fi
-        if [[ -n "${out2}" ]]; then printf '      %s\n' "${out2}" >&2; fi
-    done
+    fail "qmllint not found (looked for qmllint6/qmllint-qt6/qmllint + Qt6 libexec paths); cannot validate QML"
+    exit 1
 fi
+# Resolve the active Qt6 installation (distro-independent).
+QML_ROOT=""
+QT_VERSION=""
+if command -v qtpaths6 >/dev/null 2>&1; then
+    QML_ROOT="$(qtpaths6 --query QT_INSTALL_QML 2>/dev/null)"
+    QT_VERSION="$(qtpaths6 --query QT_VERSION 2>/dev/null)"
+fi
+
+# Fallback: locate any *.qmltypes under the system Qt QML dirs.
+if [[ -z "${QML_ROOT}" ]] || [[ ! -d "${QML_ROOT}" ]]; then
+    QML_ROOT="$(dirname "$(find /usr/lib /usr/local/lib -type f -name '*.qmltypes' 2>/dev/null | grep -E '/qml/[^/]+\.qmltypes$|/qml6/[^/]+\.qmltypes$' | head -n1)")"
+fi
+
+if [[ -z "${QML_ROOT}" ]] || [[ ! -d "${QML_ROOT}" ]]; then
+    fail "Unable to resolve Qt6 QML root (qtpaths6 unavailable and no *.qmltypes found); cannot type-check"
+    exit 1
+fi
+
+# Distro-agnostic metadata check: Fedora ships plugins.qmltypes, others
+# builtins/jsroot. Requiring ≥1 *.qmltypes covers all supported distros.
+QMLTYPES_COUNT="$(find "${QML_ROOT}" -maxdepth 1 -name '*.qmltypes' 2>/dev/null | wc -l)"
+if [[ "${QMLTYPES_COUNT}" -eq 0 ]]; then
+    fail "Qt6 QML root '${QML_ROOT}' has no *.qmltypes metadata; cannot type-check"
+    exit 1
+fi
+
+echo "  Qt version:  ${QT_VERSION:-unknown}"
+echo "  Qt QML root: ${QML_ROOT}"
+
+QML_IMPORT_ROOTS=("-I" "${QML_ROOT}")
+
+for f in "${QML_FILES[@]}"; do
+    ok=1
+    out="$("${QMLINT}" "${QML_IMPORT_ROOTS[@]}" "${f}" 2>&1)" || ok=0
+    if [[ ${ok} -eq 1 ]]; then
+        continue
+    fi
+    ok2=1
+    out2="$("${QMLINT}" "${QML_IMPORT_ROOTS[@]}" --unqualified=info --import=info "${f}" 2>&1)" || ok2=0
+    if [[ ${ok2} -eq 1 ]]; then
+        continue
+    fi
+    fail "QML syntax/type error in ${f}"
+    if [[ -n "${out}" ]]; then printf '      %s\n' "${out}" >&2; fi
+    if [[ -n "${out2}" ]]; then printf '      %s\n' "${out2}" >&2; fi
+done
 
 if [[ ${status} -eq 0 ]]; then
     echo "OK: ${THEME_DIR}"
