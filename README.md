@@ -14,8 +14,13 @@
 
 ## Текущий статус
 
-**Phase 0 / Foundation** — документация и архитектура готовы.  
-Код темы ещё не начат (ждём перехода к MVP).
+**Phase 0 / Foundation** — stage 0.1–0.2 закрыты:
+- каркас темы `theme/onyx/` (Main.qml, ThemeState.qml со scale `s = Screen.height/768`, translations.js, PROVENANCE.txt)
+- скрипты `install.sh` / `uninstall.sh` / `validate.sh`
+- версия **0.0.2** · [CHANGELOG](CHANGELOG.md)
+
+**Следующий шаг:** stage 0.3 — CI skeleton + `metadata.desktop` + `theme.conf`.  
+MVP-код greeter ещё не начат (начинается с Phase 1, stage 1.1).
 
 ## Документация
 
