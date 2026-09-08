@@ -5,6 +5,84 @@
 
 ---
 
+## [0.1.1-mvp] — stage 1.2 · CI distro-matrix fix (opensuse/rhel9) · 2026-09-08
+
+**Версия:** без bump (follow-up к stage 1.2; не ROADMAP-этап)
+
+### Статус и следующий шаг
+
+- Сделано: 8-контейнерная матрица дистрибутивов приведена к зелёному — все
+  ветки push-триггера `dev` проходят `validate` + `validate-arch` + все 8
+  matrix-контейнеров PASS (arch, cachyos, fedora, nobara, ubuntu, debian,
+  opensuse, rhel9). Исправлены два контейнера: opensuse (имена пакетов qt6
+  через `-devel` мета-пакеты; `zypper refresh` перед установкой) и rhel9
+  (UBI9 заменён на AlmaLinux 9; EPEL + AppStream Qt6 вместо UBI-only).
+  Добавлен `workflow_dispatch` — ручной запуск полной матрицы для
+  верификации. Защита `dev` настроена: required PR, required status checks
+  (validate, validate-arch), conversations resolved; approval requirement
+  отключён (solo-разработка).
+- Следующее: **stage 1.3 — Minute Orbital** (`0.1.2-mvp`).
+- Блокеры: нет.
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅ (matrix fix: opensuse/rhel9 green)
+- [ ] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp`
+- [ ] 1.4 Second orbital (smooth) — `0.1.3-mvp`
+- [ ] 1.5 Login panel (minimal) — `0.1.4-mvp`
+- [ ] 1.6 Basic auth feedback — `0.1.5-mvp`
+- [ ] 1.7 MVP freeze — `0.1.9-mvp`
+
+### Детали изменений (для агентов)
+
+- `.github/workflows/ci.yml` — единственный изменённый файл (PR #13,
+  merge commit `aac7ae2`, ветка `stage/1.2-ci-matrix-fix`). Ключевые строки
+  install для следующих агентов:
+  - **opensuse (Tumbleweed):** `zypper --non-interactive --gpg-auto-import-keys
+    refresh && zypper --non-interactive install git qt6-base-devel
+    qt6-base-common-devel qt6-declarative-devel qt6-declarative-tools
+    qt6-svg-devel` — голые имена `qt6-base`/`qt6-declarative` не существуют
+    в Tumbleweed OSS; нужно `*-devel` мета-пакеты.
+  - **rhel9 (AlmaLinux 9):** `dnf install -y epel-release && dnf install -y
+    git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg` —
+    UBI9 заменён на `almalinux:9` (полный AppStream + CRB, EPEL qt6
+    работает).
+  - **workflow_dispatch:** добавлен `on: workflow_dispatch`; guard строки
+    `distro-matrix` = `push || workflow_dispatch` (строка 61 ci.yml).
+  - **Защита dev (GitHub):** required PR, required status checks =
+    `validate` + `validate-arch`, conversations resolved required; approval
+    requirement отключён (solo-flow).
+- Верификация: workflow_dispatch run `34256636320` (на ветке) — success
+  8/8; push-триггер run `34258135671` (dev) — success 8/8.
+
+### Тех. долг
+
+- RHEL9 в матрице работает через AlmaLinux 9 (бинарный ребилд RHEL9), а
+  не через сам RHEL9/UBI9 — UBI9 AppStream/CRB не содержит X11/xcb/GL
+  рантайм-зависимостей, необходимых для EPEL qt6-qtbase-gui. Если появится
+  свободный RHEL9-раннер или UBI10 — перепроверить (HIGH, пометка для
+  будущего этапа packaging/RC).
+- Защита `dev` работает без approval requirement — осознанное решение
+  (solo-разработка, self-review + CI). При добавлении контрибьюторов —
+  включить approval.
+- Полноценный `sddm-greeter-qt6 --test-mode` runtime — отложен до stage
+  1.3+/1.5 (ATM `scripts/smoke.sh` заменяет).
+
+### Принятые решения
+
+- **UBI9 → AlmaLinux 9:** UBI9 — минимальный образ без AppStream/CRB Qt6
+  runtime-зависимостей; AlmaLinux 9 — полный бесплатный ребилд RHEL9 с EPEL
+  qt6; комментарий в ci.yml (строки 89–92) фиксирует причину.
+- **Approval requirement отключён на `dev`:** solo-разработка; CI (validate +
+  validate-arch) = единственный gates; решение пользователя, зафиксировано
+  при настройке branch protection.
+- **workflow_dispatch как канал верификации:** позволяет запустить полную
+  8-контейнерную матрицу вручную (ветка, dev, main) без push-события;
+  guard `push || workflow_dispatch` на джобе `distro-matrix`.
+
+---
+
 ## [0.1.1-mvp] — stage 1.2 · CI distro-matrix rework · 2026-09-08
 
 **Версия:** без bump (follow-up к stage 1.2; не ROADMAP-этап)

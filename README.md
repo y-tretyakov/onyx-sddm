@@ -17,6 +17,7 @@
 **Phase 1 / MVP** — stage 1.2 закрыт:
 - цифровые часы (TimeProvider, 1s timer) + indicator pill (мин|сек) + интеграция в Main.qml
 - весь масштаб через `s`; шрифт Sans Serif; проверено: `validate.sh` OK, `qmllint` exit 0, preview-рендер часов + pill
+- CI: полная 8-контейнерная матрица (arch, cachyos, fedora, nobara, ubuntu, debian, opensuse, rhel9) зелёная; opensuse/rhel9 исправлены (PR #12→#13)
 - версия **0.1.1-mvp** · [CHANGELOG](CHANGELOG.md)
 
 **Phase 1 / MVP** — stage 1.1 закрыт:
