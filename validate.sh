@@ -24,6 +24,8 @@ REQUIRED_FILES=(
     "ThemeState.qml"
     "translations.js"
     "PROVENANCE.txt"
+    "metadata.desktop"
+    "theme.conf"
 )
 
 status=0
