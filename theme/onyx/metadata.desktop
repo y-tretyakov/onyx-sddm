@@ -4,4 +4,5 @@ Description=Orbital clockwork login theme
 Type=sddm-theme
 MainScript=Main.qml
 ConfigFile=theme.conf
+Version=0.1.2-mvp
 QtVersion=6

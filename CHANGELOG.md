@@ -5,6 +5,116 @@
 
 ---
 
+## [0.1.2-mvp] — stage 1.3 · Minute Orbital · 2026-09-09
+
+**Версия:** `0.1.2-mvp` (PATCH bump в милстоуне MVP; тег/релиз НЕ ставится — это stage, не веха)
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅
+- [x] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp` ✅ THIS
+- [ ] 1.4 Second orbital (smooth) — `0.1.3-mvp`
+- [ ] 1.5 Login panel (minimal) — `0.1.4-mvp`
+- [ ] 1.6 Basic auth feedback — `0.1.5-mvp`
+- [ ] 1.7 MVP freeze — `0.1.9-mvp`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 1.3 — Minute Orbital** закрыт. Орбиталь минут
+  (`OrbitalRing.qml`): 60 тиков на круге `R = 320*s`, major (каждый 5-й) с
+  числом, minor без числа, spotlight текущей минуты через `currentIndex`
+  (увеличенный шрифт, полная opacity, удлинённый тик). Числа размещены
+  ГОРИЗОНТАЛЬНО без радиального поворота. В `TimeProvider` добавлен
+  drift-free `syncTick()` — тик перепланируется ровно на начало следующей
+  целой секунды. Цвета вынесены в ThemeState (color API), DigitalClock /
+  IndicatorPill переведены на `themeState` без хардкодов. Закрыты follow-up'ы
+  ревью: **CR-F7** (явный EUID-check в `install.sh`), **CR-F8** (`cp -r` →
+  `cp -a`), **CR-F11** (удалён `--mock` из `preview.sh` — вариант A принят
+  пользователем); **CR-F9/F10** учтены в дизайне без кода.
+- Следующее: **stage 1.4 — Second orbital (smooth)** (`0.1.3-mvp`).
+- Подготовить до старта 1.4: визуальная симметрия pill vs час-цифры (INFO из
+  QA 1.3); проба `pragma ComponentBehavior: Bound` на Qt 6.4 CI.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- `theme/onyx/components/clock/OrbitalRing.qml:1-78` — новый компонент
+  (в `qmldir`: `OrbitalRing 1.0`). Полярная позиция: `x/y = центр + R·cos/sin`,
+  `angleDeg = index*6 − 90` (индекс 0 — в 12 часов), `R = width/2 = 320*s`.
+  Тик-линия центрирована на линию кольца за счёт `rotation: angleDeg + 90`.
+  Числа — горизонтальные, `numberOffset = 18*s` от конца тика. Spotlight:
+  `isCurrent = (index === ring.currentIndex)` → `spotlightFontSize 18*s`
+  (пик ~58*s у major), opacity 1.0, тик 3*s. Компонент параметризован
+  (`tickCount`, font sizes, tick lengths, opacities) — переиспользуем для 1.4.
+- `theme/onyx/Main.qml:17-22` — `Clock.OrbitalRing` (namespaced directory
+  import), `currentIndex: clock.timeProvider.curMinute`, `anchors.centerIn: parent`.
+- `theme/onyx/components/clock/TimeProvider.qml:9-14,28-37` —
+  `readonly property int curMinute`; `syncTick()`: `interval = 1000 −
+  ms` → таймер срабатывает в ровную целую секунду (drift-free); `update()` +
+  `syncTick()` в `Component.onCompleted`.
+- `theme/onyx/ThemeState.qml:16-26` — color API: `mainTextColor #FFFFFF`,
+  `pillBgColor #1A1A1A`, `pillBorderColor #333333`, `pillDividerColor #444444`,
+  `pillMinutesColor #CCCCCC`, `pillSecondsColor #888888`,
+  `orbitalTickColor #FFFFFF`, `orbitalTextColor #CCCCCC`,
+  `fontFamily "Sans Serif"`. Полная конфигурируемость — stage 3.7 (light theme).
+- `theme/onyx/components/clock/DigitalClock.qml:6-8,27-41` +
+  `theme/onyx/components/clock/IndicatorPill.qml:6-16` — потребляют
+  `themeState` (шрифт/цвета), хардкоды цветов удалены.
+- `install.sh:29-33,40` — явная проверка root при дефолтном пути
+  `/usr/share/sddm/themes/onyx` (CR-F7); `cp -r` → `cp -a` (CR-F8).
+- `scripts/preview.sh:6,10,31-39,54-56,73` — удалён `--mock` (CR-F11, вариант
+  A); graceful preview через `ThemeState.isPreview` остаётся;
+  `preview/MockSddm.qml` + `MockConfig.qml` — fixtures на будущий harness.
+- `theme/onyx/metadata.desktop:7` — добавлено `Version=0.1.2-mvp`.
+- Критично для следующих агентов: кольцо `R = 320*s` (width 640*s); числа
+  орбитали ГОРИЗОНТАЛЬНЫ (не вращаются); spotlight переключается мгновенно
+  через `currentIndex` (без анимаций — MVP-констрейнт); тик синкается в целую
+  секунду (`syncTick`) — без дрейфа к дробным секундам.
+
+### Тех. долг
+
+- 🟡 **CR-F9 (отложено; НЕ трогать сейчас):** `s = Screen.height / 768`
+  масштабирует только по высоте; формула-кандидат
+  `Math.min(Screen.width/1366, Screen.height/768)` — перепроверить на stage 3.8
+  (HiDPI & multi-monitor) после появления реальных HUD/login-панелей.
+  Решение осознанное: без детальной композиции выбор формулы необоснован.
+- 🟡 **CR-F10 (отложено):** реальный SDDM greeter integration test — после
+  появления интерактивных панелей login (stage ~1.5+); сейчас `scripts/smoke.sh`
+  (offscreen QML-рантайм) + graceful preview как компромисс MVP.
+- 🟡 **`pragma ComponentBehavior: Bound`** — проба на Qt 6.4 CI с инжекцией
+  `currentIndex` и `themeState`: жёсткая безопасность контекста компонента;
+  отложено с stage 1.4+ (не блокируем 1.3).
+- 🟡 **Визуальный пасс 1.4/2.x:** двузначный цифровой формат орбитали (`07`) и
+  диагональная симметрия pill vs час-цифры (INFO из QA 1.3) — в визуальный
+  пасс stage 1.4 и/или 2.9.
+- Здесь «нет» не пишем — долг остаётся (закрыты только F7/F8/F11).
+
+### Принятые решения (ADR)
+
+- **ADR-1.3-1 (spotlight мгновенный):** spotlight текущей минуты переключается
+  без анимаций — MVP-констрейнт (никаких сложных анимаций); плавность — 1.4+.
+- **ADR-1.3-2 (горизонтальные числа):** числа орбитали размещены
+  ГОРИЗОНТАЛЬНО без радиального поворота (читаемость — MVP); вариант ревьюера
+  (вращение вдоль круга) отклонён в этом stage; follow-up 2.x — editor-of.
+- **ADR-1.3-3 (spotlight на некратной 5-ке):** текущая минута получает
+  spotlight + число, даже если не кратна 5 (`visible: isMajor || isCurrent`).
+- **ADR-1.3-4 (тик на линии кольца):** тик-линия центрирована на линию кольца
+  за счёт `rotation = angleDeg + 90` (тик «на» кольце, а не от края).
+- **ADR-1.3-5 (цвета в ThemeState):** цветовой API живёт в ThemeState, НЕ в
+  theme.conf; полная конфигурируемость — stage 3.7 (light theme); ThemeState —
+  единственный источник цветов (ARCHITECTURE §4.3, §5.6).
+- **ADR-1.3-6 (переиспользуемость OrbitalRing):** компонент параметризован
+  (`tickCount`, font sizes, tick lengths, opacities) и переиспользуется для
+  stage 1.4 (Second orbital, smooth) и далее.
+- **ADR-1.3-7 (формула масштаба):** `Screen.height / 768` остаётся; CR-F9
+  отложен ОСОЗНАННО; min-кандидат — на перепроверку в 3.8.
+- **ADR-1.3-8 (preview без --mock):** `scripts/preview.sh` работает в graceful
+  preview БЕЗ `--mock` (вариант A принят пользователем); моки остаются
+  fixtures на будущий harness.
+
+---
+
 ## [0.1.1-mvp] — stage 1.2 · review follow-ups (CR-F7…F11) · 2026-09-08
 
 **Версия:** без bump (follow-up-запись CR-F7…F11; не ROADMAP-этап; версия остаётся `0.1.1-mvp`)
