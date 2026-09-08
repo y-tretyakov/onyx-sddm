@@ -5,7 +5,52 @@
 
 ---
 
-## [0.0.2] — stage 0.2 · Install/uninstall/validate scripts · 2026-09-08
+## [0.0.3] — stage 0.3 · CI skeleton + metadata.desktop + theme.conf · 2026-09-08
+
+**Версия:** `0.0.3` (PATCH bump после stage 0.3; тег/релиз не ставился — это stage, не веха)
+
+### Тик-лист (копия ROADMAP — Phase 0)
+
+| Stage | Version | Deliverables                                      | Done |
+|-------|---------|---------------------------------------------------|------|
+| 0.1   | 0.0.1   | Репозиторий, ARCHITECTURE, ROADMAP, SPECS skeleton | [x]  |
+| 0.2   | 0.0.2   | install/uninstall/validate scripts skeleton        | [x]  |
+| 0.3   | 0.0.3   | CI skeleton + metadata.desktop + theme.conf        | [x]  |
+
+### Статус и следующий шаг
+
+- Сделано: тема стала installable для SDDM (metadata.desktop + theme.conf); root/scale скелет починены (follow-up F1/F2/F6); validate.sh расширен (F3); CI skeleton добавлен; version → 0.0.3.
+- Следующее: **Phase 1 / stage 1.1 — Root + scaling + background** (первый реальный greeter-код).
+- Подготовить до старта: preview-мод (qmlscene/QuickShell) для `sddm`-less рендера; mock `sddm`/`config` для превью.
+- Блокеры: нет. Follow-up F1/F2/F3/F6 закрыты в 0.3; F4 (install.sh conf.d) — в RC/4.1; F7 (синоним F3) — закрыт.
+
+### Детали изменений (для агентов)
+
+- `theme/onyx/metadata.desktop:1-7` — `[SddmGreeterTheme]`, `QtVersion=6`, `MainScript=Main.qml`, `ConfigFile=theme.conf` — тема теперь детектится SDDM.
+- `theme/onyx/theme.conf:1-7` — `[General]` скелет (`type=color`, `color`, `fontSize`, `themeMode`, `language`, `bgColor`).
+- `theme/onyx/Main.qml:1-14` — `import QtQuick` (Qt6, без 2.0); `width/height: Screen.width/height`; корневой `Rectangle` красится из `state.bgColor`; `readonly property real s: Screen.height / 768`; инстанцирует `ThemeState { id: state; s: root.s }`.
+- `theme/onyx/ThemeState.qml:1-16` — `s` как обычное `property real s: 1` (значение приходит из визуального root — НЕ считается через `Screen` в QtObject); добавлены `isPreview` (sddm-less guard) и `bgColor` (fallback `#000000` из theme.conf через `config`).
+- `validate.sh:22-28` — REQUIRED_FILES дополнен `metadata.desktop` + `theme.conf`.
+- `.github/workflows/ci.yml` — job `validate` (actions/checkout@v4; `validate.sh` + `qmllint6` по всем `*.qml`).
+- ADR (F2): scale вычисляется в визуальном root, ThemeState — единый владелец значения; `bgColor` в ThemeState с preview-safe fallback.
+- Git: commits stage 0.3 (Tasks 1–6), PR → merge в `dev`.
+
+### Тех. долг
+
+- install.sh НЕ пишет `/etc/sddm.conf.d/` с `Current=onyx` — осознанно вне scope 0.3 (F4 → RC/4.1).
+- CI НЕ проверяет checksums/`verify-theme.sh` — это stage 4.3 (CI completeness).
+- `qmllint` бинарь/пакет может называться иначе на разных дистрах — задокументировано в ci.yml comment (см. Task 5).
+- Нет `preview.png` — появится с первым визуалом (MVP, stage 1.1+).
+
+### Принятые решения
+
+- `metadata.desktop`/`theme.conf` создаём в 0.3 (по ROADMAP, как и планировалось в 0.1/0.2).
+- F2 решён передачей scale из визуального root, а не через `Screen` в bare-`QtObject` — самый надёжный паттерн по review; ThemeState остаётся единым источником scale.
+- `bgColor` вынесен в ThemeState (color API, ARCHITECTURE §4.3) с fallback на `#000000` при отсутствии `config`/`sddm` (превью).
+- CI skeleton минимальный: validate.sh + qmllint; checksums/verify — stage 4.3.
+
+---
+
 
 **Версия:** `0.0.2` (PATCH bump после stage 0.2; тег/релиз не ставился — это stage, не веха)
 
