@@ -1,4 +1,5 @@
 import QtQuick
+import "../.."
 
 // Reusable ring: `tickCount` radial ticks placed on a circle of radius R = width / 2.
 // Index 0 sits at 12 o'clock; angle = index * 6 - 90 (degrees, clockwise).
@@ -9,7 +10,7 @@ Item {
     id: ring
 
     required property real s
-    required property QtObject themeState
+    required property ThemeState themeState
     required property int currentIndex
 
     property int tickCount: 60
