@@ -95,57 +95,46 @@ done
 if [[ -z "${QMLINT}" ]]; then
     echo "WARNING: qmllint not found; skipping QML syntax check" >&2
 else
-    # Locate Qt6 QML module roots so qmllint can resolve builtins (QtQuick, Timer, ...).
-    # qmllint does not always know the distro's Qt6 module path (e.g. Debian/Ubuntu
-    # install under /usr/lib/<triplet>/qt6/qml), so pass -I for every candidate dir.
-    QML_IMPORT_ROOTS=()
-    for cand in \
-        "${QT6_QML_DIR:-}" \
-        /usr/lib/qt6/qml \
-        /usr/lib/x86_64-linux-gnu/qt6/qml \
-        /usr/lib/aarch64-linux-gnu/qt6/qml \
-        /usr/lib/arm-linux-gnueabihf/qt6/qml; do
-        if [[ -n "${cand}" ]] && [[ -d "${cand}" ]]; then
-            QML_IMPORT_ROOTS+=("-I" "${cand}")
-        fi
-    done
-
-    # Debian/Ubuntu Qt6 packages sometimes omit QtQuick/jsroot.qmltypes. Without it
-    # qmllint falls back to qrc and cannot type-resolve any QtQuick type (e.g. Timer,
-    # Item) -> a cascade of "Timer was not found / not resolved" false positives that
-    # are an environment gap, not a code defect. Degrade the whole layer to a WARNING
-    # when no discovered root provides jsroot.qmltypes, still surfacing the reason.
-    HAS_JSROOT=0
-    for cand in \
-        "${QT6_QML_DIR:-}" \
-        /usr/lib/qt6/qml \
-        /usr/lib/x86_64-linux-gnu/qt6/qml \
-        /usr/lib/aarch64-linux-gnu/qt6/qml \
-        /usr/lib/arm-linux-gnueabihf/qt6/qml; do
-        if [[ -n "${cand}" ]] && [[ -f "${cand}/jsroot.qmltypes" ]]; then
-            HAS_JSROOT=1
-        fi
-    done
-
-    if [[ ${HAS_JSROOT} -eq 0 ]]; then
-        echo "WARNING: QtQuick/jsroot.qmltypes not found in QML roots; qmllint type-checking degraded (QtQuick types unresolvable). Skipping Layer 4 QML type gate." >&2
-    else
-        for f in "${QML_FILES[@]}"; do
-            ok=1
-            out="$("${QMLINT}" "${QML_IMPORT_ROOTS[@]}" "${f}" 2>&1)" || ok=0
-            if [[ ${ok} -eq 1 ]]; then
-                continue
-            fi
-            ok2=1
-            out2="$("${QMLINT}" "${QML_IMPORT_ROOTS[@]}" --unqualified=info --import=info "${f}" 2>&1)" || ok2=0
-            if [[ ${ok2} -eq 1 ]]; then
-                continue
-            fi
-            fail "QML syntax/type error in ${f}"
-            if [[ -n "${out}" ]]; then printf '      %s\n' "${out}" >&2; fi
-            if [[ -n "${out2}" ]]; then printf '      %s\n' "${out2}" >&2; fi
-        done
+    # Resolve Qt6 QML root via qtpaths6 (distro-aware), fallback to find.
+    QML_ROOT=""
+    if command -v qtpaths6 >/dev/null 2>&1; then
+        QML_ROOT="$(qtpaths6 --query QT_INSTALL_QML 2>/dev/null)"
     fi
+    if [[ -z "${QML_ROOT}" ]] || [[ ! -d "${QML_ROOT}" ]]; then
+        QML_ROOT="$(dirname "$(find /usr/lib /usr/local/lib -type f -name jsroot.qmltypes 2>/dev/null | head -n1)")"
+    fi
+
+    if [[ -z "${QML_ROOT}" ]] || [[ ! -d "${QML_ROOT}" ]]; then
+        fail "Unable to resolve Qt6 QML root (qtpaths6 missing and no jsroot.qmltypes found); cannot type-check"
+        exit 1
+    fi
+
+    QML_IMPORT_ROOTS=()
+    if [[ -n "${QML_ROOT}" ]] && [[ -d "${QML_ROOT}" ]]; then
+        QML_IMPORT_ROOTS+=("-I" "${QML_ROOT}")
+    fi
+
+    # jsroot.qmltypes обязателен для реальной проверки типов QtQuick/QtQml.
+    # Если нет — это сломанное окружение, а не причина молчать: hard FAIL.
+    if [[ -n "${QML_ROOT}" ]] && [[ ! -f "${QML_ROOT}/jsroot.qmltypes" ]]; then
+        fail "Qt6 QML root '${QML_ROOT}' lacks jsroot.qmltypes (incomplete Qt6 -dev install); cannot type-check"
+    fi
+
+    for f in "${QML_FILES[@]}"; do
+        ok=1
+        out="$("${QMLINT}" "${QML_IMPORT_ROOTS[@]}" "${f}" 2>&1)" || ok=0
+        if [[ ${ok} -eq 1 ]]; then
+            continue
+        fi
+        ok2=1
+        out2="$("${QMLINT}" "${QML_IMPORT_ROOTS[@]}" --unqualified=info --import=info "${f}" 2>&1)" || ok2=0
+        if [[ ${ok2} -eq 1 ]]; then
+            continue
+        fi
+        fail "QML syntax/type error in ${f}"
+        if [[ -n "${out}" ]]; then printf '      %s\n' "${out}" >&2; fi
+        if [[ -n "${out2}" ]]; then printf '      %s\n' "${out2}" >&2; fi
+    done
 fi
 
 if [[ ${status} -eq 0 ]]; then

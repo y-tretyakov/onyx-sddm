@@ -11,25 +11,16 @@ Item {
 
     TimeProvider { id: _time }
 
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: _time.update()
-    }
-
     Row {
         id: row
 
         anchors.centerIn: parent
         spacing: 24 * clock.s
 
-        // Large hour digits
         Text {
             id: hourText
 
-            anchors.baseline: pillItem.baseline
-            anchors.baselineOffset: 0
+            anchors.verticalCenter: parent.verticalCenter
 
             text: _time.curH
             font.family: "Sans Serif"
@@ -38,7 +29,6 @@ Item {
             color: "#FFFFFF"
         }
 
-        // Indicator pill
         IndicatorPill {
             id: pillItem
 
