@@ -95,18 +95,18 @@ done
 if [[ -z "${QMLINT}" ]]; then
     echo "WARNING: qmllint not found; skipping QML syntax check" >&2
 else
-    # Locate Qt6 QML module root so qmllint can resolve builtins (QtQuick, Timer, ...).
+    # Locate Qt6 QML module roots so qmllint can resolve builtins (QtQuick, Timer, ...).
     # qmllint does not always know the distro's Qt6 module path (e.g. Debian/Ubuntu
-    # install under /usr/lib/<triplet>/qt6/qml), so pass -I when found.
+    # install under /usr/lib/<triplet>/qt6/qml), so pass -I for every candidate dir.
     QML_IMPORT_ROOTS=()
     for cand in \
         "${QT6_QML_DIR:-}" \
         /usr/lib/qt6/qml \
         /usr/lib/x86_64-linux-gnu/qt6/qml \
-        /usr/lib/aarch64-linux-gnu/qt6/qml; do
-        if [[ -n "${cand}" ]] && [[ -f "${cand}/QtQuick/qmldir" ]]; then
+        /usr/lib/aarch64-linux-gnu/qt6/qml \
+        /usr/lib/arm-linux-gnueabihf/qt6/qml; do
+        if [[ -n "${cand}" ]] && [[ -d "${cand}" ]]; then
             QML_IMPORT_ROOTS+=("-I" "${cand}")
-            break
         fi
     done
 
