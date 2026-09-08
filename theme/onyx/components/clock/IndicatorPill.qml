@@ -19,20 +19,20 @@ Rectangle {
         id: minText
 
         anchors.left: parent.left
-        anchors.leftMargin: 20 * s
+        anchors.leftMargin: 20 * pill.s
         anchors.verticalCenter: parent.verticalCenter
 
         text: pill.curM
         font.family: "Sans Serif"
-        font.pixelSize: 36 * s
+        font.pixelSize: 36 * pill.s
         font.weight: Font.DemiBold
         color: "#CCCCCC"
     }
 
     // Vertical divider
     Rectangle {
-        width: 1 * s
-        height: 40 * s
+        width: 1 * pill.s
+        height: 40 * pill.s
         anchors.centerIn: parent
         color: "#444444"
     }
@@ -42,12 +42,12 @@ Rectangle {
         id: secText
 
         anchors.right: parent.right
-        anchors.rightMargin: 20 * s
+        anchors.rightMargin: 20 * pill.s
         anchors.verticalCenter: parent.verticalCenter
 
         text: pill.curS
         font.family: "Sans Serif"
-        font.pixelSize: 36 * s
+        font.pixelSize: 36 * pill.s
         font.weight: Font.DemiBold
         color: "#888888"
     }
