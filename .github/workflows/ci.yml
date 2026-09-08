@@ -4,6 +4,7 @@ on:
   push:
     branches: [main, dev]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   # --- PR gate: fast hosted compatibility (Ubuntu, Qt 6.4) ---
@@ -57,7 +58,7 @@ jobs:
 
   # --- Full distro matrix: run on merge to dev/main (push event) ---
   distro-matrix:
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: [validate, validate-arch]
     runs-on: ubuntu-latest
     strategy:
@@ -87,10 +88,10 @@ jobs:
             install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qml6-module-qtqml qt6-svg-dev
           - distro: rhel9
             image: registry.access.redhat.com/ubi9/ubi:latest
-            install: dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtsvg
+            install: dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg libxkbcommon-x11 libxcb-cursor xcb-util-wm xcb-util-keysyms xcb-util-image xcb-util-renderutil libinput libmtdev mesa-libGL glx-utils
           - distro: opensuse
             image: opensuse/tumbleweed:latest
-            install: zypper --non-interactive install git qt6-base qt6-declarative qt6-declarative-tools qt6-svg
+            install: zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive install git qt6-base qt6-base-tools qt6-declarative qt6-declarative-tools qt6-svg
     container:
       image: ${{ matrix.image }}
     steps:
