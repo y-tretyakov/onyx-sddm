@@ -4,7 +4,7 @@
 **Codename:** Onyx (formerly Ryoku / clockwork/orbital)  
 **Type:** Qt6 / QML greeter theme for SDDM  
 **Target platforms:** Arch Linux / CachyOS (Wayland primary via Weston kiosk, X11 secondary)  
-**Version of this document:** 0.2.0 · 2026-09-08  
+**Version of this document:** 0.2.1 · 2026-09-08  
 
 ---
 
@@ -163,12 +163,17 @@ onyx-sddm/
 
 ### 5.1 Scaling
 
+The scale factor is calculated only by the visual root:
+
 ```qml
-// В ThemeState.qml
 readonly property real s: Screen.height / 768
 ```
 
-Все размеры, отступы, font.pixelSize и радиусы умножаются на `s`.
+`Main.qml` owns the screen-derived scale.
+
+`ThemeState` receives `s` from the root and exposes it as global theme state.
+
+Visual components receive the scale through composition/state and must not independently calculate screen scale.
 
 ### 5.2 Time source
 
