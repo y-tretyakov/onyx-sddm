@@ -40,10 +40,26 @@ Rectangle {
     }
 
     Login.LoginPanel {
+        id: loginPanel
         s: root.s
         themeState: state
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         anchors.bottomMargin: 120 * root.s
+    }
+
+    Login.AuthFeedback {
+        id: authFeedback
+        s: root.s
+        themeState: state
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: loginPanel.top
+        anchors.bottomMargin: 12 * root.s
+    }
+
+    Connections {
+        target: typeof sddm !== "undefined" ? sddm : null
+        onLoginSucceeded: authFeedback.showSuccess()
+        onLoginFailed: authFeedback.showDenied()
     }
 }
