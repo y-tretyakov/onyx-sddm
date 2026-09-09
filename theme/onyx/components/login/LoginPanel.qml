@@ -62,8 +62,6 @@ Item {
         echoMode: TextInput.Password
         clip: true
 
-        placeholderText: "Password"
-        placeholderTextColor: panel.themeState.pillSecondsColor
 
         selectByMouse: true
         focus: true
