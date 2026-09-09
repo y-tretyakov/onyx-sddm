@@ -6,12 +6,16 @@ import "../.."
 // Major ticks (index % 5 === 0) carry a two-digit number; the tick at `currentIndex`
 // gets the spotlight (larger font, full opacity). Numbers stay horizontal (no radial
 // rotation) — ADR for MVP readability.
+// optional smoothPosition in [0,60) renders a smooth hand marker at angle smoothPosition*6; spotlight stays on currentIndex
 Item {
     id: ring
 
     required property real s
     required property ThemeState themeState
     required property int currentIndex
+
+    property real radiusS: 320
+    property real smoothPosition: -1
 
     property int tickCount: 60
     property real majorFontSize: 13
@@ -23,10 +27,10 @@ Item {
     property real numberOpacity: 0.6
     property real numberOffset: 18
 
-    readonly property real radius: width / 2
+    readonly property real radius: radiusS * s
 
-    width: 640 * s
-    height: 640 * s
+    width: 2 * radiusS * s
+    height: 2 * radiusS * s
 
     Repeater {
         model: ring.tickCount
@@ -56,6 +60,20 @@ Item {
                                       : ring.themeState.orbitalTickColor
                 opacity: tick.isCurrent ? 1.0 : ring.tickOpacity
                 rotation: tick.angleDeg + 90
+                antialiasing: true
+            }
+
+            Rectangle {
+                visible: ring.smoothPosition >= 0
+
+                anchors.centerIn: parent
+
+                width: 3 * ring.s
+                height: 26 * ring.s
+                radius: 1.5 * ring.s
+                color: ring.themeState.mainTextColor
+                opacity: 1.0
+                rotation: ring.smoothPosition * 6
                 antialiasing: true
             }
 

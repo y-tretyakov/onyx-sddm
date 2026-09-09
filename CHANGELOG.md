@@ -5,6 +5,98 @@
 
 ---
 
+## [0.1.3-mvp] — stage 1.4 · Second Orbital (smooth) · 2026-09-10
+
+**Версия:** `0.1.3-mvp` (PATCH bump в милстоуне MVP; тег/релиз НЕ ставится — это stage, не веха)
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅
+- [x] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp` ✅
+- [x] 1.4 Second orbital (smooth) — `0.1.3-mvp` ✅ THIS
+- [ ] 1.5 Login panel (minimal) — `0.1.4-mvp`
+- [ ] 1.6 Basic auth feedback — `0.1.5-mvp`
+- [ ] 1.7 MVP freeze — `0.1.9-mvp`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 1.4 — Second Orbital (smooth)** закрыт. Второй (секундный)
+  инстанс `OrbitalRing` (`radiusS: 270`) с плавным маркером `smoothPosition`
+  (rotation = `smoothPosition*6`), источник `curSecondFloat` в `TimeProvider`
+  (16 ms тик, значение из `Date()` — без накопленного дрейфа). Единый renderer
+  без форка компонента — различия только параметрами (ADR-1.4-1). Visual QA:
+  60/60 тиков на обоих кольцах, маркер на дробных позициях, две раздельные
+  полосы чисел (зазор ~40 px на реальном скрине). CPU: avg 53%
+  software-renderer, 100%-spikes НЕТ (на HW ниже). Закрыты follow-up'ы
+  ревью: **CR-F9/F10** остаются (учтены без кода).
+- Следующее: **stage 1.5 — Login panel (minimal)** (`0.1.4-mvp`).
+- Подготовить до старта 1.5: визуальная симметрия pill vs час-цифры (INFO из
+  QA 1.3/1.4); `validate.sh` qmllint-приоритет (F-1.4-a).
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- `theme/onyx/components/clock/OrbitalRing.qml` — добавлены параметры:
+  `property real radiusS: 320`, `property real smoothPosition: -1`;
+  `width/height = 2*radiusS*s`, `radius = radiusS*s`; внутри делегата
+  Repeater — плавный маркер `Rectangle` (visible при `smoothPosition >= 0`,
+  rotation `smoothPosition*6`). Критично: компонент параметризован, один для
+  обоих колец.
+- `theme/onyx/components/clock/TimeProvider.qml` — добавлено:
+  `property real curSecondFloat` (не readonly — обязательная правка против
+  ошибки readonly на свойство с `=`); `smoothTimer` (16 ms, repeat, running);
+  `function tickSmooth()` — пересчёт из `Date().getSeconds() +
+  getMilliseconds()/1000`.
+- `theme/onyx/Main.qml` — второй `Clock.OrbitalRing` (`id: secondRing`,
+  `radiusS: 270`, `currentIndex: Math.floor(curSecondFloat % 60)`,
+  `smoothPosition: curSecondFloat`), оба кольца объявлены ДО `DigitalClock`
+  (z-порядок — цифры поверх колец).
+- Критично для следующих агентов: минуты — `currentIndex = curMinute` БЕЗ
+  `smoothPosition` (статичный spotlight); секунды — плавный маркер через
+  `smoothPosition`; проба `pragma ComponentBehavior: Bound` — результат ниже
+  (откатена).
+
+### Тех. долг
+
+- 🟡 **CR-F9 (отложено; НЕ трогать сейчас):** `s = Screen.height / 768`
+  масштабирует только по высоте; формула-кандидат
+  `Math.min(Screen.width/1366, Screen.height/768)` — перепроверить на stage 3.8
+  (HiDPI & multi-monitor) после появления реальных HUD/login-панелей.
+- 🟡 **CR-F10 (отложено):** реальный SDDM greeter integration test — после
+  появления интерактивных панелей login (stage ~1.5+).
+- 🟡 **F-1.4-a (новый):** `validate.sh` выбирает `qmllint` из PATH первым
+  (`/usr/bin/qmllint` = Qt5 1.0), а не Qt6-бинарник
+  (`/usr/lib/qt6/bin/qmllint`) — детерминизм линта ухудшен. Фикс приоритета —
+  следующий этап (мелкий, отдельный).
+- 🟡 **F-1.4-b (решение — откат):** прагма `pragma ComponentBehavior: Bound`
+  НЕ внедряется сейчас — откачена в эксперименте: (1) старый qmllint 1.0 в
+  PATH падает с «Unknown options», (2) прагма требует Qt ≥6.6, а CI validate
+  на Ubuntu 6.4.2 её не поддержит в любом случае. Актуализировать, когда CI
+  поднимет Qt ≥6.6 (unqualified-шум безвреден).
+- 🟡 **Визуальный пасс 2.x:** CPU avg 53% в software-renderer — приемлемо;
+  pill/час симметрия — визуальный пасс 2.x.
+
+### Принятые решения (ADR)
+
+- **ADR-1.4-1 (один renderer):** секунды используют `OrbitalRing` без форка;
+  различия — только параметры (`radiusS 270`, `currentIndex =
+  floor(curSecondFloat)`, `smoothPosition = curSecondFloat`).
+- **ADR-1.4-2 (плавность через маркер):** плавность обеспечивается отдельным
+  маркером `rotation = smoothPosition*6`; подсветка тика (spotlight) остаётся
+  дискретной на `currentIndex`. Визуальная сплошность — за счёт маркера, не
+  анимации между тиками.
+- **ADR-1.4-3 (абсолютное время без дрейфа):** `curSecondFloat` всегда
+  пересчитывается из `Date()` (не инкрементальный счётчик) — накопленного
+  дрейфа нет.
+- **ADR-1.4-4 (clockAwake упрощён):** в MVP НЕ реализуем логику
+  «бодрствования» (спека допускает «можно упростить»); `smoothTimer` работает
+  постоянно; `clockAwake` — начиная с этапов HUD/анимаций.
+- **ADR-1.4-5 (числа на секундном кольце):** те же визуальные правила, что и
+  на минутном (числа на major + spotlight) — единый компонент без спец-флагов.
+
+---
+
 ## [0.1.2-mvp] — stage 1.3 · Minute Orbital · 2026-09-09
 
 **Версия:** `0.1.2-mvp` (PATCH bump в милстоуне MVP; тег/релиз НЕ ставится — это stage, не веха)

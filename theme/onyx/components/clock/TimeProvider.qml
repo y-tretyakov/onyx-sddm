@@ -8,10 +8,18 @@ QtObject {
     property string curS: "00"
     readonly property int curMinute: Number(curM)
     readonly property string curTime: curH + ":" + curM
+    property real curSecondFloat: 0
 
     property Timer tickTimer: Timer {
         repeat: false
         onTriggered: provider.update()
+    }
+
+    property Timer smoothTimer: Timer {
+        interval: 16
+        repeat: true
+        running: true
+        onTriggered: provider.tickSmooth()
     }
 
     function _pad(n) {
@@ -23,6 +31,11 @@ QtObject {
         curH = _pad(d.getHours());
         curM = _pad(d.getMinutes());
         curS = _pad(d.getSeconds());
+    }
+
+    function tickSmooth() {
+        var d = new Date();
+        curSecondFloat = d.getSeconds() + d.getMilliseconds() / 1000;
     }
 
     // Перепланирование тика ровно на начало следующей целой секунды.
