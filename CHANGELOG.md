@@ -5,6 +5,98 @@
 
 ---
 
+## [0.1.4-mvp] — stage 1.5 · Login Panel (minimal) · 2026-09-10
+
+**Версия:** `0.1.4-mvp` (PATCH bump в милстоуне MVP; тег/релиз НЕ ставится)
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅
+- [x] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp` ✅
+- [x] 1.4 Second orbital (smooth) — `0.1.3-mvp` ✅
+- [x] 1.5 Login panel (minimal) — `0.1.4-mvp` ✅ THIS
+- [ ] 1.6 Basic auth feedback — `0.1.5-mvp`
+- [ ] 1.7 MVP freeze — `0.1.9-mvp`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 1.5 — Login Panel (minimal)** закрыт. Минимальная
+  логин-панель: label имени пользователя + password input + Enter →
+  `sddm.login(user, password, sessionIndex)`; сессия/имя по умолчанию
+  `sessionModel.lastIndex` / `userModel.lastIndex`; graceful preview
+  (isPreview guard, label «preview»); закрыт тех.долг **F-1.4-a**
+  (детерминированный выбор `qmllint` в `validate.sh` — Qt6-бинарник
+  приоритетен).
+- QA: 60-падл панель не пересекает числа колец (зазор 32px, ADR-1.5-5);
+  perf baseline: CPU avg **42.8%** (max 48%, spikes 0) software offscreen —
+  ЛУЧШЕ baseline stage 1.4 (53%); `sddm-greeter-qt6 --test-mode --theme ...`
+  пережил 15s без ошибок (live-probe на Arch); smoke 8s PASS; validate PASS
+  (qmllint Qt6.11 hard; unqualified warnings для `sddm`/`userModel`/
+  `sessionModel` — ожидаемы).
+- Следующее: **stage 1.6 — Basic auth feedback** (`0.1.5-mvp`).
+- Подготовить до старта 1.6: manual sanity реального входа на живом greeter
+  (пользователь, после установки); симметрия pill/час — визуальный пасс 2.x;
+  fake-placeholder — пасс 2.x.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- `theme/onyx/components/login/LoginPanel.qml` — новый компонент LoginPanel.
+  `_submit():7-17` — Enter → `sddm.login(user, password, sessionIndex)`,
+  сессия/имя по умолчанию `sessionModel.lastIndex` / `userModel.lastIndex`;
+  `userLabel:35-48` — label имени пользователя («preview» в graceful preview);
+  `textField:49-67` — password input (`echoMode: Password`,
+  `Keys.onReturnPressed`/`onEnterPressed` → `_submit()`).
+- `theme/onyx/Main.qml` — импорт Login:3 (`"components/login" as Login`),
+  инстанс `Login.LoginPanel`:41-47 (bottom-center, `bottomMargin: 120*s`, ниже
+  колец).
+- `validate.sh` — порядок кандидатов `qmllint` ~88-95: Qt6-бинарники
+  (`/usr/lib/qt6/{libexec,bin}/qmllint`, `/usr/lib64/qt6/...`) приоритетнее,
+  чем голый `qmllint` из PATH (F-1.4-a закрыт).
+- Критично для следующих агентов: submit — только Enter, кнопки нет
+  (ADR-1.5-3); placeholderText НЕ вводим — фейковый `Text` при пустом поле,
+  полное решение — пасс 2.x (ADR-1.5-8).
+
+### Тех. долг
+
+- 🟡 **CR-F9 (отложено; НЕ трогать сейчас):** `s = Screen.height / 768`
+  масштабирует только по высоте; формула-кандидат
+  `Math.min(Screen.width/1366, Screen.height/768)` — перепроверить на stage 3.8
+  (HiDPI & multi-monitor).
+- 🟡 **CR-F10 (отложено):** реальный SDDM greeter integration test — на
+  пользователе; manual sanity реального входа — в план stage 1.6.
+- 🟡 **F-1.4-b (остаётся):** `pragma ComponentBehavior: Bound` → некогда
+  актуализировать, когда CI поднимет Qt ≥6.6 (unqualified-шум безвреден).
+- 🟡 **placeholder-решение (пасс 2.x):** `placeholderText`/`placeholderColor` на
+  TextInput НЕ вводим — qml6 runner (Qt 6.11, offscreen) не создаёт тему с ними
+  («Did not load any objects», exit 2); placeholder — фейковый `Text` при пустом
+  поле, полное решение — пасс 2.x.
+- 🟡 **Perf INFO (baseline):** CPU avg 42.8% (max 48%, spikes 0) software
+  offscreen — ЛУЧШЕ baseline stage 1.4 (53%); на HW ниже.
+
+### Принятые решения (ADR)
+
+- **ADR-1.5-1 (минимализм):** панель строго минимальная — label +
+  password + Enter; ничего лишнего в MVP.
+- **ADR-1.5-2 (session/имя auto):** по умолчанию `sessionModel.lastIndex` /
+  `userModel.lastIndex` (фолбэк 0 / «user» при отсутствии моделей).
+- **ADR-1.5-3 (Enter без кнопки):** submit — только Enter
+  (`Keys.onReturnPressed`/`onEnterPressed`); кнопка входа не вводится.
+- **ADR-1.5-4 (graceful preview):** isPreview guard — `_submit()` возвращается
+  сразу, label «preview»; панель рендерится без живого greeter.
+- **ADR-1.5-5 (позиционирование):** 60-падл панель не пересекает числа колец —
+  зазор 32px.
+- **ADR-1.5-6 (i18n placeholder):** локализация placeholder — inline/фейковый
+  пасс 2.x.
+- **ADR-1.5-7 (детерминизм линта):** F-1.4-a закрыт — `validate.sh` выбирает
+  Qt6-бинарник `qmllint` приоритетно.
+- **ADR-1.5-8 (drop placeholderText):** свойство TextInput отклонено — qml6
+  runner (Qt 6.11, offscreen) не создаёт тему с ним («Did not load any objects»,
+  exit 2); placeholder — фейковый `Text` при пустом поле, пасс 2.x.
+
+---
+
 ## [0.1.3-mvp] — stage 1.4 · Second Orbital (smooth) · 2026-09-10
 
 **Версия:** `0.1.3-mvp` (PATCH bump в милстоуне MVP; тег/релиз НЕ ставится — это stage, не веха)
