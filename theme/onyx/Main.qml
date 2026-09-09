@@ -21,6 +21,16 @@ Rectangle {
         anchors.centerIn: parent
     }
 
+    Clock.OrbitalRing {
+        id: secondRing
+        s: root.s
+        themeState: state
+        radiusS: 270
+        currentIndex: Math.floor(clock.timeProvider.curSecondFloat % 60)
+        smoothPosition: clock.timeProvider.curSecondFloat
+        anchors.centerIn: parent
+    }
+
     Clock.DigitalClock {
         id: clock
         s: root.s
