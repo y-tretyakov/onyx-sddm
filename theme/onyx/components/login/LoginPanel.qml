@@ -55,9 +55,6 @@ Item {
         anchors.topMargin: 8 * panel.s
 
         text: ""
-        placeholderText: "Password"
-        placeholderTextColor: panel.themeState.pillSecondsColor
-
         font.family: panel.themeState.fontFamily
         font.pixelSize: 22 * panel.s
         font.weight: Font.DemiBold
