@@ -5,6 +5,105 @@
 
 ---
 
+## [0.1.5-mvp] — stage 1.6 · Basic Auth Feedback · 2026-09-10
+
+**Версия:** `0.1.5-mvp` (PATCH bump в милстоуне MVP; тег/релиз НЕ ставится)
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅
+- [x] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp` ✅
+- [x] 1.4 Second orbital (smooth) — `0.1.3-mvp` ✅
+- [x] 1.5 Login panel (minimal) — `0.1.4-mvp` ✅
+- [x] 1.6 Basic auth feedback — `0.1.5-mvp` ✅ THIS
+- [ ] 1.7 MVP freeze — `0.1.9-mvp`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 1.6 — Basic Auth Feedback** закрыт. Компонент
+  `AuthFeedback` — текст «ACCESS GRANTED ✦» / «ACCESS DENIED ✦»
+  (Unicode ✦ `\u2726`), fade in 250ms, auto-hide granted 2200ms / denied
+  5000ms, fade out 400ms, скрытие через opacity. Публичное API:
+  `showSuccess()` / `showDenied()`. Цвет ошибки `denyColor "#FF5252"`
+  добавлен в `ThemeState`. В `Main.qml` — `Connections` на
+  `sddm.loginSucceeded` / `sddm.loginFailed` с preview-safe target
+  (`typeof sddm !== "undefined" ? sddm : null`). `LoginPanel` получил
+  `id: loginPanel`. `AuthFeedback` размещён над панелью (`bottom:
+  loginPanel.top`, `bottomMargin: 12*s`). QA: автономный probe
+  (`scripts/qa/auth-feedback-probe.qml`) — обе ветки OK (slide1 denied
+  active/granted, slide2 success), exit 0; validate/smoke(preview)/
+  preview-gate PASS; perf-baseline: CPU avg **48.8%** (max 52.8%, spikes
+  0) software offscreen — между baseline 42.8% (1.5) и 53% (1.4),
+  регрессий нет; live-greeter probe (`sddm-greeter-qt6 --test-mode`)
+  выжил 15s без ошибок.
+- Следующее: **stage 1.7 — MVP freeze** (`0.1.9-mvp`).
+- Подготовить до старта 1.7: manual sanity реального входа на живом
+  greeter (пользователь); visual QA на 1920×1080 и 2560×1440;
+  «как поставить MVP» в README (требование freeze); fake-placeholder и
+  симметрия pill/час — пасс 2.x.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- `theme/onyx/components/login/AuthFeedback.qml` — новый компонент
+  `AuthFeedback`. `_show():33-42` — внутренняя логика fade in/out + auto-hide;
+  `showSuccess()` / `showDenied()`:44-45 — публичный API; текст задан
+  литералами («ACCESS GRANTED ✦» / «ACCESS DENIED ✦»); `textLabel`
+  приватный — детерминация ветки через `fb.active` + `fb._granted`.
+- `theme/onyx/Main.qml` — `id: loginPanel`:43; `AuthFeedback` инстанс
+  `Login.AuthFeedback`:48-54 (`bottom: loginPanel.top`, `bottomMargin:
+  12*s`); `Connections { target: typeof sddm !== "undefined" ? sddm : null
+  }`:56-60 (`onLoginSucceeded` → `authFeedback.showSuccess()`,
+  `onLoginFailed` → `authFeedback.showDenied()`).
+- `theme/onyx/ThemeState.qml:26` — добавлен `property string denyColor:
+  "#FF5252"`.
+- `scripts/qa/auth-feedback-probe.qml` — автономный probe (без
+  qmltestrunner), обе ветки OK, exit 0; текст не читается через
+  `textLabel` (приватный) — ассерты используют `fb.active` +
+  `fb._granted` (детерминированно).
+- Критично для следующих агентов: `AuthFeedback` НЕ слушает сигналы
+  `sddm` сам — подключение в `Main.qml` через `Connections`; текст
+  компонента не доступен снаружи (приватный `textLabel`); probe
+  работает автономно, CI-интеграция пока не расширена.
+
+### Тех. долг
+
+- 🟡 **CR-F9 (отложено; НЕ трогать сейчас):** `s = Screen.height / 768`
+  масштабирует только по высоте; формула-кандидат
+  `Math.min(Screen.width/1366, Screen.height/768)` — перепроверить на stage
+  3.8 (HiDPI & multi-monitor).
+- 🟡 **CR-F10 (отложено):** реальный SDDM greeter integration test — на
+  пользователе; manual sanity реального входа — в план stage 1.7.
+- 🟡 **F-1.4-b (остаётся):** `pragma ComponentBehavior: Bound` → некогда
+  актуализировать, когда CI поднимет Qt ≥6.6 (unqualified-шум безвреден).
+- 🟡 **Perf INFO:** CPU avg 48.8% (max 52.8%, spikes 0) software offscreen
+  — между baseline 42.8% (1.5) и 53% (1.4), регрессий нет.
+- 🟡 **Probe без CI-интеграции:** автономный probe
+  (`scripts/qa/auth-feedback-probe.qml`) работает, но не интегрирован в
+  CI-пайплайн.
+
+### Принятые решения (ADR)
+
+- **ADR-1.6-1 (публичный API):** `showSuccess()` / `showDenied()` —
+  компонент НЕ слушает сигналы `sddm` сам; подключение к greeter — в
+  `Main.qml` через `Connections`. Разделение ответственности: компонент
+  знает как показать; Main знает когда.
+- **ADR-1.6-2 (preview-safe):** target `typeof sddm !== "undefined" ? sddm
+  : null` — вне greeter `Connections` неактивна; компонент рендерится без
+  ошибок в preview/offscreen.
+- **ADR-1.6-3 (fade + auto-hide):** 250ms fade in, hold granted 2200ms /
+  denied 5000ms, 400ms fade out; скрытие через `opacity: 0` (не
+  `visible: false`) — не перехватывает ввод.
+- **ADR-1.6-4 (цвет):** `denyColor` в `ThemeState` — единый источник
+  цвета ошибки (единообразно с остальными цветами темы).
+- **ADR-1.6-5 (текст):** литералы по спеке («ACCESS GRANTED ✦» /
+  «ACCESS DENIED ✦»); i18n — на stage 3.x (рано для локализации).
+- **ADR-1.6-6 (QA-инструмент):** probe автономный (без qmltestrunner);
+  harness не вводили; CI не расширялся — достаточный уровень для MVP.
+
+---
+
 ## [0.1.4-mvp] — stage 1.5 · Login Panel (minimal) · 2026-09-10
 
 **Версия:** `0.1.4-mvp` (PATCH bump в милстоуне MVP; тег/релиз НЕ ставится)
