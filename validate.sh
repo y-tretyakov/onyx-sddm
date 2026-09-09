@@ -86,13 +86,13 @@ fi
 
 QMLINT=""
 for cand in \
+    /usr/lib/qt6/libexec/qmllint \
+    /usr/lib/qt6/bin/qmllint \
+    /usr/lib64/qt6/libexec/qmllint \
+    /usr/lib64/qt6/bin/qmllint \
     qmllint6 \
     qmllint-qt6 \
-    qmllint \
-    /usr/lib/qt6/bin/qmllint \
-    /usr/lib/qt6/libexec/qmllint \
-    /usr/lib64/qt6/bin/qmllint \
-    /usr/lib64/qt6/libexec/qmllint; do
+    qmllint; do
     if command -v "${cand}" >/dev/null 2>&1 || [[ -x "${cand}" ]]; then
         QMLINT="${cand}"
         break

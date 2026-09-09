@@ -1,5 +1,6 @@
 import QtQuick
 import "components/clock" as Clock
+import "components/login" as Login
 
 Rectangle {
     id: root
@@ -36,5 +37,13 @@ Rectangle {
         s: root.s
         themeState: state
         anchors.centerIn: parent
+    }
+
+    Login.LoginPanel {
+        s: root.s
+        themeState: state
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 120 * root.s
     }
 }
