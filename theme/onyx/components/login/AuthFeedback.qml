@@ -11,16 +11,17 @@ Item {
     height: 34 * s
 
     readonly property bool active: textLabel.opacity > 0
+    readonly property string displayText: textLabel.text
 
     property bool _granted: false
-    property var _icon: "\u2726"
+    readonly property string icon: "\u2726"
 
     Text {
         id: textLabel
 
         anchors.centerIn: parent
 
-        text: (feedback._granted ? "ACCESS GRANTED " : "ACCESS DENIED ") + feedback._icon
+        text: (feedback._granted ? "ACCESS GRANTED " : "ACCESS DENIED ") + feedback.icon
         font.family: feedback.themeState.fontFamily
         font.pixelSize: 22 * feedback.s
         font.weight: Font.Bold

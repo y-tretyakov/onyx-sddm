@@ -27,7 +27,7 @@ Window {
         onTriggered: {
             var visible = fb.active
             var isDenied = !fb._granted
-            var ok = visible && isDenied
+            var ok = visible && isDenied && fb.displayText.indexOf("ACCESS DENIED") === 0
             console.log("PROBE slide1 denied active=" + fb.active + " granted=" + fb._granted + (ok ? " OK" : " FAIL"))
             fb.showSuccess()
             successTimer.start()
@@ -41,7 +41,7 @@ Window {
         onTriggered: {
             var visible = fb.active
             var isGranted = fb._granted
-            var ok = visible && isGranted
+            var ok = visible && isGranted && fb.displayText.indexOf("ACCESS GRANTED") === 0
             console.log("PROBE slide2 success active=" + fb.active + " granted=" + fb._granted + (ok ? " OK" : " FAIL"))
             Qt.exit(ok ? 0 : 1)
         }
