@@ -28,7 +28,7 @@
   (isPreview guard, label «preview»); закрыт тех.долг **F-1.4-a**
   (детерминированный выбор `qmllint` в `validate.sh` — Qt6-бинарник
   приоритетен).
-- QA: 60-падл панель не пересекает числа колец (зазор 32px, ADR-1.5-5);
+- QA: панель не пересекает числа колец (зазор 32px, ADR-1.5-5);
   perf baseline: CPU avg **42.8%** (max 48%, spikes 0) software offscreen —
   ЛУЧШЕ baseline stage 1.4 (53%); `sddm-greeter-qt6 --test-mode --theme ...`
   пережил 15s без ошибок (live-probe на Arch); smoke 8s PASS; validate PASS
@@ -85,7 +85,7 @@
   (`Keys.onReturnPressed`/`onEnterPressed`); кнопка входа не вводится.
 - **ADR-1.5-4 (graceful preview):** isPreview guard — `_submit()` возвращается
   сразу, label «preview»; панель рендерится без живого greeter.
-- **ADR-1.5-5 (позиционирование):** 60-падл панель не пересекает числа колец —
+- **ADR-1.5-5 (позиционирование):** панель не пересекает числа колец —
   зазор 32px.
 - **ADR-1.5-6 (i18n placeholder):** локализация placeholder — inline/фейковый
   пасс 2.x.
