@@ -23,5 +23,6 @@ QtObject {
     readonly property color pillSecondsColor: "#888888"
     readonly property color orbitalTickColor: "#FFFFFF"
     readonly property color orbitalTextColor: "#CCCCCC"
+    readonly property color denyColor: "#FF5252"
     readonly property string fontFamily: "Sans Serif"
 }
