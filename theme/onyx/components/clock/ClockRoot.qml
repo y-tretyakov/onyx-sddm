@@ -35,7 +35,8 @@ Item {
 
         s: clockRoot.s
         themeState: clockRoot.themeState
-        currentIndex: _time.curMinute
+        // one full rotation per hour, counter-clockwise
+        positionDeg: -(_time.curMinuteFloat / 60.0) * 360.0
 
         radiusS: 400
         numberRadiusOffset: 30
@@ -56,8 +57,8 @@ Item {
 
         s: clockRoot.s
         themeState: clockRoot.themeState
-        currentIndex: _time.curSecond
-        smoothAngle: (_time.curSecondFloat / 60.0) * 360.0
+        // one full rotation per minute, smooth (16ms), counter-clockwise
+        positionDeg: -(_time.curSecondFloat / 60.0) * 360.0
 
         radiusS: 520
         numberRadiusOffset: -30
@@ -71,6 +72,7 @@ Item {
         weightBlackSoft: false
         majorBoldAlways: false
         scaleBehavior: false
+        pillWindowHiding: true
     }
 
     Text {

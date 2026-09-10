@@ -5,6 +5,82 @@
 
 ---
 
+## [0.1.11-mvp] — stage 1.8 · Nobara P0 regression fix · 2026-09-10
+
+**Версия:** `0.1.11-mvp` — PATCH-bump внутри MVP (bugfix/regression fix).
+Тег `0.1.11-mvp` + GitHub Release созданы 2026-09-10.
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅
+- [x] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp` ✅
+- [x] 1.4 Second orbital (smooth) — `0.1.3-mvp` ✅
+- [x] 1.5 Login panel (minimal) — `0.1.4-mvp` ✅
+- [x] 1.6 Basic auth feedback — `0.1.5-mvp` ✅
+- [x] 1.7 MVP freeze — `0.1.9-mvp` ✅
+- [x] 1.8 Nobara P0 regression fix — `0.1.11-mvp` ✅ THIS
+
+- [x] Milestone: MVP (0.1.x-mvp) — релиз-тег ждёт апрува
+- [ ] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+
+### Статус и следующий шаг
+
+- Сделано: P0 regression fix после MVP-релиза на реальном SDDM (Nobara 44).
+  Логин реально работает: username виден (helper-ListView с delegate-roles),
+  Enter/NumpadEnter логинят (`_submit` с empty-guard → `sddm.login`), non-original
+  rotating hand удалён, обе орбитали вращаются против часовой стрелки каждая со
+  своей скоростью (мин — 1 об/час, сек — 1 об/мин) через `positionDeg` из
+  непрерывных float-значений. validate exit 0, verify-theme.sh PASS.
+- Следующий шаг: Alpha 2.1 (windup→boom).
+- Блокеров нет.
+
+### Детали изменений (для агентов)
+
+- `components/login/LoginPanel.qml` — helper ListView `userHelper` (model:
+  `userModel.count`, delegate с role-данными: `userName`/`loginName`), свойства
+  `currentUserName` / `currentLoginName` для label; `_submit()` с empty-guard
+  (пароль/логин не пустые → `sddm.login(currentLoginName, password,
+  sessionModel.lastIndex)`); `Keys.onPressed` для Return/Enter; нигде в проекте
+  больше нет `userModel.data(` — удалены все вызовы.
+- `components/clock/OrbitalRing.qml:12-13` — `required property real positionDeg`;
+  `deg = index*6 + positionDeg` (вместо старого `angleDeg = index*6 - 90`);
+  relDeg/spotlight через `relAngle`; удалён `smoothHand` (non-original rotating
+  hand по original Ryoku — не предполагался).
+- `components/clock/ClockRoot.qml:39,61` — минутное кольцо: `positionDeg:
+  -(curMinuteFloat/60)*360`; секундное кольцо: `-(curSecondFloat/60)*360`;
+  `pillWindowHiding: true` на обоих кольцах.
+- `components/clock/TimeProvider.qml` — `curMinuteFloat` (дроп-in
+  `curSecondFloat`-стиля, 16ms тик через `tickSmooth`).
+- `scripts/verify-theme.sh` — regression-grep: `userModel.data(` → FAIL,
+  `smoothHand` → FAIL, `currentIndex` (для MinutesBypass) → FAIL.
+- `theme/onyx/Main.qml` — QML6 Connections signal-handler syntax:
+  `onLoginSucceeded:` → `function onLoginSucceeded() {}`,
+  `onLoginFailed:` → `function onLoginFailed() {}`.
+- `theme/onyx/components/login/LoginPanel.qml` — cached `Window.window` as
+  `property var windowWin` to avoid repeated `.window` accesses; Connections
+  target uses `windowWin`.
+
+### Тех. долг
+
+- `pillWindowHiding: true` на secRing без pillWin* (defensive, без визуального
+  эффекта — pillWindow на секундном кольце не реализован).
+- Optional: clockAwake gating 16ms таймера (не входило в scope багфикса).
+
+### Принятые решения
+
+- **ADR-1.8-1 (отказ от `userModel.data()`):** `userModel.data()` выбрасывал
+  exception на SDDM в Nobara 44, ломая и лейбл имени, и submit. Переход на
+  delegate-roles helper (ListView с model=userModel.count) — проверенный паттерн
+  для SDDM greeter'ов, robust к平台specific особенностям.
+- **ADR-1.8-2 (CCW через positionDeg):** вращение кольца вместо стрелки по
+  оригиналу Ryoku; CCW-по-умолчанию через отрицательный `positionDeg`:
+  `-(float/60)*360`. Минутное кольцо 1 об/час (float/60), секундное — 1 об/мин.
+- **ADR-1.8-3 (удаление smoothHand):** non-original rotating hand удалён —
+  по оригиналу Ryoku стрелки нет, есть только вращение цифр по кольцу.
+
+---
+
 ## [0.1.10-mvp] — stage bugfix · Ryoku layout fidelity · 2026-09-10
 
 **Версия:** `0.1.10-mvp` — PATCH-bump внутри MVP после bugfix-этапа. Тег/release

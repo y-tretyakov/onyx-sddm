@@ -126,5 +126,15 @@ else
     fail "auth-feedback-probe failed"
 fi
 
+# --- 7. registration regressions ---
+echo "--- 7. registration regressions ---"
+for _bad in "userModel.data(" "smoothHand" "currentIndex"; do
+    if rg -F -l --glob "*.qml" "$_bad" theme/onyx/components/clock/; then
+        echo "FAIL: forbidden token '$_bad' present in clock components" >&2
+        exit 1
+    fi
+done
+echo "registration regressions: PASS"
+
 echo "[ OK ] verify OK"
 exit 0

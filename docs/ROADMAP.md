@@ -71,6 +71,7 @@ MAJOR.MINOR.PATCH[-prerelease]
 | 1.5   | 0.1.4-mvp     | Login panel (minimal)                      | Password field + sddm.login() |
 | 1.6   | 0.1.5-mvp     | Basic auth feedback                        | ACCESS GRANTED / DENIED text |
 | 1.7   | 0.1.9-mvp     | MVP freeze + visual QA on 1080p/1440p      | Milestone exit |
+| 1.8   | 0.1.11-mvp    | Nobara P0 regression fix (login submit, username, orbital rotation) | Login работает на реальном SDDM |
 
 **Exit criteria MVP:**
 - Greeter запускается под SDDM (Wayland)
