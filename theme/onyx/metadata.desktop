@@ -6,3 +6,4 @@ MainScript=Main.qml
 ConfigFile=theme.conf
 Version=0.1.5-mvp
 QtVersion=6
+X-SDDM-ThemeName=Onyx
