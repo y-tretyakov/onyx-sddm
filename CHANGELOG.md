@@ -63,6 +63,11 @@
   ls10 AlignRight.
 - `scripts/verify-theme.sh` — структура: DigitalClock → ClockRoot + DateBlock
   (в этой же задаче).
+- Follow-up (ревью #22): шрифт Outfit-Black vendored
+  (`theme/onyx/font/Outfit-Black.ttf`, OFL-1.1, из оригинала 1-в-1),
+  FontLoader в ThemeState (fallback Sans Serif); smooth-hand укорочён
+  до 0.75·радиуса; pill-window на мин-кольце переведён на прямые
+  биндинги вместо Connections/onWidthChanged.
 
 ### Тех. долг
 

@@ -42,10 +42,10 @@ Item {
         spotlightPeakSize: 58
         scaleBehavior: true
         pillWindowHiding: true
-        pillWinX: 0
-        pillWinY: 0
-        pillWinW: 0
-        pillWinH: 0
+        pillWinX: clockRoot.pillWinX - (clockRoot.cx - width / 2)
+        pillWinY: clockRoot.pillWinY - (clockRoot.cy - height / 2)
+        pillWinW: clockRoot.pillWinW
+        pillWinH: clockRoot.pillWinH
     }
 
     OrbitalRing {
@@ -110,19 +110,5 @@ Item {
 
         s: clockRoot.s
         themeState: clockRoot.themeState
-    }
-
-    Connections {
-        target: ringMin
-        function onWidthChanged() { applyPillWin() }
-        function onHeightChanged() { applyPillWin() }
-        Component.onCompleted: applyPillWin()
-    }
-    function applyPillWin() {
-        if (ringMin.width === 0) return
-        ringMin.pillWinX = clockRoot.pillWinX - ringMin.x
-        ringMin.pillWinY = clockRoot.pillWinY - ringMin.y
-        ringMin.pillWinW = clockRoot.pillWinW
-        ringMin.pillWinH = clockRoot.pillWinH
     }
 }

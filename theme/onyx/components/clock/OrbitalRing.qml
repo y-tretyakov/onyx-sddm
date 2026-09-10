@@ -125,7 +125,7 @@ Item {
         y: ring.height / 2 - height
 
         width: 3 * ring.s
-        height: ring.radiusS * ring.s * 0.92
+        height: ring.radiusS * ring.s * 0.75
         radius: 1.5 * ring.s
         color: ring.themeState.mainTextColor
         opacity: 1.0

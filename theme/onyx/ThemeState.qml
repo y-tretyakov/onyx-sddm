@@ -3,6 +3,11 @@ import QtQuick
 QtObject {
     id: themeState
 
+    FontLoader {
+        id: outfitFont
+        source: "font/Outfit-Black.ttf"
+    }
+
     property real s: 1
 
     readonly property bool isPreview: typeof sddm === "undefined" || sddm.hostName === undefined
@@ -24,5 +29,7 @@ QtObject {
     readonly property color orbitalTickColor: "#FFFFFF"
     readonly property color orbitalTextColor: "#CCCCCC"
     readonly property color errorColor: "#FF4444"
-    readonly property string fontFamily: "Sans Serif"
+    readonly property string fontFamily: outfitFont.status === FontLoader.Ready
+                                          ? outfitFont.name
+                                          : "Sans Serif"
 }

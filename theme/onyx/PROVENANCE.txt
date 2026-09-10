@@ -8,3 +8,7 @@ This project is a clean re-implementation from scratch:
 architecture, code and tests are original. No code is copied.
 
 License: GPL-3.0 (see LICENSE in repository root).
+
+Bundled font: Outfit-Black.ttf — SIL OFL-1.1, copied verbatim from the
+original Ryoku theme (author: Darkkal44) to match the reference 1-to-1.
+License: SIL Open Font License 1.1 (https://scripts.sil.org/OFL).
