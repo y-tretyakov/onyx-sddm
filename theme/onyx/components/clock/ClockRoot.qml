@@ -9,6 +9,7 @@ Item {
     required property ThemeState themeState
 
     property alias timeProvider: _time
+    property alias dateBlock: dateBlk
 
     property real windupDegMin: 0
     property real windupDegSec: 0
@@ -131,6 +132,8 @@ Item {
             sparkImpulseAnim.stop(); clockRoot.sparkImpulse = 0
         }
     }
+
+    function startDateReveal() { dateBlk.startReveal() }
 
     function triggerTickFeedback() {
         if (!themeState.clockAwake)
