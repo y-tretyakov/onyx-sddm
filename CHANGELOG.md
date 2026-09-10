@@ -5,6 +5,123 @@
 
 ---
 
+## [0.2.0-alpha.2] — stage 2.2 · Tick Feedback (Flash + Halo) · 2026-09-10
+
+**Версия:** `0.2.0-alpha.2` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2` ✅ THIS
+- [ ] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [ ] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [ ] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [ ] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.2 — Tick Feedback (flash + halo)** закрыт. При смене минуты
+  major-тики обеих орбиталей вспыхивают (`tickFlash` 1→0 за 140ms OutQuad:
+  alpha `cap 1.0` +0.55·flash, scale `1+0.04·flash`, spotlight-тики не трогаем),
+  вокруг центра циферблата расширяется тонкий бордер-ореол (`tickHaloR`
+  `16·s→110·s` за 480ms OutCubic, `tickHaloOpacity` `0.5→0` за 480ms OutQuad,
+  border `1.5·s` mainText, z:5, центр cx/cy колец). Всё живёт в ClockRoot
+  (владелец minute-триггера), триггер — `onCurMChanged` → `triggerTickFeedback()`
+  с гейтом `themeState.clockAwake`. Закрыт follow-up ревью 2.1 **F-2.2-1**:
+  `AnimEngine.boomFinished` вместо хрупкой привязки curtain к
+  `onUiOpacityChanged`. gate-прогоны: validate exit 0, smoke exit 0, windup-probe
+  exit 0, tickfeedback-probe exit 0, verify-theme.sh exit 0 (секции 1–9).
+- Следующее: **stage 2.3 — Sparks + sec/min/hour bursts** (`0.2.0-alpha.3`):
+  `sparkIntensity`/particle-эффекты в момент feedback.
+- Подготовить до старта 2.3: ADR-2.2-2 (boom-scale parity) — оформить токеном
+  в план 2.3 или Beta; проверить масштаб ореола на 1440p визуально.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- `theme/onyx/components/clock/ClockRoot.qml` — владелец tick-фида
+  (`ClockRoot.qml:15-17`): `tickFlash` / `tickHaloR` / `tickHaloOpacity` (default 0).
+  Анимации `tickFlashAnim` 140ms OutQuad 1→0; `tickHaloAnim` SequentialAnimation
+  → `tickHaloR` 16·s→110·s 480ms OutCubic; `tickHaloOpacityAnim` 0.5→0 480ms
+  OutQuad (значения из эталона Main.qml:194-201). Публичная точка:
+  `triggerTickFeedback()` (`ClockRoot.qml:44-52`) — ранний return если
+  `!themeState.clockAwake` (единый источник гейта; preview-safe = true вне
+  greeter). Halo-круг (`ClockRoot.qml:112-124`): z:5 (кольца 10, pill 1),
+  transparent + border `1.5·s` mainText, `visible: tickHaloOpacity > 0.01`,
+  радиус = `tickHaloR`, центр `cx/cy` — ореол не пересекает pill
+  (`cx+230·s`) и login-панель (геометрия). Flash подключён в оба OrbitalRing
+  (`tickFlash: clockRoot.tickFlash`). Триггер — `Connections { target: _time;
+  function onCurMChanged() { clockRoot.triggerTickFeedback() } }`.
+- `theme/onyx/components/clock/OrbitalRing.qml` — `property real tickFlash: 0`
+  (`OrbitalRing.qml:19`). Тик-Rectangle: opacity `cap 1.0`
+  (`spotlight ? 1.0 : min(1.0, base + isMajor·flash·0.55)`), scale
+  `isMajor ? 1.0 + flash·0.04 : 1.0` (`OrbitalRing.qml:84-86`) — transformOrigin
+  не задаём (дефолт Rectangle = Center). Формулы = оригинал Main.qml:470-471.
+- `theme/onyx/components/effects/AnimEngine.qml` — `signal boomFinished`
+  (`AnimEngine.qml:15`), emit после `boomScale = 35` в конце boom-фазы
+  (`AnimEngine.qml:86-87`) перед `_phase = 2`. F-2.2-1 закрыт.
+- `theme/onyx/Main.qml` — curtain: удалён хрупкий блок
+  `onUiOpacityChanged { if (uiOpacity === 1.0 && boomOverlay.opacity > 0)
+  curtainOut.start() }`; вместо него `onBoomFinished: curtainOut.start()`
+  (`Main.qml:26-30`). `curtainOut` target `boomOverlay` без изменений.
+- `scripts/qa/windup-probe.qml` — счётчик `boomFinishedCount` + `Connections`
+  на `engine.onBoomFinished`; `Timer tBoomBtn` 1850ms → `checkBoomFinished()`
+  (`count >= 1`, иначе `WINDUP-PROBE: FAIL: boomFinished not emitted`).
+- `scripts/qa/tickfeedback-probe.qml` — НОВЫЙ автономный probe (Window +
+  ThemeState{s:1} + ClockRoot{s:1}): ручной вызов `triggerTickFeedback()` в
+  `Component.onCompleted`, таймлайн 80/550/700ms (flash>0, haloR>16·s,
+  haloOpacity>0 → haloR≥105·s, haloOpacity<0.1, flash<0.05 → flash≈0, haloR≈max,
+  haloOpacity≈0). Контракт: exit 0 = OK / exit 1 = FAIL.
+- `scripts/verify-theme.sh` — секция 8 «tickfeedback-probe» (offscreen, 12s);
+  секция 9 — registration regressions (перенумерована из 8).
+- Критично для следующих агентов: гейт clockAwake в probe НЕ тестируется
+  (readonly, см. Тех. долг) — покрыт ревью; `tickHaloOpacityAnim` и
+  `tickHaloAnim` не имеют `running`-привязки к clockAwake — они инициируются
+  только из гейтнутого `triggerTickFeedback()`; AnimEngine остаётся глобальным
+  движком стартовой последовательности (вкус фида — НЕ в нём).
+
+### Тех. долг
+
+- 🟡 **CR-F9 (отложено; НЕ трогать сейчас):** `s = Screen.height / 768` — на
+  перепроверку stage 3.8 (HiDPI & multi-monitor). Переносится.
+- 🟡 **CR-F10 (отложено):** реальный SDDM greeter integration test — на
+  пользователе. Переносится.
+- 🟡 **F-1.4-b (остаётся):** `pragma ComponentBehavior: Bound` — ждёт Qt ≥6.6
+  в CI (unqualified-шум безвреден). Переносится.
+- 🟡 **F-2.2-3 (гейт clockAwake вне auto-test):** `triggerTickFeedback()` гейт
+  `!themeState.clockAwake` НЕ покрыт probe'ом — `clockAwake` readonly, ломать
+  ThemeState ради теста нельзя; покрыт qt-qml-review. Не блокирует acceptance,
+  чинится при появлении test-harness с моком ThemeState.
+- 🟡 **F-2.2-2 (boom scale parity, из ревью 2.1):** `boomScale 1→35` вычисляется,
+  но не применяется к `boomOverlay` (опасити-только). При parity-этапе взять
+  scale или зафиксировать. Follow-up в план Beta.
+- 🟡 **Перенос из 0.2.0-alpha.1:** `pillWindowHiding: true` на secRing без
+  pillWin* (defensive, без визуального эффекта). Переносится.
+- **Sparks / `sparkIntensity`** — по плану в 2.3 (ADR-2.2-3 подтверждает).
+- Новых долгов stage 2.2, кроме перечисленных, нет.
+
+### Принятые решения
+
+- **ADR-2.2-1 (tick feedback живёт в ClockRoot):** flash/halo-properties и
+  триггер — в ClockRoot (владелец minute-триггера `_time` и halo-декорации),
+  а не в AnimEngine: это свойство clock-модуля, а не глобальной стартовой
+  последовательности. AnimEngine остаётся движком windup/boom/fade-in.
+  F-2.2-1 (`boomFinished`) закрыт в 2.2.
+- **ADR-2.2-2 (boom — только opacity):** `boomScale 1→35` вычисляется, но не
+  применяется (анимация шторки opacity-only). Зафиксировано из замечаний ревью
+  2.1; при parity-этапе (Beta) взять scale или зафиксировать (см. Тех. долг).
+- **ADR-2.2-3 (sparks → 2.3):** sparks/`sparkIntensity` осознанно вне 2.2 —
+  этап 2.2 = flash + halo по спеке; частицы — 2.3 (Sparks + bursts).
+- **ADR-2.2-4 (гейт — единый источник):** `themeState.clockAwake` — единственный
+  источник для UI-анимаций (`triggerTickFeedback()` гейтится им); двойная
+  проверка `&& !_time.clockAwake` в функции — страховка, не второй источник.
+
+---
+
 ## [0.2.0-alpha.1] — stage 2.1 · Windup → Boom Sequence · 2026-09-10
 
 **Версия:** `0.2.0-alpha.1` — вход в milestone Alpha (MINOR MVP→Alpha).
