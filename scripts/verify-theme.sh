@@ -53,7 +53,7 @@ else
     fail "theme/onyx/icons/ empty"
 fi
 
-for f in clock/DigitalClock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml login/LoginPanel.qml login/AuthFeedback.qml; do
+for f in clock/ClockRoot.qml clock/DateBlock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml login/LoginPanel.qml login/AuthFeedback.qml; do
     if [[ -r "${THEME_DIR}/components/${f}" ]]; then
         ok "components/${f} present"
     else

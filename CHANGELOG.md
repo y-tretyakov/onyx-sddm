@@ -5,6 +5,92 @@
 
 ---
 
+## [0.1.10-mvp] — stage bugfix · Ryoku layout fidelity · 2026-09-10
+
+**Версия:** `0.1.10-mvp` — PATCH-bump внутри MVP после bugfix-этапа. Тег/release
+не ставились — ждёт апрува пользователя (manual-gate).
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅
+- [x] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp` ✅
+- [x] 1.4 Second orbital (smooth) — `0.1.3-mvp` ✅
+- [x] 1.5 Login panel (minimal) — `0.1.4-mvp` ✅
+- [x] 1.6 Basic auth feedback — `0.1.5-mvp` ✅
+- [x] 1.7 MVP freeze — `0.1.9-mvp` ✅
+- [x] bugfix Ryoku layout fidelity — `0.1.10-mvp` ✅ THIS
+
+- [x] Milestone: MVP (0.1.x-mvp) — релиз-тег ждёт апрува
+- [ ] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+
+### Статус и следующий шаг
+
+- Сделано: закрыты 4 P0-бага (замирание часов, 60 smooth-hand'ов, Enter не
+  работал, перекрытие логин-панелью) + приведён layout/палитра/типографика к
+  оригиналу Ryoku 1-в-1; validate exit 0, verify-theme.sh починен.
+- Следующий шаг: manual-gate Юрия (реальный greeter-цикл, визуальная проверка
+  нового layout 1080/1440) → PR dev→main, tag 0.1.10-mvp, GitHub Release;
+  далее Alpha 0.2.0-alpha.1.
+- Блокеров нет.
+
+### Детали изменений (для агентов)
+
+- `ThemeState.qml` — палитра оригинала (pillColor #080808, pillBorder #1a1a1a,
+  pillDivider #222222, dimText #666666, subText #555555, tickAccent #FF7A18,
+  error #FF4444); удалены pillBgColor/pillMinutesColor/pillSecondsColor/denyColor.
+- `components/clock/TimeProvider.qml` — `syncTick()` вызывается в конце `update()`
+  (часы больше не замирают после 1-й секунды); добавлен `curSecond` (int).
+- `components/clock/OrbitalRing.qml` — полный рерайт под оригинал: smooth-hand
+  ОДИН Rectangle вне Repeater (`smoothAngle`, transformOrigin Bottom),
+  spotlight = `pow(1-|relAngle|/5.5, 1.6)`, пик 58·s при >0.70, scale 1.15
+  при >0.6 + Behavior 280ms, вращение цифр радиально, цифры минут на
+  minR+30·s (снаружи), секунд на secR−30·s (внутри); параметризация тиков/цифр.
+- `components/clock/IndicatorPill.qml` — капсула radius 45·s, минуты 54·s
+  Font.Black x=85·s, секунды 30·s Font.Bold x=255·s, divider 1×35·s x=170·s.
+- `components/clock/DateBlock.qml` (новый) — дата 13·s ls4 subText + день недели
+  18·s ls8 Bold, toUpperCase; месяцы EN hardcoded (i18n = Alpha 2.7).
+- `components/clock/ClockRoot.qml` (новый) + `qmldir` — контейнер часов: cx=40·s,
+  minR=400·s, secR=520·s, часы (110·s Font.Black ls−2·s) слева от pill
+  (rightMargin 40·s), дата справа (leftMargin 110·s); pill-window скрытия цифр
+  минут; второй uniforms на кольце; `property alias timeProvider`.
+- `Main.qml` + `qmldir` — ClockRoot слева (сам якорится), LoginPanel bottom-right
+  (rightMargin 80·s / bottomMargin 80·s, width 350·s), AuthFeedback над панелью
+  справа; DigitalClock.qml удалён (поглощён ClockRoot).
+- `components/login/LoginPanel.qml` — Enter/NumpadEnter через Keys.onPressed
+  (+ фолбэк на корневом Item), focus:true + Timer 300ms forceActiveFocus +
+  re-grab при активации окна, username 18·s Bold ls8 dimText, пароль 14·s
+  ls10 AlignRight.
+- `scripts/verify-theme.sh` — структура: DigitalClock → ClockRoot + DateBlock
+  (в этой же задаче).
+- Follow-up (ревью #22): шрифт Outfit-Black vendored
+  (`theme/onyx/font/Outfit-Black.ttf`, OFL-1.1, из оригинала 1-в-1),
+  FontLoader в Main.qml (инъекция имени в ThemeState); smooth-hand укорочён
+  до 0.75·радиуса; pill-window на мин-кольце переведён на прямые
+  биндинги вместо Connections/onWidthChanged.
+
+### Тех. долг
+
+- CR-F9 (HiDPI scale) — открыт.
+- CR-F10 (реальный login integration) — открыт.
+- F-1.4-b (pragma ComponentBehavior) — ждёт Qt≥6.6 в CI.
+- Ручной визуальный контроль нового layout (память кладки, pill-window на
+  мин-кольце) — на пользователе.
+- One-liner curl проверить после релиза.
+- Placeholder-pass — 2.x.
+
+### Принятые решения
+
+- **ADR-bugfix-1 (эталон — оригинал):** layout/значения 1-в-1 из
+  `sddm/theme/ryoku/Main.qml`, оригинал не модифицируется.
+- **ADR-bugfix-2 (вращение цифр минут):** цифры минут ВРАЩАЮТСЯ (по оригиналу),
+  несмотря на раннюю формулировку баг-дока.
+- **ADR-bugfix-3 (spotlight до 58·s):** по UI Spec (в коде оригинала тира нет).
+- **ADR-bugfix-4 (ClockRoot поглощает DigitalClock):** один владелец assembly;
+  HUD вне скоупа (Alpha 2.5/2.6).
+
+---
+
 ## [0.1.9-mvp] — stage 1.7 · MVP Freeze · 2026-09-10
 
 **Версия:** `0.1.9-mvp` — финальный этап MVP (freeze). Тег/release НЕ ставились —

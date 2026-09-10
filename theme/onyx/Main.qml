@@ -9,50 +9,40 @@ Rectangle {
     color: state.bgColor
 
     readonly property real s: Screen.height / 768
+    readonly property real marginR: 80 * root.s
+
+    FontLoader {
+        id: outfitFont
+        source: "font/Outfit-Black.ttf"
+    }
 
     ThemeState {
         id: state
         s: root.s
+        fontFamily: outfitFont.status === FontLoader.Ready ? outfitFont.name : "Sans Serif"
     }
 
-    Clock.OrbitalRing {
-        s: root.s
-        themeState: state
-        currentIndex: clock.timeProvider.curMinute
-        anchors.centerIn: parent
-    }
-
-    Clock.OrbitalRing {
-        id: secondRing
-        s: root.s
-        themeState: state
-        radiusS: 270
-        currentIndex: Math.floor(clock.timeProvider.curSecondFloat % 60)
-        smoothPosition: clock.timeProvider.curSecondFloat
-        anchors.centerIn: parent
-    }
-
-    Clock.DigitalClock {
+    Clock.ClockRoot {
         id: clock
         s: root.s
         themeState: state
-        anchors.centerIn: parent
     }
 
     Login.LoginPanel {
         id: loginPanel
         s: root.s
         themeState: state
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.right: parent.right
+        anchors.rightMargin: root.marginR
         anchors.bottom: parent.bottom
-        anchors.bottomMargin: 120 * root.s
+        anchors.bottomMargin: 80 * root.s
     }
 
     Login.AuthFeedback {
         id: authFeedback
         s: root.s
         themeState: state
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.right: loginPanel.right
         anchors.bottom: loginPanel.top
         anchors.bottomMargin: 12 * root.s
     }

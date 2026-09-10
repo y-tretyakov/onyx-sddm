@@ -27,7 +27,7 @@ Item {
         font.weight: Font.Bold
         font.letterSpacing: 2 * feedback.s
         color: feedback._granted ? feedback.themeState.mainTextColor
-                                 : feedback.themeState.denyColor
+                                 : feedback.themeState.errorColor
         opacity: 0
     }
 
