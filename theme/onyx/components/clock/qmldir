@@ -1,5 +1,7 @@
 module Clock
 TimeProvider 1.0 TimeProvider.qml
+ClockRoot 1.0 ClockRoot.qml
 DigitalClock 1.0 DigitalClock.qml
-IndicatorPill 1.0 IndicatorPill.qml
 OrbitalRing 1.0 OrbitalRing.qml
+IndicatorPill 1.0 IndicatorPill.qml
+DateBlock 1.0 DateBlock.qml
