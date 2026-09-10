@@ -5,6 +5,115 @@
 
 ---
 
+## [0.2.0-alpha.4] — stage 2.4 · Date + Weekday Reveal · 2026-09-10
+
+**Версия:** `0.2.0-alpha.4` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4` ✅ THIS
+- [ ] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [ ] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.4 — Date + Weekday Reveal** закрыт. Дата и день недели
+  собираются посимвольно сразу после ветрапа (один раз при старте, после boom и
+  fade-in): `AnimEngine.fadeInFinished` (новый сигнал) → `Main`
+  `onFadeInFinished: clock.startDateReveal()` → `ClockRoot.startDateReveal()` →
+  `DateBlock.startReveal()`. StaggerText — переиспользуемый per-char ревил
+  (master progress NumberAnimation, duration `320 + len*28`, per-char
+  opacity/scale/translateY через easedFor с easeOutBack c1=1.70158; charW =
+  `stPixelSize*0.72`, шрифт из `themeState.fontFamily`). Дата стартует сразу
+  (`dateAnimActive`), день недели — через `weekdayDelayTimer` 420ms
+  (`weekdayAnimActive`); вся пара строк мягко blur→sharp: `dateBlurR` 7→0 за
+  800ms через GaussianBlur (samples 16) на двух per-line Item layer-слоях.
+  Закрыт follow-up ревью 2.3 **F-2.4-1**: `Burst.pixelSize` параметром — sec
+  30·s / min 54·s / hour 110·s (30·s остаётся дефолтом компонента).
+  gate-прогоны: validate exit 0, smoke exit 0, windup-probe exit 0,
+  tickfeedback-probe exit 0, sparks-burst-probe exit 0, date-reveal-probe
+  exit 0, verify-theme.sh exit 0 (секции 1–11).
+- Следующее: **stage 2.5 — User & Session pickers** (`0.2.0-alpha.5`).
+- Подготовить до старта 2.5: визуальная QA date reveal на 1080p/1440p
+  (см. Тех. долг); переносится долг CR-F9/CR-F10/F-1.4-b.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- НОВЫЙ `theme/onyx/components/effects/StaggerText.qml` — per-char reveal.
+  required `text`/`s`/`themeState`; `stPixelSize` (default `13*s`),
+  `stLetterSpacing`, `stColor`, `stWeight`, `staggerActive`, `progress`; readonly
+  `charW = stPixelSize*0.72`, `stDuration = 320 + text.length*28`. На
+  `staggerActive` → `progress=0`, restart master (`StaggerText.qml:30-36`).
+  `easedFor(i)` — easeOutBack (c1=1.70158, `1 + c3*(raw-1)^3 + c1*(raw-1)^2`),
+  на прогресс мапается `t*(N+1)` (`StaggerText.qml:41-49`). Row+Repeater:
+  `opacity: e`, `scale: 1-(1-e)*0.08`, `Translate.y: (1-e)*stPixelSize*0.8`
+  (`StaggerText.qml:55-73`). Импорт `"../.."` — берёт `themeState` напрямую,
+  без root-скоупа.
+- `theme/onyx/components/effects/qmldir` — `StaggerText 1.0 StaggerText.qml`.
+- `theme/onyx/components/clock/DateBlock.qml` — переписан на StaggerText
+  (`DateBlock.qml:3-4` импорт `Qt5Compat.GraphicalEffects` + `"../effects"`).
+  Публичные props: `dateAnimActive`/`weekdayAnimActive`/`dateBlurR`
+  (`DateBlock.qml:11-13`); `startReveal()` (`DateBlock.qml:27-31`) — `dateBlurR=7`,
+  `dateAnimActive=true`, `dateBlurAnim.restart()` (from:7→to:0, 800ms),
+  `weekdayDelayTimer.restart()` (420ms). Две строки обёрнуты в Item с
+  `layer.enabled: dateBlurR>0.01` + `layer.effect: GaussianBlur{radius: dateBlurR;
+  samples: 16}` (per-line, `DateBlock.qml:43-50,63-70`). Дата: 13·s subColor,
+  ls 4·s (`stLetterSpacing`); weekday: 18·s mainText Bold, ls 8·s.
+  `width: Math.max(dW.implicitWidth, wW.implicitWidth)`,
+  `height: dW.height + wW.height + 5*s` — не изменены.
+- `theme/onyx/components/effects/AnimEngine.qml:17` — `signal fadeInFinished`;
+  emit в `_tick()` фаза 2, когда `fdt >= fadeInDuration`, после `uiOpacity = 1`,
+  перед `isWindup = false` (`AnimEngine.qml:96-97`).
+- `theme/onyx/components/clock/ClockRoot.qml:12` — `property alias dateBlock:
+  dateBlk`; `function startDateReveal() { dateBlk.startReveal() }`
+  (`ClockRoot.qml:136`). Три `Effects.Burst` получили `pixelSize`: sec
+  `30*clockRoot.s`, min `54*clockRoot.s`, hour `110*clockRoot.s`.
+- `theme/onyx/components/effects/Burst.qml:12` — `property real pixelSize:
+  30*burst.s` (F-2.4-1); оба Text используют `burst.pixelSize`.
+- `theme/onyx/Main.qml:31` — `onFadeInFinished: clock.startDateReveal()`.
+- НОВЫЙ `scripts/qa/date-reveal-probe.qml` — poll-based (offscreen render loop
+  лагает NumberAnimation и 420ms-таймер против валл-тайма, как в 2.3).
+  В `Component.onCompleted`: заморозка живых ticker'ов, ручной
+  `clockRoot.startDateReveal()`. Фаза 1 (poll до 500ms): `dateAnimActive` +
+  `dateBlurR > 0` + гейт `!weekdayAnimActive` (weekday ещё не стартовал);
+  фаза 2 (poll до 2s): `weekdayAnimActive === true` (420ms-задержка отдала);
+  фаза 3 (poll до 3s): `dateBlurR === 0` && `dateAnimActive`. Контракт:
+  exit 0 = `DATE-REVEAL-PROBE: OK` / exit 1 = `FAIL: <reason>`.
+- `scripts/verify-theme.sh` — секция 1: +`effects/StaggerText.qml`; секция 10
+  «date-reveal-probe» (offscreen, 18s); секция 11 — registration regressions
+  (перенумерована из 10).
+
+### Тех. долг
+
+- F-2.4-1 закрыт. Перенос из 2.3: CR-F9 (HiDPI), CR-F10 (greeter-integration),
+  F-1.4-b (`pragma ComponentBehavior`), ADR-2.2-2 (boom-scale parity),
+  pillWindowHiding defensive на secRing.
+- Новый: «GaussianBlur layer на DateBlock — следить за перфомансом на слабых
+  GPU в Beta (аналог замечания sparks 60×16ms): 2 Item-слоя активны только пока
+  `dateBlurR > 0.01`, после reveal layer отключается».
+- Новый: «визуальная QA 1080p/1440p date reveal (посимвольная сборка, blur
+  sharpen, задержка weekday) — токен в план Beta». В offscreen-GaussianBlur
+  рендерится корректно (smoke + probe стабильны), на реальном GPU не проверяли.
+
+### Принятые решения
+
+- **ADR-2.4-1 (StaggerText — собственный компонент):** per-char reveal вынесен
+  в `effects/StaggerText.qml` (не инлайн component как в оригинале) — компонент
+  переиспользуем и не зависит от root-скоупа (`themeState` качается через
+  required property, импорт `"../.."`). Blur применён на **per-line** Item-слоях,
+  а не на Column — приклейка GaussianBlur к двум строкам раздельно, чтобы строки
+  не blur-или друг друга через общий слой и чтобы layer включался точечно.
+
+---
+
 ## [0.2.0-alpha.3] — stage 2.3 · Sparks + Bursts · 2026-09-10
 
 **Версия:** `0.2.0-alpha.3` — PATCH-bump внутри milestone Alpha (stage, не веха).
