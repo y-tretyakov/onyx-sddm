@@ -9,6 +9,7 @@ QtObject {
     readonly property int curMinute: Number(curM)
     readonly property string curTime: curH + ":" + curM
     property real curSecondFloat: 0
+    readonly property int curSecond: Number(curS)
 
     property Timer tickTimer: Timer {
         repeat: false
@@ -31,6 +32,7 @@ QtObject {
         curH = _pad(d.getHours());
         curM = _pad(d.getMinutes());
         curS = _pad(d.getSeconds());
+        syncTick();
     }
 
     function tickSmooth() {
