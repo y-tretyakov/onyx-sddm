@@ -9,6 +9,12 @@ Item {
 
     property alias timeProvider: _time
 
+    property real windupDegMin: 0
+    property real windupDegSec: 0
+
+    readonly property real minuteAngleDeg: ringMin.positionDeg
+    readonly property real secondAngleDeg: ringSec.positionDeg
+
     readonly property real cx: 40 * s
     readonly property real cy: height * 0.5
     readonly property real minR: 400 * s
@@ -35,8 +41,8 @@ Item {
 
         s: clockRoot.s
         themeState: clockRoot.themeState
-        // one full rotation per hour, counter-clockwise
-        positionDeg: -(_time.curMinuteFloat / 60.0) * 360.0
+        // one full rotation per hour, counter-clockwise, minus windup kick
+        positionDeg: -(_time.curMinuteFloat / 60.0) * 360.0 - clockRoot.windupDegMin
 
         radiusS: 400
         numberRadiusOffset: 30
@@ -57,8 +63,8 @@ Item {
 
         s: clockRoot.s
         themeState: clockRoot.themeState
-        // one full rotation per minute, smooth (16ms), counter-clockwise
-        positionDeg: -(_time.curSecondFloat / 60.0) * 360.0
+        // one full rotation per minute, smooth (16ms), counter-clockwise minus windup kick
+        positionDeg: -(_time.curSecondFloat / 60.0) * 360.0 - clockRoot.windupDegSec
 
         radiusS: 520
         numberRadiusOffset: -30

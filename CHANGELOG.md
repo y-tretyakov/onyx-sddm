@@ -5,6 +5,97 @@
 
 ---
 
+## [0.2.0-alpha.1] — stage 2.1 · Windup → Boom Sequence · 2026-09-10
+
+**Версия:** `0.2.0-alpha.1` — вход в milestone Alpha (MINOR MVP→Alpha).
+Тег/release НЕ ставились — это stage, не веха (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1` ✅ THIS
+- [ ] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [ ] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [ ] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [ ] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [ ] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.1 — Windup → Boom Sequence** закрыт. При появлении greeter'а
+  орбитали «заводятся» (windup ≤ ~1600ms, Easing.InQuint, windupOffset 0→150000),
+  затем scale+opacity boom, затем fade-in UI (`uiOpacity` 0→1). Реализовано через
+  собственный AnimEngine (QtObject + 16ms tick), который уважает
+  `clockAwake` / `windupEnabled`. validate/smoke PASS, windup-probe (MockMain)
+  exit 0, verify-theme.sh PASS (секция 7).
+- Следующее: **stage 2.2 — Tick feedback (flash + halo)** (`0.2.0-alpha.2`):
+  трещины/halo/эмулированные детали по спеке (`docs/SPECS/01-alpha.md`);
+  AnimEngine переиспользуется.
+- Подготовить до старта 2.2: никакие.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- `theme/onyx/components/effects/AnimEngine.qml` — НОВЫЙ QtObject-движок
+  reveal-последовательности. Публичный API: `startReveal()` / `abort()`;
+  фазовый 16ms `_tick()` (`AnimEngine.qml:31-37,64-98`): фаза 0 — windup
+  (`windupOffset = eased(0,150000,t,_easeInQuint)`, `windupDegMin = offset*5`,
+  `windupDegSec = offset*10`); фаза 1 — boom (`boomScale 1→35`,
+  `boomOpacity 0→1`); фаза 2 — fade-in (`uiOpacity 0→1`, Easing.OutCubic,
+  350ms). Гейт `clockAwake`: `running: engine.isWindup && engine.clockAwake`
+  + ранний return в `_tick()`.
+- `theme/onyx/components/effects/qmldir` — модуль `Effects`, `AnimEngine 1.0`.
+- `theme/onyx/Main.qml` — `Effects.AnimEngine:26-34`, проводка
+  `windupDegMin`/`windupDegSec` в ClockRoot и `clockAwake: state.clockAwake`
+  в TimeProvider (`Main.qml:36-43`); `uiLayer` opacity = `engine.uiOpacity`:46-48;
+  `boomOverlay` (z:9999, `state.blastColor`, opacity = `engine.boomOpacity`):70-77;
+  `curtainOut` 180ms NumberAnimation (снятие boom-шторки):79-87;
+  `Component.onCompleted` → `engine.startReveal()`:95-100.
+- `theme/onyx/components/clock/ClockRoot.qml:12-13,45,67` — пропсы `windupDegMin`
+  / `windupDegSec`; `positionDeg` вычитает windup-кик:
+  `-(float/60)*360 - windupDeg*` (минутное/секундное кольцо).
+- `theme/onyx/ThemeState.qml:12-23` — `clockAwake` (isPreview→true, иначе
+  `Window.active`), `windupEnabled` (читает `config.enableWindup`, default true),
+  `blastColor "#FFFFFF"`.
+- `theme/onyx/components/clock/TimeProvider.qml:24` — `smoothTimer`
+  `running: provider.clockAwake` — закрывает долг 0.1.11 «clockAwake gating
+  16ms таймера».
+- `theme/onyx/theme.conf` — `enableWindup=true`.
+- `scripts/qa/windup-probe.qml` — MockMain live-проверка: startReveal →
+  проверки `windupOffset > 0` (560ms/1300ms), boom, fade-in (`uiOpacity = 1`),
+  ring-mix (`windupDegMin`/`windupDegSec` попадают на кольца). exit 0.
+- `scripts/verify-theme.sh:130-135` — секция 7 «windup-probe» (offscreen, 18s).
+- Критично для следующих агентов: AnimEngine НЕ использует NumberAnimation —
+  весь reveal на 16ms tick (см. ADR ниже); `clockAwake` гейтит и TimeProvider,
+  и AnimEngine; `windupEnabled=false` → `uiOpacity=1` мгновенно (без анимации).
+
+### Тех. долг
+
+- 🟡 **CR-F9 (отложено; НЕ трогать сейчас):** `s = Screen.height / 768` — на
+  перепроверку stage 3.8 (HiDPI & multi-monitor). Переносится.
+- 🟡 **CR-F10 (отложено):** реальный SDDM greeter integration test — на
+  пользователе. Переносится.
+- 🟡 **F-1.4-b (остаётся):** `pragma ComponentBehavior: Bound` — ждёт Qt ≥6.6
+  в CI (unqualified-шум безвреден). Переносится.
+- 🟡 **Перенос из 0.1.11:** `pillWindowHiding: true` на secRing без pillWin*
+  (defensive, без визуального эффекта).
+- Follow-up'ы: в записи 0.1.11 F-записей не было; тех. долг 0.1.10
+  (CR-F9/F10/F-1.4-b) перенесён выше. Долг 0.1.11 «clockAwake gating 16ms
+  таймера» — ЗАКРЫТ в stage 2.1 (`TimeProvider.qml:24`).
+- Новых тех. долгов в stage 2.1 нет.
+
+### Принятые решения
+
+- **ADR-2.1-1 (AnimEngine, а не NumberAnimation):** windup/boom/fade-in
+  реализованы через собственный движок (QtObject + 16ms tick), а не через
+  NumberAnimation — ради гейта `clockAwake` (анимации обязаны «спать», когда
+  окно неактивно) и переиспользования движка в следующих alpha-эффектах
+  (2.2 tick feedback, 2.3 sparks/bursts).
+
+---
+
 ## [0.1.11-mvp] — stage 1.8 · Nobara P0 regression fix · 2026-09-10
 
 **Версия:** `0.1.11-mvp` — PATCH-bump внутри MVP (bugfix/regression fix).

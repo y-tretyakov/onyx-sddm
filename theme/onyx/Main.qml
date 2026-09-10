@@ -1,5 +1,6 @@
 import QtQuick
 import "components/clock" as Clock
+import "components/effects" as Effects
 import "components/login" as Login
 
 Rectangle {
@@ -22,34 +23,79 @@ Rectangle {
         fontFamily: outfitFont.status === FontLoader.Ready ? outfitFont.name : "Sans Serif"
     }
 
+    Effects.AnimEngine {
+        id: engine
+        clockAwake: state.clockAwake
+        animationEnabled: state.windupEnabled
+        onUiOpacityChanged: {
+            if (engine.uiOpacity === 1.0 && boomOverlay.opacity > 0)
+                curtainOut.start()
+        }
+    }
+
     Clock.ClockRoot {
         id: clock
         s: root.s
         themeState: state
+        windupDegMin: engine.windupDegMin
+        windupDegSec: engine.windupDegSec
+        timeProvider.clockAwake: state.clockAwake
     }
 
-    Login.LoginPanel {
-        id: loginPanel
-        s: root.s
-        themeState: state
-        anchors.right: parent.right
-        anchors.rightMargin: root.marginR
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 80 * root.s
+    Item {
+        id: uiLayer
+        anchors.fill: parent
+        opacity: engine.uiOpacity
+
+        Login.LoginPanel {
+            id: loginPanel
+            s: root.s
+            themeState: state
+            anchors.right: parent.right
+            anchors.rightMargin: root.marginR
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: 80 * root.s
+        }
+
+        Login.AuthFeedback {
+            id: authFeedback
+            s: root.s
+            themeState: state
+            anchors.right: loginPanel.right
+            anchors.bottom: loginPanel.top
+            anchors.bottomMargin: 12 * root.s
+        }
     }
 
-    Login.AuthFeedback {
-        id: authFeedback
-        s: root.s
-        themeState: state
-        anchors.right: loginPanel.right
-        anchors.bottom: loginPanel.top
-        anchors.bottomMargin: 12 * root.s
+    Rectangle {
+        id: boomOverlay
+        anchors.fill: parent
+        z: 9999
+        color: state.blastColor
+        opacity: engine.boomOpacity
+        visible: opacity > 0
+    }
+
+    NumberAnimation {
+        id: curtainOut
+        target: boomOverlay
+        property: "opacity"
+        from: 1
+        to: 0
+        duration: 180
+        easing.type: Easing.InQuad
     }
 
     Connections {
         target: typeof sddm !== "undefined" ? sddm : null
         function onLoginSucceeded() { authFeedback.showSuccess() }
         function onLoginFailed() { authFeedback.showDenied() }
+    }
+
+    Component.onCompleted: {
+        if (state.windupEnabled)
+            engine.startReveal()
+        else
+            engine.uiOpacity = 1
     }
 }
