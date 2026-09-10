@@ -11,40 +11,18 @@ Item {
     width: 350 * s
     height: 100 * s
 
-    // Hidden helper matching the original: usernames come from ListView
-    // delegate roles (model.realName / model.name), never the old data() call.
-    ListView {
-        id: userHelper
-        width: 1
-        height: 1
-        opacity: 0
-        currentIndex: {
-            if (typeof userModel !== "undefined" && userModel.lastIndex >= 0)
-                return userModel.lastIndex
-            return 0
-        }
-        model: typeof userModel !== "undefined" ? userModel : null
-        delegate: Item {
-            property string uName: model.realName || model.name || ""
-            property string uLogin: model.name || ""
-        }
-    }
-
+    // SDDM exposes the last logged-in user as a plain string (userModel.lastUser).
+    // Reading it directly is qmllint-hard clean and avoids the SDDM
+    // data()-hazard seen on Nobara 44.
     readonly property string currentUserName: {
         if (themeState.isPreview)
             return "preview"
-        var h = userHelper.currentItem
-        if (h && h.uName)
-            return h.uName
         if (typeof userModel !== "undefined" && userModel.lastUser)
             return userModel.lastUser
         return "user"
     }
 
     readonly property string currentLoginName: {
-        var h = userHelper.currentItem
-        if (h && h.uLogin)
-            return h.uLogin
         if (typeof userModel !== "undefined" && userModel.lastUser)
             return userModel.lastUser
         return ""
