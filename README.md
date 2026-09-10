@@ -1,6 +1,6 @@
 # Onyx SDDM Theme
 
-[![Version](https://img.shields.io/badge/version-0.1.5--mvp-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.9--mvp-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/y-tretyakov/onyx-sddm/ci.yml?branch=dev&label=CI)](https://github.com/y-tretyakov/onyx-sddm/actions)
 [![OS](https://img.shields.io/badge/OS-Arch%7CCachyOS%7CFedora%7CNobara%7CUbuntu%7CDebian%7CopenSUSE%7CRHEL9-41CD52.svg?style=flat)](.github/workflows/ci.yml)
 [![Qt6](https://img.shields.io/badge/Qt-6-41CD52.svg?logo=qt&logoColor=white&style=flat)](https://doc.qt.io/qt-6/)
@@ -21,22 +21,84 @@ indicator pill на орбитально-часовом фоне, валидир
 
 ## Текущий статус
 
-- **Версия:** `0.1.5-mvp` · Phase 1 / MVP — stage 1.1–1.6 закрыты.
-- **Что сделано:** компонент AuthFeedback (текст «ACCESS GRANTED ✦» /
-  «ACCESS DENIED ✦» через Unicode ✦, fade in 250ms / auto-hide granted
-  2200ms / denied 5000ms / fade out 400ms, скрытие через opacity);
-  публичное API `showSuccess()` / `showDenied()`; цвет ошибки `denyColor`
-  в ThemeState; `Connections` на `sddm.loginSucceeded` / `sddm.loginFailed`
-  с preview-safe target; минимальная логин-панель (label + password + Enter
-  → `sddm.login`); second orbital (`radiusS: 270`) с плавным маркером;
-  drift-free синк тика; орбиталь минут + indicator pill + цветовой API;
-  масштаб через `s`; шрифт Sans Serif; CPU avg 48.8% software-renderer;
-  validate/smoke/preview PASS; `sddm-greeter-qt6 --test-mode` live-probe
-  15s OK.
-- **CI:** полная 8-контейнерная матрица (arch, cachyos, fedora, nobara,
-  ubuntu, debian, opensuse, rhel9) зелёная.
-- **Следующий шаг:** stage 1.7 — MVP freeze.
+- **Версия:** `0.1.9-mvp` · Phase 1 / MVP — stage 1.1–1.7 закрыты (freeze).
+- **Что сделано:** regression sweep PASS (scan чист, trailing newline во всех
+  8 QML, hex только в ThemeState, масштаб только через `s`, validate exit 0,
+  smoke 15s exit 0, probe exit 0, стресс 5×10s exit 0 без флуктуаций);
+  `verify-theme.sh` создан (структура + validate + smoke + probe); visual QA
+  1920×1080 и 2560×1440 PASS через Xvfb; README — раздел «Установка (MVP)»
+  + one-liner curl; `install.sh --release TAG`.
+- **CI:** полная 8-контейнерная матрица зелёная.
+- **Следующий шаг:** апрув Юрия (manual-gate: реальный greeter-цикл
+  DENIED/GRANTED, повторный login, focus/Enter, смена user/session,
+  1080/1440 на мониторе, чистая установка/uninstall/reinstall) →
+  затем PR dev→main, tag 0.1.9-mvp, GitHub Release; далее Alpha 0.2.0-alpha.1.
 - Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
+
+## Установка (MVP)
+
+### Одна строка (после релиза по тегу)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/y-tretyakov/onyx-sddm/0.1.9-mvp/install.sh | sudo bash -s -- --release 0.1.9-mvp
+```
+
+Скачивает тему по тегу релиза и ставит системно.
+
+### Системная установка
+
+```bash
+sudo ./install.sh
+```
+
+Скрипт копирует `theme/onyx` в `/usr/share/sddm/themes/onyx`.
+
+### Пользовательская установка (без root)
+
+```bash
+./install.sh --dest ~/.local/share/sddm/themes
+```
+
+> Отмечено: установка в домашний каталог работает, только если в системе
+> настроен поиск SDDM тем в пользовательских путях (иначе greeter их не найдёт).
+
+### Включение темы
+
+В `/etc/sddm.conf`:
+
+```ini
+[Theme]
+Current=onyx
+```
+
+Либо через системный инструментарий распределения (например, на дистрибутивах
+с графической настройкой SDDM). После включения — перезапустить SDDM.
+
+### Удаление
+
+```bash
+sudo ./uninstall.sh
+```
+
+Если тема ставилась в своё место — удалять с тем же `--dest`:
+
+```bash
+./uninstall.sh --dest ~/.local/share/sddm/themes
+```
+
+### Проверка
+
+```bash
+ls /usr/share/sddm/themes/onyx
+./scripts/verify-theme.sh   # exit 0 — всё в порядке
+```
+
+### Примечания
+
+- Минимальные требования: **Qt 6** (SDDM ≥ 0.20 с Qt6-greeter).
+- Primary — Wayland, secondary — X11.
+- Превью/smoke работают без живого greeter: тема «graceful» деградирует
+  в preview-режиме (SMOKE/preview не требуют работающего SDDM).
 
 ## Документация
 
