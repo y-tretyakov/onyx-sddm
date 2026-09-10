@@ -71,8 +71,6 @@ Item {
     }
 
     function triggerTickFeedback() {
-        if (!themeState.clockAwake && !_time.clockAwake)
-            return
         if (!themeState.clockAwake)
             return
         tickFlashAnim.restart()
@@ -116,7 +114,6 @@ Item {
 
         s: clockRoot.s
         themeState: clockRoot.themeState
-        tickFlash: clockRoot.tickFlash
         // one full rotation per minute, smooth (16ms), counter-clockwise minus windup kick
         positionDeg: -(_time.curSecondFloat / 60.0) * 360.0 - clockRoot.windupDegSec
 
