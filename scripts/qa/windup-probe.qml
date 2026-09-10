@@ -11,6 +11,7 @@ Window {
     visible: true
 
     property bool mockAwake: true
+    property int boomFinishedCount: 0
 
     Item {
         anchors.fill: parent
@@ -19,6 +20,11 @@ Window {
             id: engine
             clockAwake: true
             animationEnabled: true
+        }
+
+        Connections {
+            target: engine
+            function onBoomFinished() { probe.boomFinishedCount++ }
         }
 
         ThemeState {
@@ -59,6 +65,7 @@ Window {
     Timer { id: tWind;   interval: 560 ; repeat: false; onTriggered: checkWindup() }
     Timer { id: tReach;  interval: 1300; repeat: false; onTriggered: checkWindupReach() }
     Timer { id: tBoom;   interval: 1780; repeat: false; onTriggered: checkBoom() }
+    Timer { id: tBoomBtn; interval: 1850; repeat: false; onTriggered: checkBoomFinished() }
     Timer { id: tEnd;    interval: 2500; repeat: false; onTriggered: checkEnd() }
     Timer { id: tGateA;  interval: 120 ; repeat: false; onTriggered: checkAwakeOff() }
     Timer { id: tGateB;  interval: 120 ; repeat: false; onTriggered: checkAwakeResume() }
@@ -101,6 +108,11 @@ Window {
             -engine.windupDegSec)
         if (secOk !== true) return secOk
         tEnd.start()
+    }
+
+    function checkBoomFinished() {
+        if (probe.boomFinishedCount < 1)
+            return fail("boomFinished not emitted")
     }
 
     function checkEnd() {

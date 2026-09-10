@@ -14,8 +14,9 @@ End-to-end validation of the Onyx SDDM theme (local checks only):
   3. theme.conf — readable, has key=value pairs
   4. validate.sh — full validation pass (repo root)
   5. smoke.sh — headless load test, SMOKE_SECS=12
-  6. auth-feedback-probe.qml — offscreen probe (qml6 / qml)
-  7. windup-probe.qml — offscreen windup/boom/fade-in + ring-mix probe
+6. auth-feedback-probe.qml — offscreen probe (qml6 / qml)
+   7. windup-probe.qml — offscreen windup/boom/fade-in + ring-mix probe
+   8. tickfeedback-probe.qml — offscreen tick feedback flash/halo probe
 
 Every check prints [ OK ] or [ FAIL ]; any [ FAIL ] exits 1 immediately.
 Final success line: [ OK ] verify OK. Exit 0 = all passed.
@@ -135,8 +136,16 @@ else
     fail "windup-probe failed"
 fi
 
-# --- 8. registration regressions ---
-echo "--- 8. registration regressions ---"
+# --- 8. tickfeedback-probe ---
+echo "--- 8. tickfeedback-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 12 "${RUNNER}" "${ROOT_DIR}/scripts/qa/tickfeedback-probe.qml"; then
+    ok "tickfeedback-probe passed (flash + halo live values)"
+else
+    fail "tickfeedback-probe failed"
+fi
+
+# --- 9. registration regressions ---
+echo "--- 9. registration regressions ---"
 for _bad in "userModel.data(" "smoothHand" "currentIndex"; do
     if rg -F -l --glob "*.qml" "$_bad" theme/onyx/components/clock/; then
         echo "FAIL: forbidden token '$_bad' present in clock components" >&2

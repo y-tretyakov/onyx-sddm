@@ -1,6 +1,6 @@
 # Onyx SDDM Theme
 
-[![Version](https://img.shields.io/badge/version-0.2.0--alpha.1-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0--alpha.2-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/y-tretyakov/onyx-sddm/ci.yml?branch=dev&label=CI)](https://github.com/y-tretyakov/onyx-sddm/actions)
 [![OS](https://img.shields.io/badge/OS-Arch%7CCachyOS%7CFedora%7CNobara%7CUbuntu%7CDebian%7CopenSUSE%7CRHEL9-41CD52.svg?style=flat)](.github/workflows/ci.yml)
 [![Qt6](https://img.shields.io/badge/Qt-6-41CD52.svg?logo=qt&logoColor=white&style=flat)](https://doc.qt.io/qt-6/)
@@ -15,18 +15,21 @@
 оригинальной темы *clockwork/orbital* (Ryoku / Darkkal44), но с полностью
 переработанной архитектурой, чистым кодом и чёткой дорожной картой.
 
-Статус: **Alpha в процессе** (Phase 2). Уже реализовано: windup → boom →
-fade-in sequence при появлении greeter'а (stage 2.1); весь MVP (1.1–1.8) закрыт.
+Статус: **Alpha в процессе** (Phase 2). Уже реализовано: tick feedback (flash + halo)
+при смене минуты (stage 2.2); windup → boom → fade-in sequence при появлении
+greeter'а (stage 2.1); весь MVP (1.1–1.8) закрыт.
 
 ## Текущий статус
 
-- **Версия:** `0.2.0-alpha.1` · Phase 2 / Alpha — [x] stage 2.1 закрыт (windup→boom→fade-in sequence).
-- **Что сделано:** windup→boom→fade-in sequence при появлении greeter'а: орбитали
-  раскручиваются (windup, Easing.InQuint, windupOffset 0→150000, ~1600ms), затем
-  scale+opacity boom, затем fade-in UI (`uiOpacity` 0→1). Реализовано через
-  собственный `AnimEngine` (QtObject + 16ms tick, гейт `clockAwake`).
-- **CI:** полная 8-контейнерная матрица зелёная.
-- **Следующий шаг:** Alpha 2.2 — Tick feedback (flash + halo) (`0.2.0-alpha.2`).
+- **Версия:** `0.2.0-alpha.2` · Phase 2 / Alpha — [x] stage 2.2 закрыт (tick feedback: flash + halo).
+- **Что сделано:** при смене минуты major-тики орбиталей вспыхивают (`tickFlash`
+  1→0 на 140ms, OutQuad — alpha cap 1.0, scale +4%), вокруг центра циферблата
+  расширяется тонкий круглый ореол (`tickHaloR` 16·s→110·s на 480ms OutCubic,
+  `tickHaloOpacity` 0.5→0 на 480ms OutQuad, border 1.5·s, z:5). Всё гейтится
+  `clockAwake`, живёт в ClockRoot (владелец minute-триггера); закрыт follow-up
+  F-2.2-1 (`boomFinished` из AnimEngine вместо `onUiOpacityChanged`).
+- **CI:** полная 8-контейнерная матрица зелёная (на момент stage 2.1).
+- **Следующий шаг:** Alpha 2.3 — Sparks + sec/min/hour bursts (`0.2.0-alpha.3`).
 - Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
 
 ## Установка (MVP)
