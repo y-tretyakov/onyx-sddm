@@ -38,6 +38,63 @@ indicator pill на орбитально-часовом фоне, валидир
 - **Следующий шаг:** stage 1.7 — MVP freeze.
 - Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
 
+## Установка (MVP)
+
+### Системная установка
+
+```bash
+sudo ./install.sh
+```
+
+Скрипт копирует `theme/onyx` в `/usr/share/sddm/themes/onyx`.
+
+### Пользовательская установка (без root)
+
+```bash
+./install.sh --dest ~/.local/share/sddm/themes
+```
+
+> Отмечено: установка в домашний каталог работает, только если в системе
+> настроен поиск SDDM тем в пользовательских путях (иначе greeter их не найдёт).
+
+### Включение темы
+
+В `/etc/sddm.conf`:
+
+```ini
+[Theme]
+Current=onyx
+```
+
+Либо через системный инструментарий распределения (например, на дистрибутивах
+с графической настройкой SDDM). После включения — перезапустить SDDM.
+
+### Удаление
+
+```bash
+sudo ./uninstall.sh
+```
+
+Если тема ставилась в своё место — удалять с тем же `--dest`:
+
+```bash
+./uninstall.sh --dest ~/.local/share/sddm/themes
+```
+
+### Проверка
+
+```bash
+ls /usr/share/sddm/themes/onyx
+./scripts/verify-theme.sh   # exit 0 — всё в порядке
+```
+
+### Примечания
+
+- Минимальные требования: **Qt 6** (SDDM ≥ 0.20 с Qt6-greeter).
+- Primary — Wayland, secondary — X11.
+- Превью/smoke работают без живого greeter: тема «graceful» деградирует
+  в preview-режиме (SMOKE/preview не требуют работающего SDDM).
+
 ## Документация
 
 | Документ | Описание |
