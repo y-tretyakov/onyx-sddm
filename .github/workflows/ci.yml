@@ -1,0 +1,117 @@
+name: ci
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # --- PR gate: fast hosted compatibility (Ubuntu, Qt 6.4) ---
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Print checked SHA
+        run: |
+          echo "Checked SHA (PR head): ${GITHUB_SHA}"
+          echo "Ref: ${GITHUB_REF}"
+
+      - name: Install Qt6 QML tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            qt6-declarative-dev \
+            qt6-declarative-dev-tools \
+            qt6-qmllint-plugins \
+            qml-qt6 \
+            qml6-module-qtquick \
+            qml6-module-qtqml \
+            qt6-svg-dev
+
+      - name: Validate theme (structural + qmllint hard)
+        run: ./validate.sh
+
+  # --- PR gate: authoritative Arch container (Qt 6.11 + offscreen smoke) ---
+  validate-arch:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Print checked SHA
+        run: |
+          echo "Checked SHA (PR head): ${GITHUB_SHA}"
+          echo "Ref: ${GITHUB_REF}"
+
+      - name: Install Qt6 QML tooling (Arch)
+        run: >
+          pacman -Syu --noconfirm
+          git qt6-base qt6-declarative qt6-svg
+
+      - name: Validate theme (structural + qmllint hard)
+        run: ./validate.sh
+
+      - name: Offscreen smoke (authoritative runtime)
+        run: ./scripts/smoke.sh
+
+  # --- Full distro matrix: run on merge to dev/main (push event) ---
+  distro-matrix:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: [validate, validate-arch]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: arch
+            image: archlinux:latest
+            install: pacman -Syu --noconfirm git qt6-base qt6-declarative qt6-svg
+          - distro: cachyos
+            image: cachyos/cachyos:latest
+            install: pacman -Syu --noconfirm git qt6-base qt6-declarative qt6-svg
+          - distro: fedora
+            image: fedora:latest
+            install: dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg
+          # Nobara has no official container image; it is Fedora-derived and
+          # shares package names. Runtime-specific QA (Wayland/gaming) is done
+          # on physical hardware outside CI.
+          - distro: nobara
+            image: fedora:latest
+            install: dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg
+          - distro: ubuntu
+            image: ubuntu:24.04
+            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qml6-module-qtqml qt6-svg-dev
+          - distro: debian
+            image: debian:bookworm
+            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qml6-module-qtqml qt6-svg-dev
+          # RHEL9-compatible (free): AlmaLinux 9 = binary RHEL9 rebuild with full
+          # AppStream. Plain UBI9 cannot host EPEL qt6-qtbase-gui: its X11/xcb/GL
+          # runtime libs (libxkbcommon-x11, xcb-util-*, libinput, mesa-libGL) are
+          # absent from UBI AppStream/CRB even when enabled.
+          - distro: rhel9
+            image: almalinux:9
+            install: dnf install -y epel-release && dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg
+          - distro: opensuse
+            image: opensuse/tumbleweed:latest
+            install: zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive install git qt6-base-devel qt6-base-common-devel qt6-declarative-devel qt6-declarative-tools qt6-svg-devel
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Print checked SHA
+        run: |
+          echo "Checked SHA (PR head): ${GITHUB_SHA}"
+          echo "Ref: ${GITHUB_REF}"
+
+      - name: Install Qt6 QML tooling (${{ matrix.distro }})
+        run: ${{ matrix.install }}
+
+      - name: Validate theme (structural + qmllint hard)
+        run: ./validate.sh
+
+      - name: Offscreen smoke (authoritative only)
+        if: matrix.distro == 'arch' || matrix.distro == 'cachyos'
+        run: ./scripts/smoke.sh
