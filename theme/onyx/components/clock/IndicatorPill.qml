@@ -16,6 +16,11 @@ Rectangle {
     border.color: themeState.pillBorderColor
     border.width: 1 * s
 
+    readonly property real minCenterX: minText.x + minText.width / 2
+    readonly property real minCenterY: minText.y + minText.height / 2
+    readonly property real secCenterX: secText.x + secText.width / 2
+    readonly property real secCenterY: secText.y + secText.height / 2
+
     Text {
         id: minText
         x: 85 * pill.s - width / 2

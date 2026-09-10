@@ -1,5 +1,6 @@
 import QtQuick
 import "../.."
+import "../effects" as Effects
 
 Item {
     id: clockRoot
@@ -15,6 +16,34 @@ Item {
     property real tickFlash: 0
     property real tickHaloR: 0
     property real tickHaloOpacity: 0
+
+    property bool clockAwake: true
+
+    property real sparkWindup: 0
+    property int sparkBurst: 0
+    property real sparkImpulse: 0
+
+    property string lastSec: ""
+    property string lastMin: ""
+    property string lastHour: ""
+
+    property real secBurstScale: 1.0
+    property real secBurstOpacity: 0.0
+    property string secBurstText: "00"
+    property real secBurstX: 0
+    property real secBurstY: 0
+
+    property real minBurstScale: 1.0
+    property real minBurstOpacity: 0.0
+    property string minBurstText: "00"
+    property real minBurstX: 0
+    property real minBurstY: 0
+
+    property real hourBurstScale: 1.0
+    property real hourBurstOpacity: 0.0
+    property string hourBurstText: "00"
+    property real hourBurstX: 0
+    property real hourBurstY: 0
 
     readonly property real minuteAngleDeg: ringMin.positionDeg
     readonly property real secondAngleDeg: ringSec.positionDeg
@@ -70,6 +99,39 @@ Item {
         easing.type: Easing.OutQuad
     }
 
+    SequentialAnimation {
+        id: sparkImpulseAnim
+        NumberAnimation { target: clockRoot; property: "sparkImpulse"; to: 0.8; duration: 200; easing.type: Easing.OutCubic }
+        NumberAnimation { target: clockRoot; property: "sparkImpulse"; to: 0.0; duration: 500; easing.type: Easing.OutCubic }
+    }
+
+    SequentialAnimation {
+        id: secBurstAnim
+        NumberAnimation { target: clockRoot; property: "secBurstScale"; from: 1.0; to: 2.2; duration: 450; easing.type: Easing.OutCubic }
+        NumberAnimation { target: clockRoot; property: "secBurstOpacity"; from: 0.9; to: 0.0; duration: 450; easing.type: Easing.OutQuad }
+    }
+
+    SequentialAnimation {
+        id: minBurstAnim
+        NumberAnimation { target: clockRoot; property: "minBurstScale"; from: 1.0; to: 2.2; duration: 450; easing.type: Easing.OutCubic }
+        NumberAnimation { target: clockRoot; property: "minBurstOpacity"; from: 0.9; to: 0.0; duration: 450; easing.type: Easing.OutQuad }
+    }
+
+    SequentialAnimation {
+        id: hourBurstAnim
+        NumberAnimation { target: clockRoot; property: "hourBurstScale"; from: 1.0; to: 2.2; duration: 450; easing.type: Easing.OutCubic }
+        NumberAnimation { target: clockRoot; property: "hourBurstOpacity"; from: 0.9; to: 0.0; duration: 450; easing.type: Easing.OutQuad }
+    }
+
+    onClockAwakeChanged: {
+        if (!clockRoot.clockAwake) {
+            secBurstAnim.stop(); clockRoot.secBurstOpacity = 0
+            minBurstAnim.stop(); clockRoot.minBurstOpacity = 0
+            hourBurstAnim.stop(); clockRoot.hourBurstOpacity = 0
+            sparkImpulseAnim.stop(); clockRoot.sparkImpulse = 0
+        }
+    }
+
     function triggerTickFeedback() {
         if (!themeState.clockAwake)
             return
@@ -78,9 +140,56 @@ Item {
         tickHaloOpacityAnim.restart()
     }
 
+    function maybeSecBurst() {
+        if (!clockRoot.clockAwake)
+            return
+        if (_time.curS === lastSec)
+            return
+        lastSec = _time.curS
+        secBurstText = _time.curS
+        var p = pill.mapToItem(clockRoot, pill.secCenterX, pill.secCenterY)
+        secBurstX = p.x
+        secBurstY = p.y
+        secBurstAnim.restart()
+        sparkBurst++
+        sparkImpulseAnim.restart()
+    }
+
+    function maybeMinBurst() {
+        if (!clockRoot.clockAwake)
+            return
+        if (_time.curM === lastMin)
+            return
+        lastMin = _time.curM
+        minBurstText = _time.curM
+        var p = pill.mapToItem(clockRoot, pill.minCenterX, pill.minCenterY)
+        minBurstX = p.x
+        minBurstY = p.y
+        minBurstAnim.restart()
+        sparkBurst++
+        sparkImpulseAnim.restart()
+    }
+
+    function maybeHourBurst() {
+        if (!clockRoot.clockAwake)
+            return
+        if (_time.curH === lastHour)
+            return
+        lastHour = _time.curH
+        hourBurstText = _time.curH
+        var p = hourText.mapToItem(clockRoot, hourText.width / 2, hourText.height / 2)
+        hourBurstX = p.x
+        hourBurstY = p.y
+        hourBurstAnim.restart()
+        sparkBurst++
+        sparkImpulseAnim.restart()
+    }
+
     Connections {
         target: _time
-        function onCurMChanged() { clockRoot.triggerTickFeedback() }
+        function onCurSChanged() { clockRoot.maybeSecBurst() }
+        function onCurMChanged() { clockRoot.triggerTickFeedback(); clockRoot.maybeMinBurst() }
+        function onCurHChanged() { clockRoot.maybeHourBurst() }
     }
 
     OrbitalRing {
@@ -146,6 +255,17 @@ Item {
         opacity: clockRoot.tickHaloOpacity
     }
 
+    Effects.Sparks {
+        z: 50
+        centerX: clockRoot.cx
+        centerY: clockRoot.cy
+        sparkIntensity: Math.max(clockRoot.sparkWindup, clockRoot.sparkImpulse)
+        burstTick: clockRoot.sparkBurst
+
+        s: clockRoot.s
+        themeState: clockRoot.themeState
+    }
+
     Text {
         id: hourText
         z: 30
@@ -183,5 +303,35 @@ Item {
 
         s: clockRoot.s
         themeState: clockRoot.themeState
+    }
+
+    Effects.Burst {
+        text: clockRoot.secBurstText
+        s: clockRoot.s
+        themeState: clockRoot.themeState
+        x: clockRoot.secBurstX
+        y: clockRoot.secBurstY
+        scale: clockRoot.secBurstScale
+        opacity: clockRoot.secBurstOpacity
+    }
+
+    Effects.Burst {
+        text: clockRoot.minBurstText
+        s: clockRoot.s
+        themeState: clockRoot.themeState
+        x: clockRoot.minBurstX
+        y: clockRoot.minBurstY
+        scale: clockRoot.minBurstScale
+        opacity: clockRoot.minBurstOpacity
+    }
+
+    Effects.Burst {
+        text: clockRoot.hourBurstText
+        s: clockRoot.s
+        themeState: clockRoot.themeState
+        x: clockRoot.hourBurstX
+        y: clockRoot.hourBurstY
+        scale: clockRoot.hourBurstScale
+        opacity: clockRoot.hourBurstOpacity
     }
 }
