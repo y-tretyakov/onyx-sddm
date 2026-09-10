@@ -5,6 +5,134 @@
 
 ---
 
+## [0.2.0-alpha.3] — stage 2.3 · Sparks + Bursts · 2026-09-10
+
+**Версия:** `0.2.0-alpha.3` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3` ✅ THIS
+- [ ] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [ ] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [ ] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.3 — Sparks + Bursts** закрыт. Sparks — частицы
+  (`effects/Sparks.qml`, z:50, центр cx/cy): 60 частиц, жизнь 600–1000ms
+  OutQuad-fade, позиция по жизни, интенсивность = `Math.max(sparkWindup,
+  sparkImpulse)`; в момент каждого burst `sparkBurst++` перезапускает инстанциатор.
+  Bursts — клоны цифры (`effects/Burst.qml`, z:20, white + accent 0.65, 30·s
+  Bold): scale 1→2.2 450ms OutCubic + opacity 0.9→0 450ms OutQuad
+  (ParallelAnimation) для сек (pill.secCenter), минут (pill.minCenter) и часов
+  (центр hourText). Триггеры `maybeSecBurst`/`maybeMinBurst`/`maybeHourBurst`
+  (dedupe по lastSec/Min/Hour) + `sparkImpulseAnim` 0→0.8 200ms OutCubic → 0
+  500ms OutCubic. Гейт `clockAwake`: при `false` все burst-анимации стопятся,
+  opacity/sparkImpulse обнуляются, новые burst не стартуют. Секундная орбиталь
+  больше НЕ мерцает при смене секунды (только feedback на минуту). Закрыт
+  follow-up ревью 2.2 **F-2.3-1** (одинарный гейт triggerTickFeedback,
+  tickFlash только на minute ring). gate-прогоны: validate exit 0, smoke exit 0,
+  tickfeedback-probe exit 0, sparks-burst-probe exit 0 (6× стабильно),
+  verify-theme.sh exit 0 (секции 1–10).
+- Следующее: **stage 2.4 — Date + weekday reveal** (`0.2.0-alpha.4`).
+- Подготовить до старта 2.4: ADR-2.2-2 (boom-scale parity) — оформить токеном в
+  план; проверить визуально sparks/burst на 1440p (плотность частиц, размер
+  клона) — зафиксировать в план 2.4 как визуальную QA-задачу.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- НОВЫЙ `theme/onyx/components/effects/Sparks.qml` — particle-слой (z:50),
+  центр `centerX/centerY`, `sparkIntensity` — целевая интенсивность,
+  `burstTick` — счётчик рестартов. Логика: Repeater 60 частиц; каждая частица
+  имеет скорость/направление от центра, жизнь 600–1000ms; контейнер
+  `IntensityGroup` двигает opacity = `sparkIntensity` (capped), на `burstTick`
+  частицы перезапускаются с новой случайной скоростью. Формулы распределения —
+  своя компонентная реализация в духе эталона (не копия): см.
+  `docs/superpowers/plans/2026-09-10-stage-2.3-sparks-bursts.md` №2.
+- НОВЫЙ `theme/onyx/components/effects/Burst.qml` — клон цифры. required
+  `text`/`s`/`themeState`; ширина/высота 1 (размер числа задаёт clockRoot);
+  `z:20`; `visible: opacity > 0.01`; цвет white с под-слоем accent 0.65;
+  `font.pixelSize: 30 * s`, Bold, family `themeState.fontFamily`. Позиция/scale/
+  opacity управляются снаружи (x/y/scale/opacity) — писать внутрь компонента
+  self-binding нельзя (binding loop), см. Note ниже.
+- `theme/onyx/components/effects/qmldir` — module Effects: добавлены
+  `Sparks 1.0 Sparks.qml`, `Burst 1.0 Burst.qml`.
+- `theme/onyx/components/clock/ClockRoot.qml` — триггеры bursts и sparks-веб:
+  props (`ClockRoot.qml:22-46`): `sparkWindup`, `sparkBurst: Int`, `sparkImpulse`,
+  `lastSec/Min/Hour`, `secBurst{Scale,Opacity,Text,X,Y}`, ...hour...;
+  `sparkImpulseAnim` Sequential 0→0.8 200ms OutCubic → 0 500ms OutCubic
+  (`ClockRoot.qml:102-106`); три `ParallelAnimation` burst (`108-124`): scale
+  1→2.2 450ms OutCubic + opacity 0.9→0 450ms OutQuad (ParallelAnimation, а НЕ
+  Sequential — Sequential оставил бы цифру невидимой первые 450ms и сломал бы
+  timing probe); `onClockAwakeChanged` (`126-133`) стопает анимации и обнуляет
+  opacity/sparkImpulse при `!clockAwake`; `maybeSecBurst/Min/Hour`
+  (`143-186`) — гейт `clockRoot.clockAwake`, dedupe по last*, coords через
+  `pill.mapToItem(clockRoot, …)` / центр `hourText`, `restart()` анимации +
+  `sparkBurst++` + `sparkImpulseAnim.restart()`; `Connections` (`188-193`) на
+  `_time.curS/curM/curH` (curM — feedback+burst). `Effects.Sparks`
+  (`258-267`): `sparkIntensity: Math.max(sparkWindup, sparkImpulse)`,
+  `burstTick: sparkBurst`. Три `Effects.Burst` (`308-336`).
+- `theme/onyx/Main.qml` — `clockAwake` (не readonly, ставится из state;
+  `clockAwake: state.clockAwake` в Main) + гейт `sparkWindup`:
+  `engine.isWindup && windupProgress > 0.2 ? (windupProgress - 0.2) * 2.2 : 0` —
+  для sparkIntensity (план хотел `windupProgress` напрямую, но после windup
+  прогресс навсегда 1.0; без гейта sparks висели бы на 1.76 вечно).
+- `theme/onyx/components/clock/IndicatorPill.qml` — readonly `minCenterX/Y`,
+  `secCenterX/Y` (центр блоков минут/секунд pill) для позиционирования burst.
+- `theme/onyx/components/clock/OrbitalRing.qml` (ringSec в ClockRoot) — убран
+  `tickFlash`-проброс на seconds ring (частично было на 2.2, F-2.3-1 финализирует);
+  feedback живёт только на minute ring.
+- НОВЫЙ `scripts/qa/sparks-burst-probe.qml` — автономный probe (Window 480x200 +
+  ThemeState{s:1} + ClockRoot{s:1, clockAwake:true}). Детерминизм: в
+  `Component.onCompleted` стопаются живые тикеры (`timeProvider.clockAwake =
+  false`, `timeProvider.tickTimer.stop()`), время гонится вручную curS "01"→"02".
+  Poll-based (не жёсткие тайминги — offscreen render loop тормозит NumberAnimation):
+  полл «burst стартовал» (opacity>0 && impulse>0, budget 300ms), полл «faded»
+  (opacity<0.1 && scale>=2.1 && impulse<0.05, budget 1.5s), затем ручные
+  curM="42"/curH="07" → minBurstOpacity>0 && hourBurstOpacity>0 && sparkBurst>=3,
+  затем гейт: `clockAwake=false` + curS="03" + `maybeSecBurst()` → opacity и
+  impulse <0.01. Контракт: exit 0 = OK / exit 1 = FAIL. Запуск:
+  `QT_QPA_PLATFORM=offscreen qml6 scripts/qa/sparks-burst-probe.qml`.
+- `scripts/verify-theme.sh` — структура секции 1: +`effects/Sparks.qml`,
+  +`effects/Burst.qml`; новая секция 9 «sparks-burst-probe», секция 10 —
+  registration regressions (перенумерована из 9).
+- Note (почему нет self-binding в Burst): свойства x/y/scale/opacity у Item —
+  это встроенные свойства трансформации; привязка `x: burst.x` внутри
+  компонента, инстанцированного как `burst.x: …`, образует цикл (сказ.
+  binding loop). Правильная структура — позиция/масштаб/прозрачность текут из
+  clockRoot (мастер-точка), Burst хранит НЕ клоны этих свойств, а
+  семантику (text/s/themeState).
+
+### Тех. долг
+
+- F-2.3-1 закрыт. ADR-2.2-2 (boom-scale parity) — перенесён токеном в план 2.4.
+- Визуальная QA на реальном greeter (1080p/1440p): плотность sparks,
+  размер/позиция burst-клона, поведение при wake — делать на 2.4 до её кода.
+- sparks в state preview (Main.qml вне greeter) — проверить, что при
+  `testmode`/темах без runSparks sparks не выстреливают (гейт clockAwake уже
+  покрывает lock-сценарий; preview-проверка — часть 2.4 QA).
+
+### Принятые решения
+
+- **Параллельность burst-анимаций (ParallelAnimation) вместо Sequential** из
+  снипета плана: эталон и собственный probe-контракт плана требуют одновременного
+  скейла и fade (450/450ms). Sequential ломал оба.
+- **gate `isWindup`** для `sparkWindup`: `windupProgress` после windup = 1.0
+  навсегда; гейт держит sparks-интенсивность честной (0 вне windup).
+- **Burst-x/y отказ от self-binding** — см. Note: coords из clockRoot.
+- **Poll-based probe**: из-за ограничений offscreen render loop валл-тайм
+  и тайминг NumberAnimation расходятся (наблюдалось: opacity>0.1 на 550ms);
+  жёсткие тайминги давали флаки (2/6 прогонов). Полл стабилен 6/6.
+
+---
+
 ## [0.2.0-alpha.2] — stage 2.2 · Tick Feedback (Flash + Halo) · 2026-09-10
 
 **Версия:** `0.2.0-alpha.2` — PATCH-bump внутри milestone Alpha (stage, не веха).
