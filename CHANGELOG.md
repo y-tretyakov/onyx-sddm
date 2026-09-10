@@ -5,6 +5,80 @@
 
 ---
 
+## [0.1.9-mvp] — stage 1.7 · MVP Freeze · 2026-09-10
+
+**Версия:** `0.1.9-mvp` — финальный этап MVP (freeze). Тег/release НЕ ставились —
+ожидает апрува пользователя (next: PR dev→main, tag 0.1.9-mvp + GitHub Release,
+далее 0.2.0-alpha.1).
+
+### Тик-лист ROADMAP (Phase 1 — MVP)
+
+- [x] 1.1 Root + scaling + background — `0.1.0-mvp` ✅
+- [x] 1.2 Digital clock + indicator pill — `0.1.1-mvp` ✅
+- [x] 1.3 Minute orbital (static + spotlight) — `0.1.2-mvp` ✅
+- [x] 1.4 Second orbital (smooth) — `0.1.3-mvp` ✅
+- [x] 1.5 Login panel (minimal) — `0.1.4-mvp` ✅
+- [x] 1.6 Basic auth feedback — `0.1.5-mvp` ✅
+- [x] 1.7 MVP freeze — `0.1.9-mvp` ✅ THIS
+
+- [x] Milestone: MVP (0.1.x-mvp) — релиз-тег ожидает апрува
+- [ ] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 1.7 — MVP freeze** закрыт. Regression sweep PASS (scan чист,
+  trailing newline во всех 8 QML, hex только в ThemeState, масштаб только через
+  `s`, validate exit 0, smoke 15s exit 0, probe exit 0, стресс 5×10s exit 0 —
+  флуктуаций нет). `verify-theme.sh` создан (структура + validate + smoke +
+  probe). Visual QA 1920×1080 и 2560×1440 PASS через Xvfb (контент всех зон,
+  gap pill→panel 241/321px, s=H/768, ширины соответствуют). README — раздел
+  «Установка (MVP)» + one-liner curl. `install.sh --release TAG` добавлен.
+  `metadata.desktop` обновлён до 0.1.9-mvp.
+- Следующее: **апрув Юрия** (manual-gate: реальный greeter-цикл DENIED/GRANTED,
+  повторный login, focus/Enter, смена user/session, 1080/1440 на мониторе,
+  чистая установка/uninstall/reinstall) → затем PR dev→main, tag 0.1.9-mvp,
+  GitHub Release; далее Alpha 0.2.0-alpha.1.
+- Подготовить к Alpha: принцип «один владелец auth-состояния».
+- Блокеры: нет (апрув — не блокер, а ветка flow).
+
+### Детали изменений (для агентов)
+
+- `scripts/verify-theme.sh` — новый скрипт, проверки 1–7 (структура +
+  validate + smoke + probe), локальный end-to-end.
+- `scripts/qa/visual-qa.sh` — новый скрипт, прогоны на 1920×1080 и 2560×1440
+  через Xvfb.
+- `install.sh` — добавлен флаг `--release TAG`, `_resolve_root` pip-фоллбэк.
+- `README.md` — раздел «Установка (MVP)» + one-liner curl, бейдж версии
+  обновлён до 0.1.9--mvp, «Текущий статус» обновлён.
+- `theme/onyx/metadata.desktop` — `Version=0.1.9-mvp`, добавлен
+  `X-SDDM-ThemeName=Onyx`.
+
+### Тех. долг
+
+- CR-F9 (HiDPI scale) — открыт.
+- CR-F10 (реальный login integration) — открыт.
+- F-1.4-b (pragma ComponentBehavior) — ждёт Qt≥6.6 в CI.
+- Manual-gate реального greeter — на пользователе.
+- Локальный прогон `curl | sudo bash` one-liner — проверить после релиза.
+- Fake-placeholder pass — 2.x.
+- Perf-финал: стресс 5×10s без флуктуаций, базлайн без регрессий (42.8–53%).
+
+### Принятые решения
+
+- **ADR-1.7-1 (freeze):** этап без новых фич; правки — только фиксы из QA;
+  `install.sh --release` и README-раздел — явное требование пользователя
+  (one-liner установка), принято.
+- **ADR-1.7-2 (Xvfb QA):** 1080/1440 честно через `Xvfb -screen 0 WxHx24` +
+  software; `offscreen:size=` в Qt 6.11 не работает — отброшен.
+- **ADR-1.7-3 (verify-theme.sh):** локальный end-to-end (структура + validate +
+  smoke + probe), в CI не добавляется (гейт прежний validate/validate-arch).
+- **ADR-1.7-4 (manual-gate):** реальный auth-цикл и инсталл-цикл — на
+  пользователе (CI/greeter не способен).
+- **ADR-1.7-5 (Alpha-принцип):** у auth-состояния один владелец; не плодить
+  loading/failed по компонентам; состояние Authenticating — задача Alpha.
+
+---
+
 ## [0.1.5-mvp] — stage 1.6 · Basic Auth Feedback · 2026-09-10
 
 **Версия:** `0.1.5-mvp` (PATCH bump в милстоуне MVP; тег/релиз НЕ ставится)
