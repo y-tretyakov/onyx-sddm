@@ -8,7 +8,7 @@
 ## [0.1.11-mvp] — stage 1.8 · Nobara P0 regression fix · 2026-09-10
 
 **Версия:** `0.1.11-mvp` — PATCH-bump внутри MVP (bugfix/regression fix).
-Тег/release не ставились — ждёт апрува пользователя (manual-gate).
+Тег `0.1.11-mvp` + GitHub Release созданы 2026-09-10.
 
 ### Тик-лист ROADMAP (Phase 1 — MVP)
 
@@ -32,9 +32,7 @@
   rotating hand удалён, обе орбитали вращаются против часовой стрелки каждая со
   своей скоростью (мин — 1 об/час, сек — 1 об/мин) через `positionDeg` из
   непрерывных float-значений. validate exit 0, verify-theme.sh PASS.
-- Следующий шаг: manual-gate пользователя на живой Nobara 44 VM (логин-цикл
-  DENIED/GRANTED, повторный login, focus/Enter, визуальная проверка), затем
-  Alpha 2.1 (windup→boom).
+- Следующий шаг: Alpha 2.1 (windup→boom).
 - Блокеров нет.
 
 ### Детали изменений (для агентов)
@@ -56,10 +54,15 @@
   `curSecondFloat`-стиля, 16ms тик через `tickSmooth`).
 - `scripts/verify-theme.sh` — regression-grep: `userModel.data(` → FAIL,
   `smoothHand` → FAIL, `currentIndex` (для MinutesBypass) → FAIL.
+- `theme/onyx/Main.qml` — QML6 Connections signal-handler syntax:
+  `onLoginSucceeded:` → `function onLoginSucceeded() {}`,
+  `onLoginFailed:` → `function onLoginFailed() {}`.
+- `theme/onyx/components/login/LoginPanel.qml` — cached `Window.window` as
+  `property var windowWin` to avoid repeated `.window` accesses; Connections
+  target uses `windowWin`.
 
 ### Тех. долг
 
-- README curl-инструкция всё ещё `0.1.9-mvp` → правим при релизе Alpha.
 - `pillWindowHiding: true` на secRing без pillWin* (defensive, без визуального
   эффекта — pillWindow на секундном кольце не реализован).
 - Optional: clockAwake gating 16ms таймера (не входило в scope багфикса).

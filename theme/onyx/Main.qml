@@ -49,7 +49,7 @@ Rectangle {
 
     Connections {
         target: typeof sddm !== "undefined" ? sddm : null
-        onLoginSucceeded: authFeedback.showSuccess()
-        onLoginFailed: authFeedback.showDenied()
+        function onLoginSucceeded() { authFeedback.showSuccess() }
+        function onLoginFailed() { authFeedback.showDenied() }
     }
 }
