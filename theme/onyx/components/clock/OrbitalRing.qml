@@ -1,12 +1,10 @@
 import QtQuick
 import "../.."
 
-// Reusable ring: `tickCount` radial ticks placed on a circle of radius R = width / 2.
-// Index 0 sits at 12 o'clock; angle = index * 6 - 90 (degrees, clockwise).
-// Major ticks (index % 5 === 0) carry a two-digit number; the tick at `currentIndex`
-// gets the spotlight (larger font, full opacity). Numbers stay horizontal (no radial
-// rotation) — ADR for MVP readability.
-// optional smoothPosition in [0,60) renders a smooth hand marker at angle smoothPosition*6; spotlight stays on currentIndex
+// Reusable ring reproducing the original Ryoku orbital behaviour.
+// Index 0 sits at 12 o'clock; angle = index*6 - 90 (deg, clockwise).
+// Spotlight = smooth falloff around currentIndex (pow(1-|rel|/5.5, 1.6));
+// numbers rotate radially; optional smooth hand (single Rectangle) at smoothAngle.
 Item {
     id: ring
 
@@ -14,20 +12,34 @@ Item {
     required property ThemeState themeState
     required property int currentIndex
 
-    property real radiusS: 320
-    property real smoothPosition: -1
-
     property int tickCount: 60
-    property real majorFontSize: 13
-    property real spotlightFontSize: 18
-    property real majorTickLen: 20
-    property real minorTickLen: 12
-    property real spotlightTickLen: 26
-    property real tickOpacity: 0.6
-    property real numberOpacity: 0.6
-    property real numberOffset: 18
+    property real radiusS: 400
+    property real smoothAngle: -1
+
+    property real numberRadiusOffset: 30
+    property bool  showNumbers: true
+    property bool  rotateNumbers: true
+
+    property real tickMajorW: 2
+    property real tickMajorLen: 18
+    property real tickMinorW: 1
+    property real tickMinorLen: 10
+    property real numMajorSize: 26
+    property real numMinorSize: 15
+    property real spotlightPeakSize: 58
+
+    property bool weightBlackSoft: true
+    property bool majorBoldAlways: true
+    property bool scaleBehavior: true
+
+    property bool  pillWindowHiding: false
+    property real  pillWinX: 0
+    property real  pillWinY: 0
+    property real  pillWinW: 0
+    property real  pillWinH: 0
 
     readonly property real radius: radiusS * s
+    readonly property real numberRadius: (radiusS + numberRadiusOffset) * s
 
     width: 2 * radiusS * s
     height: 2 * radiusS * s
@@ -41,57 +53,84 @@ Item {
             readonly property real angleDeg: index * 6 - 90
             readonly property real angleRad: angleDeg * Math.PI / 180
             readonly property bool isMajor: index % 5 === 0
-            readonly property bool isCurrent: index === ring.currentIndex
-            readonly property real tickLen: (isCurrent ? ring.spotlightTickLen
-                                              : (isMajor ? ring.majorTickLen : ring.minorTickLen)) * ring.s
 
-            x: ring.width / 2 + ring.radius * Math.cos(angleRad) - width / 2
-            y: ring.height / 2 + ring.radius * Math.sin(angleRad) - height / 2
-            width: 0
-            height: 0
+            readonly property real relAngle: {
+                var a = Math.abs(index * 6 - ring.currentIndex * 6)
+                a = ((a + 180) % 360) - 180
+                return a
+            }
+            readonly property real spotlight: Math.max(0, Math.pow(1.0 - Math.abs(relAngle) / 5.5, 1.6))
 
+            readonly property real tickW: (isMajor ? ring.tickMajorW : ring.tickMinorW) * ring.s
+            readonly property real tickLen: (isMajor ? ring.tickMajorLen : ring.tickMinorLen) * ring.s
+
+            readonly property real nx: ring.width / 2 + ring.numberRadius * Math.cos(angleRad)
+            readonly property real ny: ring.height / 2 + ring.numberRadius * Math.sin(angleRad)
+            readonly property bool inPillWindow: ring.pillWindowHiding &&
+                nx >= ring.pillWinX && nx <= ring.pillWinX + ring.pillWinW &&
+                ny >= ring.pillWinY && ny <= ring.pillWinY + ring.pillWinH
+            readonly property bool showNumber: !inPillWindow && (isMajor || spotlight > 0)
+
+            // Tick rectangle — centered on the radius circle, pointing inward.
             Rectangle {
-                anchors.centerIn: parent
-
-                width: (isCurrent ? 3 : (isMajor ? 2 : 1)) * ring.s
+                id: tickRect
+                x: ring.width / 2 + ring.radius * Math.cos(angleRad) - width / 2
+                y: ring.height / 2 + ring.radius * Math.sin(angleRad) - height / 2
+                width: tick.tickW
                 height: tick.tickLen
-                radius: (isCurrent ? 1.5 : 1) * ring.s
-                color: tick.isCurrent ? ring.themeState.mainTextColor
-                                      : ring.themeState.orbitalTickColor
-                opacity: tick.isCurrent ? 1.0 : ring.tickOpacity
+                radius: 1 * ring.s
+                color: tick.spotlight > 0 ? ring.themeState.mainTextColor
+                                          : ring.themeState.orbitalTickColor
+                opacity: tick.spotlight > 0 ? 1.0 : (tick.isMajor ? 0.40 : 0.22)
                 rotation: tick.angleDeg + 90
                 antialiasing: true
             }
 
-            Rectangle {
-                visible: ring.smoothPosition >= 0
-
-                anchors.centerIn: parent
-
-                width: 3 * ring.s
-                height: 26 * ring.s
-                radius: 1.5 * ring.s
-                color: ring.themeState.mainTextColor
-                opacity: 1.0
-                rotation: ring.smoothPosition * 6
-                antialiasing: true
-            }
-
             Text {
-                visible: tick.isMajor || tick.isCurrent
-
-                x: Math.cos(tick.angleRad) * ring.numberOffset * ring.s - width / 2
-                y: Math.sin(tick.angleRad) * ring.numberOffset * ring.s - height / 2
+                visible: tick.showNumber
+                x: tick.nx - width / 2
+                y: tick.ny - height / 2
 
                 text: (index < 10 ? "0" : "") + index
                 font.family: ring.themeState.fontFamily
-                font.pixelSize: (tick.isCurrent ? ring.spotlightFontSize
-                                                : ring.majorFontSize) * ring.s
-                font.weight: tick.isCurrent ? Font.Bold : Font.DemiBold
-                color: tick.isCurrent ? ring.themeState.mainTextColor
-                                      : ring.themeState.orbitalTextColor
-                opacity: tick.isCurrent ? 1.0 : ring.numberOpacity
+                font.pixelSize: (tick.spotlight > 0.70 && ring.spotlightPeakSize > 0)
+                                ? ring.spotlightPeakSize * ring.s
+                                : (tick.isMajor ? ring.numMajorSize : ring.numMinorSize) * ring.s
+                font.weight: {
+                    if (ring.weightBlackSoft && tick.spotlight > 0.50) return Font.Black
+                    if (tick.isMajor && ring.majorBoldAlways) return Font.Bold
+                    if (tick.spotlight > 0.50) return Font.Bold
+                    return Font.Normal
+                }
+                scale: ring.scaleBehavior && tick.spotlight > 0.60 ? 1.15 : 1.0
+                Behavior on scale {
+                    enabled: ring.scaleBehavior
+                    NumberAnimation { duration: 280; easing.type: Easing.OutCubic }
+                }
+                rotation: ring.rotateNumbers ? tick.angleDeg : 0
+                transformOrigin: Item.Center
+                color: tick.spotlight > 0 ? ring.themeState.mainTextColor
+                                          : ring.themeState.orbitalTextColor
+                opacity: tick.spotlight > 0 ? (0.4 + tick.spotlight * 0.6) : 0.25
             }
         }
+    }
+
+    // Smooth hand — OUTSIDE the Repeater, single instance.
+    Rectangle {
+        id: smoothHand
+        visible: ring.smoothAngle >= 0
+
+        x: ring.width / 2 - width / 2
+        y: ring.height / 2 - height
+
+        width: 3 * ring.s
+        height: ring.radiusS * ring.s * 0.92
+        radius: 1.5 * ring.s
+        color: ring.themeState.mainTextColor
+        opacity: 1.0
+        transformOrigin: Item.Bottom
+        rotation: ring.smoothAngle
+        antialiasing: true
     }
 }
