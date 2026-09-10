@@ -1,2 +1,3 @@
 module Effects
 AnimEngine 1.0 AnimEngine.qml
+Sparks 1.0 Sparks.qml
