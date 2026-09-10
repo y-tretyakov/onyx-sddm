@@ -8,6 +8,8 @@ Item {
     required property real s
     required property ThemeState themeState
 
+    property var windowWin: typeof Window !== "undefined" ? Window.window : null
+
     width: 350 * s
     height: 100 * s
 
@@ -106,9 +108,9 @@ Item {
     }
 
     Connections {
-        target: typeof Window !== "undefined" ? Window.window : null
+        target: windowWin
         function onActiveChanged() {
-            if (Window.window && Window.window.active)
+            if (windowWin && windowWin.active)
                 textField.forceActiveFocus()
         }
     }
