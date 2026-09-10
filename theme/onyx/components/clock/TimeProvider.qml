@@ -11,6 +11,8 @@ QtObject {
     readonly property int curSecond: Number(curS)
     readonly property int curMinute: Number(curM)
 
+    property bool clockAwake: true
+
     property Timer tickTimer: Timer {
         repeat: false
         onTriggered: provider.update()
@@ -19,7 +21,7 @@ QtObject {
     property Timer smoothTimer: Timer {
         interval: 16
         repeat: true
-        running: true
+        running: provider.clockAwake
         onTriggered: provider.tickSmooth()
     }
 
