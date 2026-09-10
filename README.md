@@ -1,6 +1,6 @@
 # Onyx SDDM Theme
 
-[![Version](https://img.shields.io/badge/version-0.1.11--mvp-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0--alpha.1-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/y-tretyakov/onyx-sddm/ci.yml?branch=dev&label=CI)](https://github.com/y-tretyakov/onyx-sddm/actions)
 [![OS](https://img.shields.io/badge/OS-Arch%7CCachyOS%7CFedora%7CNobara%7CUbuntu%7CDebian%7CopenSUSE%7CRHEL9-41CD52.svg?style=flat)](.github/workflows/ci.yml)
 [![Qt6](https://img.shields.io/badge/Qt-6-41CD52.svg?logo=qt&logoColor=white&style=flat)](https://doc.qt.io/qt-6/)
@@ -15,21 +15,18 @@
 оригинальной темы *clockwork/orbital* (Ryoku / Darkkal44), но с полностью
 переработанной архитектурой, чистым кодом и чёткой дорожной картой.
 
-Статус: **MVP в процессе** (Phase 1). Уже реализовано: цифровые часы +
-indicator pill на орбитально-часовом фоне, валидировано на 8 дистрибутивах
-в CI.
+Статус: **Alpha в процессе** (Phase 2). Уже реализовано: windup → boom →
+fade-in sequence при появлении greeter'а (stage 2.1); весь MVP (1.1–1.8) закрыт.
 
 ## Текущий статус
 
-- **Версия:** `0.1.11-mvp` · Phase 1 / MVP — stage 1.1–1.8 закрыты (P0 regression fix).
-- **Что сделано:** P0 regression fix после real install на Nobara 44: username
-  теперь виден (helper-ListView с delegate-roles), Enter/NumpadEnter работают
-  (`_submit` с empty-guard → `sddm.login`), non-original rotating hand удалён,
-  обе орбитали вращаются против часовой стрелки (мин — 1 об/час, сек — 1 об/мин)
-  через `positionDeg` из непрерывных float-значений.
+- **Версия:** `0.2.0-alpha.1` · Phase 2 / Alpha — [x] stage 2.1 закрыт (windup→boom→fade-in sequence).
+- **Что сделано:** windup→boom→fade-in sequence при появлении greeter'а: орбитали
+  раскручиваются (windup, Easing.InQuint, windupOffset 0→150000, ~1600ms), затем
+  scale+opacity boom, затем fade-in UI (`uiOpacity` 0→1). Реализовано через
+  собственный `AnimEngine` (QtObject + 16ms tick, гейт `clockAwake`).
 - **CI:** полная 8-контейнерная матрица зелёная.
-- **Следующий шаг:** manual-gate на живой Nobara 44 VM (логин-цикл
-  DENIED/GRANTED, повторный login, focus/Enter), затем Alpha 2.1 (windup→boom).
+- **Следующий шаг:** Alpha 2.2 — Tick feedback (flash + halo) (`0.2.0-alpha.2`).
 - Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
 
 ## Установка (MVP)
