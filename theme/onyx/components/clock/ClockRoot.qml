@@ -12,6 +12,10 @@ Item {
     property real windupDegMin: 0
     property real windupDegSec: 0
 
+    property real tickFlash: 0
+    property real tickHaloR: 0
+    property real tickHaloOpacity: 0
+
     readonly property real minuteAngleDeg: ringMin.positionDeg
     readonly property real secondAngleDeg: ringSec.positionDeg
 
@@ -33,6 +37,54 @@ Item {
 
     TimeProvider { id: _time }
 
+    NumberAnimation {
+        id: tickFlashAnim
+        target: clockRoot
+        property: "tickFlash"
+        from: 1.0
+        to: 0.0
+        duration: 140
+        easing.type: Easing.OutQuad
+    }
+
+    SequentialAnimation {
+        id: tickHaloAnim
+        running: false
+        NumberAnimation {
+            target: clockRoot
+            property: "tickHaloR"
+            from: 16 * clockRoot.s
+            to: 110 * clockRoot.s
+            duration: 480
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    NumberAnimation {
+        id: tickHaloOpacityAnim
+        target: clockRoot
+        property: "tickHaloOpacity"
+        from: 0.50
+        to: 0.0
+        duration: 480
+        easing.type: Easing.OutQuad
+    }
+
+    function triggerTickFeedback() {
+        if (!themeState.clockAwake && !_time.clockAwake)
+            return
+        if (!themeState.clockAwake)
+            return
+        tickFlashAnim.restart()
+        tickHaloAnim.restart()
+        tickHaloOpacityAnim.restart()
+    }
+
+    Connections {
+        target: _time
+        function onCurMChanged() { clockRoot.triggerTickFeedback() }
+    }
+
     OrbitalRing {
         id: ringMin
         z: 10
@@ -41,6 +93,7 @@ Item {
 
         s: clockRoot.s
         themeState: clockRoot.themeState
+        tickFlash: clockRoot.tickFlash
         // one full rotation per hour, counter-clockwise, minus windup kick
         positionDeg: -(_time.curMinuteFloat / 60.0) * 360.0 - clockRoot.windupDegMin
 
@@ -63,6 +116,7 @@ Item {
 
         s: clockRoot.s
         themeState: clockRoot.themeState
+        tickFlash: clockRoot.tickFlash
         // one full rotation per minute, smooth (16ms), counter-clockwise minus windup kick
         positionDeg: -(_time.curSecondFloat / 60.0) * 360.0 - clockRoot.windupDegSec
 
@@ -79,6 +133,20 @@ Item {
         majorBoldAlways: false
         scaleBehavior: false
         pillWindowHiding: true
+    }
+
+    Rectangle {
+        z: 5
+        visible: clockRoot.tickHaloOpacity > 0.01
+        x: clockRoot.cx - clockRoot.tickHaloR
+        y: clockRoot.cy - clockRoot.tickHaloR
+        width: clockRoot.tickHaloR * 2
+        height: clockRoot.tickHaloR * 2
+        radius: clockRoot.tickHaloR
+        color: "transparent"
+        border.color: clockRoot.themeState.mainTextColor
+        border.width: 1.5 * clockRoot.s
+        opacity: clockRoot.tickHaloOpacity
     }
 
     Text {
