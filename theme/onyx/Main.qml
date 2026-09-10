@@ -37,6 +37,9 @@ Rectangle {
         id: clock
         s: root.s
         themeState: state
+        windupDegMin: engine.windupDegMin
+        windupDegSec: engine.windupDegSec
+        timeProvider.clockAwake: state.clockAwake
     }
 
     Item {
