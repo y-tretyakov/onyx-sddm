@@ -16,6 +16,8 @@ Item {
     property int tickCount: 60
     property real radiusS: 400
 
+    property real tickFlash: 0
+
     property real numberRadiusOffset: 30
     property bool  showNumbers: true
     property bool  rotateNumbers: true
@@ -79,7 +81,9 @@ Item {
                 radius: 1 * ring.s
                 color: tick.spotlight > 0 ? ring.themeState.mainTextColor
                                           : ring.themeState.orbitalTickColor
-                opacity: tick.spotlight > 0 ? 1.0 : (tick.isMajor ? 0.40 : 0.22)
+                opacity: tick.spotlight > 0 ? 1.0
+                                            : Math.min(1.0, (tick.isMajor ? 0.40 : 0.22) + (tick.isMajor ? ring.tickFlash * 0.55 : 0))
+                scale: tick.isMajor ? 1.0 + ring.tickFlash * 0.04 : 1.0
                 rotation: tick.disp * 180 / Math.PI + 90
                 antialiasing: true
             }
