@@ -1,6 +1,6 @@
 # Onyx SDDM Theme
 
-[![Version](https://img.shields.io/badge/version-0.1.9--mvp-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.10--mvp-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/y-tretyakov/onyx-sddm/ci.yml?branch=dev&label=CI)](https://github.com/y-tretyakov/onyx-sddm/actions)
 [![OS](https://img.shields.io/badge/OS-Arch%7CCachyOS%7CFedora%7CNobara%7CUbuntu%7CDebian%7CopenSUSE%7CRHEL9-41CD52.svg?style=flat)](.github/workflows/ci.yml)
 [![Qt6](https://img.shields.io/badge/Qt-6-41CD52.svg?logo=qt&logoColor=white&style=flat)](https://doc.qt.io/qt-6/)
@@ -21,18 +21,21 @@ indicator pill на орбитально-часовом фоне, валидир
 
 ## Текущий статус
 
-- **Версия:** `0.1.9-mvp` · Phase 1 / MVP — stage 1.1–1.7 закрыты (freeze).
-- **Что сделано:** regression sweep PASS (scan чист, trailing newline во всех
-  8 QML, hex только в ThemeState, масштаб только через `s`, validate exit 0,
-  smoke 15s exit 0, probe exit 0, стресс 5×10s exit 0 без флуктуаций);
-  `verify-theme.sh` создан (структура + validate + smoke + probe); visual QA
-  1920×1080 и 2560×1440 PASS через Xvfb; README — раздел «Установка (MVP)»
-  + one-liner curl; `install.sh --release TAG`.
+- **Версия:** `0.1.10-mvp` · Phase 1 / MVP — stage 1.1–1.7 закрыты + bugfix-этап Ryoku layout fidelity.
+- **Что сделано:** Layout приведён к оригиналу Ryoku 1-в-1 (часы слева cx=40·s,
+  minR/secR 400/520, pill-капсула 45·s, дата справа, часы слева от pill,
+  часы/тики/цифры и spotlight по формуле оригинала, цифры минут вращаются
+  радиально); фиксы P0: часы больше не замирают (syncTick перепланируется),
+  smooth-hand теперь ОДИН Rectangle вне Repeater (было 60 копий),
+  Enter/NumpadEnter логинит + гарантированный фокус на поле пароля,
+  логин-панель перенесена в bottom-right (ширина 350·s) — перекрытия больше нет;
+  новая палитра ThemeState по оригиналу; компонент ClockRoot (архитектура §2.1),
+  DigitalClock поглощён и удалён.
 - **CI:** полная 8-контейнерная матрица зелёная.
 - **Следующий шаг:** апрув Юрия (manual-gate: реальный greeter-цикл
   DENIED/GRANTED, повторный login, focus/Enter, смена user/session,
-  1080/1440 на мониторе, чистая установка/uninstall/reinstall) →
-  затем PR dev→main, tag 0.1.9-mvp, GitHub Release; далее Alpha 0.2.0-alpha.1.
+  визуальная проверка нового layout 1080/1440 на мониторе, чистая установка) →
+  PR dev→main, tag 0.1.10-mvp, GitHub Release; далее Alpha 0.2.0-alpha.1.
 - Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
 
 ## Установка (MVP)

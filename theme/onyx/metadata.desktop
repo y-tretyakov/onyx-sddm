@@ -4,6 +4,6 @@ Description=Orbital clockwork login theme
 Type=sddm-theme
 MainScript=Main.qml
 ConfigFile=theme.conf
-Version=0.1.9-mvp
+Version=0.1.10-mvp
 QtVersion=6
 X-SDDM-ThemeName=Onyx
