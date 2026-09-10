@@ -11,9 +11,15 @@ Rectangle {
     readonly property real s: Screen.height / 768
     readonly property real marginR: 80 * root.s
 
+    FontLoader {
+        id: outfitFont
+        source: "font/Outfit-Black.ttf"
+    }
+
     ThemeState {
         id: state
         s: root.s
+        fontFamily: outfitFont.status === FontLoader.Ready ? outfitFont.name : "Sans Serif"
     }
 
     Clock.ClockRoot {
