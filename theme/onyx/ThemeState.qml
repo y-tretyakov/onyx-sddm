@@ -13,16 +13,16 @@ QtObject {
         return "#000000"
     }
 
-    // Color API — единый хост для тем (ARCHITECTURE §4.3, §5.6).
-    // Полная конфигурируемость через theme.conf — stage 3.7 (light theme).
     readonly property color mainTextColor: "#FFFFFF"
-    readonly property color pillBgColor: "#1A1A1A"
-    readonly property color pillBorderColor: "#333333"
-    readonly property color pillDividerColor: "#444444"
-    readonly property color pillMinutesColor: "#CCCCCC"
-    readonly property color pillSecondsColor: "#888888"
+    readonly property color dimTextColor: "#666666"
+    readonly property color subTextColor: "#555555"
+    readonly property color pillColor: "#080808"
+    readonly property color pillBorderColor: "#1a1a1a"
+    readonly property color pillDividerColor: "#222222"
+    readonly property color tickAccentColor: "#FF7A18"
+    readonly property color inputWaitColor: "#333333"
     readonly property color orbitalTickColor: "#FFFFFF"
     readonly property color orbitalTextColor: "#CCCCCC"
-    readonly property color denyColor: "#FF5252"
+    readonly property color errorColor: "#FF4444"
     readonly property string fontFamily: "Sans Serif"
 }

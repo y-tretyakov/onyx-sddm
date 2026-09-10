@@ -12,7 +12,7 @@ Rectangle {
     width: 330 * s
     height: 90 * s
     radius: 12 * s
-    color: themeState.pillBgColor
+    color: themeState.pillColor
     border.color: themeState.pillBorderColor
     border.width: 1 * s
 
@@ -28,7 +28,7 @@ Rectangle {
         font.family: pill.themeState.fontFamily
         font.pixelSize: 36 * pill.s
         font.weight: Font.DemiBold
-        color: pill.themeState.pillMinutesColor
+        color: pill.themeState.mainTextColor
     }
 
     // Vertical divider
@@ -51,6 +51,6 @@ Rectangle {
         font.family: pill.themeState.fontFamily
         font.pixelSize: 36 * pill.s
         font.weight: Font.DemiBold
-        color: pill.themeState.pillSecondsColor
+        color: pill.themeState.subTextColor
     }
 }

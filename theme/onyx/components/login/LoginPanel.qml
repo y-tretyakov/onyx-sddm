@@ -43,7 +43,7 @@ Item {
         font.family: panel.themeState.fontFamily
         font.pixelSize: 14 * panel.s
         font.weight: Font.DemiBold
-        color: panel.themeState.pillMinutesColor
+        color: panel.themeState.mainTextColor
     }
 
     TextInput {
