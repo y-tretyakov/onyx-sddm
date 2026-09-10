@@ -34,8 +34,10 @@ Rectangle {
         id: clock
         s: root.s
         themeState: state
+        clockAwake: state.clockAwake
         windupDegMin: engine.windupDegMin
         windupDegSec: engine.windupDegSec
+        sparkWindup: engine.isWindup && engine.windupProgress > 0.2 ? (engine.windupProgress - 0.2) * 2.2 : 0
         timeProvider.clockAwake: state.clockAwake
     }
 
