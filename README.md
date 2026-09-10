@@ -40,6 +40,14 @@ indicator pill на орбитально-часовом фоне, валидир
 
 ## Установка (MVP)
 
+### Одна строка (после релиза по тегу)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/y-tretyakov/onyx-sddm/0.1.9-mvp/install.sh | sudo bash -s -- --release 0.1.9-mvp
+```
+
+Скачивает тему по тегу релиза и ставит системно.
+
 ### Системная установка
 
 ```bash
