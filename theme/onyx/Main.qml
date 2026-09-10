@@ -27,10 +27,7 @@ Rectangle {
         id: engine
         clockAwake: state.clockAwake
         animationEnabled: state.windupEnabled
-        onUiOpacityChanged: {
-            if (engine.uiOpacity === 1.0 && boomOverlay.opacity > 0)
-                curtainOut.start()
-        }
+        onBoomFinished: curtainOut.start()
     }
 
     Clock.ClockRoot {

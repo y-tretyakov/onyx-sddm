@@ -13,6 +13,8 @@ QtObject {
     property real uiOpacity: 0.0
     property bool isWindup: false
 
+    signal boomFinished
+
     readonly property real windupDegMin: windupOffset * 5
     readonly property real windupDegSec: windupOffset * 10
 
@@ -82,6 +84,7 @@ QtObject {
             boomOpacity = _eased(0, 1, bOpacity, _easeInQuad)
             if (bdt >= boomDuration) {
                 boomScale = 35
+                boomFinished()
                 _phase = 2
                 _t0 = now
             }
