@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Window
 import "../.."
 
 Item {
@@ -7,8 +8,8 @@ Item {
     required property real s
     required property ThemeState themeState
 
-    width: 330 * s
-    height: 90 * s
+    width: 350 * s
+    height: 100 * s
 
     readonly property bool canLogin: !themeState.isPreview && textField.text.length > 0
 
@@ -30,7 +31,7 @@ Item {
     Text {
         id: userLabel
 
-        anchors.left: parent.left
+        anchors.right: parent.right
         anchors.top: parent.top
 
         text: {
@@ -41,9 +42,10 @@ Item {
             return "user"
         }
         font.family: panel.themeState.fontFamily
-        font.pixelSize: 14 * panel.s
-        font.weight: Font.DemiBold
-        color: panel.themeState.mainTextColor
+        font.pixelSize: 18 * panel.s
+        font.weight: Font.Bold
+        font.letterSpacing: 8 * panel.s
+        color: panel.themeState.dimTextColor
     }
 
     TextInput {
@@ -56,18 +58,31 @@ Item {
 
         text: ""
         font.family: panel.themeState.fontFamily
-        font.pixelSize: 22 * panel.s
-        font.weight: Font.DemiBold
+        font.pixelSize: 14 * panel.s
+        font.letterSpacing: 10 * panel.s
+        font.weight: Font.Normal
         color: panel.themeState.mainTextColor
         echoMode: TextInput.Password
         clip: true
-
+        horizontalAlignment: TextInput.AlignRight
 
         selectByMouse: true
         focus: true
 
-        Keys.onReturnPressed: panel._submit()
-        Keys.onEnterPressed: panel._submit()
+        Keys.onPressed: function(event) {
+            if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+                panel._submit();
+                event.accepted = true;
+            }
+        }
+    }
+
+    // Fallback: submit even if focus is not on the TextInput.
+    Keys.onPressed: function(event) {
+        if (event.key === Qt.Key_Return || event.key === Qt.Key_Enter) {
+            panel._submit();
+            event.accepted = true;
+        }
     }
 
     Rectangle {
@@ -83,5 +98,19 @@ Item {
         color: panel.themeState.pillDividerColor
     }
 
-    Component.onCompleted: textField.forceActiveFocus()
+    // Original Ryoku re-claims focus via a 300ms startup timer + window active grab.
+    Timer {
+        id: focusTimer
+        interval: 300
+        running: true
+        onTriggered: textField.forceActiveFocus()
+    }
+
+    Connections {
+        target: typeof Window !== "undefined" ? Window.window : null
+        function onActiveChanged() {
+            if (Window.window && Window.window.active)
+                textField.forceActiveFocus()
+        }
+    }
 }
