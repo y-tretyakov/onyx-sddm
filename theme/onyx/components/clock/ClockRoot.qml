@@ -105,19 +105,19 @@ Item {
         NumberAnimation { target: clockRoot; property: "sparkImpulse"; to: 0.0; duration: 500; easing.type: Easing.OutCubic }
     }
 
-    SequentialAnimation {
+    ParallelAnimation {
         id: secBurstAnim
         NumberAnimation { target: clockRoot; property: "secBurstScale"; from: 1.0; to: 2.2; duration: 450; easing.type: Easing.OutCubic }
         NumberAnimation { target: clockRoot; property: "secBurstOpacity"; from: 0.9; to: 0.0; duration: 450; easing.type: Easing.OutQuad }
     }
 
-    SequentialAnimation {
+    ParallelAnimation {
         id: minBurstAnim
         NumberAnimation { target: clockRoot; property: "minBurstScale"; from: 1.0; to: 2.2; duration: 450; easing.type: Easing.OutCubic }
         NumberAnimation { target: clockRoot; property: "minBurstOpacity"; from: 0.9; to: 0.0; duration: 450; easing.type: Easing.OutQuad }
     }
 
-    SequentialAnimation {
+    ParallelAnimation {
         id: hourBurstAnim
         NumberAnimation { target: clockRoot; property: "hourBurstScale"; from: 1.0; to: 2.2; duration: 450; easing.type: Easing.OutCubic }
         NumberAnimation { target: clockRoot; property: "hourBurstOpacity"; from: 0.9; to: 0.0; duration: 450; easing.type: Easing.OutQuad }
