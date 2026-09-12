@@ -19,7 +19,8 @@ End-to-end validation of the Onyx SDDM theme (local checks only):
 8. tickfeedback-probe.qml — offscreen tick feedback flash/halo probe
     9. sparks-burst-probe.qml — offscreen sparks intensity/burst probe
    10. date-reveal-probe.qml — offscreen date+weekday stagger reveal probe
-   11. registration regressions (forbidden tokens)
+   11. user-session-probe.qml — offscreen pickers + sddm.login wiring probe
+   12. registration regressions (forbidden tokens)
 
 Every check prints [ OK ] or [ FAIL ]; any [ FAIL ] exits 1 immediately.
 Final success line: [ OK ] verify OK. Exit 0 = all passed.
@@ -58,7 +59,7 @@ else
     fail "theme/onyx/icons/ empty"
 fi
 
-for f in clock/ClockRoot.qml clock/DateBlock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml effects/AnimEngine.qml effects/qmldir effects/Sparks.qml effects/Burst.qml effects/StaggerText.qml login/LoginPanel.qml login/AuthFeedback.qml; do
+for f in clock/ClockRoot.qml clock/DateBlock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml effects/AnimEngine.qml effects/qmldir effects/Sparks.qml effects/Burst.qml effects/StaggerText.qml login/LoginPanel.qml login/AuthFeedback.qml login/UserPicker.qml login/SessionPicker.qml; do
     if [[ -r "${THEME_DIR}/components/${f}" ]]; then
         ok "components/${f} present"
     else
@@ -163,14 +164,27 @@ else
     fail "date-reveal-probe failed"
 fi
 
-# --- 11. registration regressions ---
-echo "--- 11. registration regressions ---"
+# --- 11. user-session-probe ---
+echo "--- 11. user-session-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 12 "${RUNNER}" "${ROOT_DIR}/scripts/qa/user-session-probe.qml"; then
+    ok "user-session-probe passed (UserPicker/SessionPicker selection wiring)"
+else
+    fail "user-session-probe failed"
+fi
+
+# --- 12. registration regressions ---
+echo "--- 12. registration regressions ---"
 for _bad in "userModel.data(" "smoothHand" "currentIndex"; do
     if rg -F -l --glob "*.qml" "$_bad" theme/onyx/components/clock/; then
         echo "FAIL: forbidden token '$_bad' present in clock components" >&2
         exit 1
     fi
 done
+# ADR-1.8-1: pickers read roles via helper-ListView, never userModel.data().
+if rg -F -l --glob "*.qml" "userModel.data(" theme/onyx/components/login/ theme/onyx/Main.qml; then
+    echo "FAIL: forbidden token 'userModel.data(' present in login components" >&2
+    exit 1
+fi
 echo "registration regressions: PASS"
 
 echo "[ OK ] verify OK"
