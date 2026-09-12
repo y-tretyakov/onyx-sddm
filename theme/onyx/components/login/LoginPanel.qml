@@ -10,6 +10,9 @@ Item {
 
     property var windowWin: typeof Window !== "undefined" ? Window.window : null
 
+    property alias userPicker: pickerInstance
+    property int sessionIndex: (typeof sessionModel !== "undefined" && sessionModel.lastIndex !== undefined) ? sessionModel.lastIndex : 0
+
     width: 350 * s
     height: 100 * s
 
@@ -24,7 +27,7 @@ Item {
         return "user"
     }
 
-    readonly property string currentLoginName: {
+    property string currentLoginName: {
         if (typeof userModel !== "undefined" && userModel.lastUser)
             return userModel.lastUser
         return ""
@@ -39,23 +42,28 @@ Item {
             return
         }
         var user = currentLoginName
-        var session = (typeof sessionModel !== "undefined") ? sessionModel.lastIndex : 0
+        if (user === "" && userPicker && userPicker.currentLogin !== "")
+            user = userPicker.currentLogin
+        if (user === "" && typeof userModel !== "undefined" && userModel.lastUser)
+            user = userModel.lastUser
+        var session = (typeof panel.sessionIndex !== "undefined") ? panel.sessionIndex : 0
+        if (typeof sessionModel !== "undefined" && ((typeof panel.sessionIndex === "undefined") || panel.sessionIndex < 0))
+            session = sessionModel.lastIndex
         if (user !== "" && typeof sddm !== "undefined")
             sddm.login(user, textField.text, session)
     }
 
-    Text {
-        id: userLabel
-
+    UserPicker {
+        id: pickerInstance
+        s: panel.s
+        themeState: panel.themeState
+        width: parent.width
         anchors.right: parent.right
         anchors.top: parent.top
-
-        text: panel.currentUserName.toUpperCase()
-        font.family: panel.themeState.fontFamily
-        font.pixelSize: 18 * panel.s
-        font.weight: Font.Bold
-        font.letterSpacing: 8 * panel.s
-        color: panel.themeState.dimTextColor
+        onSelected: function(index, login, name) {
+            if (login !== "")
+                panel.currentLoginName = login
+        }
     }
 
     TextInput {
@@ -63,7 +71,7 @@ Item {
 
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: userLabel.bottom
+        anchors.top: pickerInstance.bottom
         anchors.topMargin: 8 * panel.s
 
         text: ""
