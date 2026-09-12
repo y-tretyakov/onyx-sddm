@@ -1,6 +1,6 @@
 # Onyx SDDM Theme
 
-[![Version](https://img.shields.io/badge/version-0.2.0--alpha.5-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0--alpha.6-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/y-tretyakov/onyx-sddm/ci.yml?branch=dev&label=CI)](https://github.com/y-tretyakov/onyx-sddm/actions)
 [![OS](https://img.shields.io/badge/OS-Arch%7CCachyOS%7CFedora%7CNobara%7CUbuntu%7CDebian%7CopenSUSE%7CRHEL9-41CD52.svg?style=flat)](.github/workflows/ci.yml)
 [![Qt6](https://img.shields.io/badge/Qt-6-41CD52.svg?logo=qt&logoColor=white&style=flat)](https://doc.qt.io/qt-6/)
@@ -15,7 +15,9 @@
 оригинальной темы *clockwork/orbital* (Ryoku / Darkkal44), но с полностью
 переработанной архитектурой, чистым кодом и чёткой дорожной картой.
 
-Статус: **Alpha в процессе** (Phase 2). Уже реализовано: user & session pickers
+Статус: **Alpha в процессе** (Phase 2). Уже реализовано: HUD power/reboot
+(иконки-кнопки reboot + power в hudContainer, hover-состояние, sddm.wiring,
+stage 2.6); user & session pickers
 (два dropdown'а из userModel/sessionModel, влияют на `sddm.login`, stage 2.5);
 date + weekday reveal (посимвольная сборка после windup→boom→fade-in, stage 2.4);
 sparks + bursts (stage 2.3); tick feedback (flash + halo) при смене минуты
@@ -24,18 +26,25 @@ sparks + bursts (stage 2.3); tick feedback (flash + halo) при смене ми
 
 ## Текущий статус
 
-- **Версия:** `0.2.0-alpha.5` · Phase 2 / Alpha — [x] 2.1 (windup→boom), [x] 2.2 (tick feedback), [x] 2.3 (sparks + bursts), [x] 2.4 (date + weekday reveal), [x] 2.5 (user & session pickers) закрыты.
-- **Что сделано:** на 2.5 — два новых dropdown'а в стиле орбитального clockwork:
+- **Версия:** `0.2.0-alpha.6` · Phase 2 / Alpha — [x] 2.1 (windup→boom), [x] 2.2 (tick feedback), [x] 2.3 (sparks + bursts), [x] 2.4 (date + weekday reveal), [x] 2.5 (user & session pickers), [x] 2.6 (HUD: power/reboot) закрыты.
+- **Что сделано:** на 2.6 — HUD power/reboot: два icon-кнопки в hudContainer
+  (`components/hud/HudAction.qml` — лист-кнопка с hover: scale 1.12 +
+  ColorOverlay-перекраска; `components/hud/HudActions.qml` — строка
+  `[reboot | power]` с разделителем), вызывают `sddm.reboot()` /
+  `sddm.powerOff()` под `typeof sddm` guard; иконки `icons/{power,reboot}.svg`
+  (Material, Apache-2.0, PROVENANCE дополнен); offscreen `hud-probe`
+  (click-through + hover) — секция 12 verify-theme (registration → 13).
+  На 2.5 — два новых dropdown'а в стиле орбитального clockwork:
   `components/login/UserPicker.qml` (внутри LoginPanel, меню открывается вверх от
   trigger) и `components/login/SessionPicker.qml` (самостоятельный компонент в
   верхней правой hud-зоне, меню вниз). Оба читают роли через helper-ListView
   без `userModel.data()` (ADR-1.8-1), выбор пользователя/сессии влияет на
   `sddm.login(user, pass, sessionIndex)` через `LoginPanel._submit`; добавлен
   автономный `user-session-probe` в verify-theme.
-- **CI:** локальная фулл-gate («validate + smoke + verify-theme секции 1–12») на
+- **CI:** локальная фулл-gate («validate + smoke + verify-theme секции 1–13») на
   ветках stage — exit 0 на каждом этапе; 8-контейнерная матрица GitHub Actions
   зелёная на `dev` (по состоянию на stage 2.4).
-- **Следующий шаг:** Alpha 2.6 — HUD (power / reboot) (`0.2.0-alpha.6`).
+- **Следующий шаг:** Alpha 2.7 — i18n Core (en + ru + uk) (`0.2.0-alpha.7`).
 - Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
 
 ## Установка (MVP)

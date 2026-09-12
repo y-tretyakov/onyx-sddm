@@ -5,6 +5,69 @@
 
 ---
 
+## [0.2.0-alpha.6] — stage 2.6 · HUD (Power / Reboot) · 2026-09-12
+
+**Версия:** `0.2.0-alpha.6` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [x] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [x] 2.6 HUD (power / reboot) — `0.2.0-alpha.6` ✅ THIS
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.6 — HUD (power / reboot)** закрыт. В hud-зону добавлены
+  power/reboot-кнопки (`components/hud/HudAction.qml` — лист-кнопка:
+  публичный `active` (bind к hover), scale 1.12 + ColorOverlay-перекраска,
+  signal `clicked()`; `components/hud/HudActions.qml` — строка `[reboot |
+  power]` с разделителем), вызывающие `sddm.reboot()` / `sddm.powerOff()`
+  под `typeof sddm` guard. `Main.qml`: `hudContainer`/`hudRow` (порядок
+  [SessionPicker, HudActions], right marginR, top 50·s, spacing 25·s).
+  Иконки `icons/power.svg` + `reboot.svg` (Material, Apache-2.0,
+  PROVENANCE дополнен). Offscreen `hud-probe` — click-through + hover
+  проверка — секция 12 verify-theme (registration переименована в 13).
+  gate-прогоны: validate exit 0, verify-theme.sh exit 0 (секции 1–13,
+  включая 12 hud-probe и 13 registration).
+- Следующее: **stage 2.7 — i18n Core (en + ru + uk)** (`0.2.0-alpha.7`).
+- Подготовить до старта 2.7: визуальная QA HUD power/reboot на 1080p/1440p;
+  продумать встраивание language-selector в hudContainer рядом с
+  SessionPicker/HudActions; переносится долг из ранних этапов
+  (CR-F9/CR-F10/F-1.4-b/ADR-2.4-1).
+- Блокеры: нет.
+
+### Детали изменений
+
+- theme/onyx/components/hud/HudAction.qml — лист-кнопка: `active`
+  (публичный, JS-присваиваемый для probe), scale 1.12 hover,
+  ColorOverlay-перекраска, signal clicked().
+- theme/onyx/components/hud/HudActions.qml:15-31 — reboot → `sddm.reboot()`,
+  power → `sddm.powerOff()`, hoverColor #4a9eff / #ff5c5c,
+  разделитель pillDividerColor.
+- theme/onyx/Main.qml:46-69 — hudContainer/hudRow позиционирование
+  (right marginR, top 50·s, spacing 25·s), порядок [SessionPicker, HudActions].
+- scripts/qa/hud-probe.qml — break «кнопки работают» и «есть hover» через
+  sddm-стаб и public active.
+- Иконки: Material (Apache-2.0), копия из Ryoku 1-to-1, PROVENANCE.txt дополнен.
+
+**Тех. долг:** нет.
+
+**Принятые решения:**
+
+- ADR-2.6-1: hover-состояние моделируется публичным property `active`
+  (bind к containsMouse) — даёт offline-проверку hover без SDDM.
+- ADR-2.6-2: иконки копируются verbatim из эталона (1-to-1 визуально),
+  PROVENANCE фиксирует Apache-2.0.
+
+---
+
 ## [0.2.0-alpha.5] — stage 2.5 · User & Session Pickers · 2026-09-12
 
 **Версия:** `0.2.0-alpha.5` — PATCH-bump внутри milestone Alpha (stage, не веха).
