@@ -20,6 +20,8 @@ QtObject {
         return true
     }
 
+    readonly property bool isWayland: Qt.platform.pluginName.toLowerCase().indexOf("wayland") >= 0
+
     readonly property color blastColor: "#FFFFFF"
     readonly property color sparkColor: "#FFFFFF"
 

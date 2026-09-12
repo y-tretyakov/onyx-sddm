@@ -22,7 +22,8 @@ End-to-end validation of the Onyx SDDM theme (local checks only):
    11. user-session-probe.qml — offscreen pickers + sddm.login wiring probe
 12. hud-probe.qml — offscreen reboot/power click-through + hover surface probe
    13. i18n-probe.qml — language detection + translation switch + fallback probe
-   14. registration regressions (forbidden tokens)
+   14. virtual-cursor-probe.qml — cursor hidden on non-Wayland + instant x/y binding probe
+   15. registration regressions (forbidden tokens)
 
 Every check prints [ OK ] or [ FAIL ]; any [ FAIL ] exits 1 immediately.
 Final success line: [ OK ] verify OK. Exit 0 = all passed.
@@ -61,7 +62,7 @@ else
     fail "theme/onyx/icons/ empty"
 fi
 
-for f in clock/ClockRoot.qml clock/DateBlock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml effects/AnimEngine.qml effects/qmldir effects/Sparks.qml effects/Burst.qml effects/StaggerText.qml login/LoginPanel.qml login/AuthFeedback.qml login/UserPicker.qml login/SessionPicker.qml hud/LangPicker.qml hud/HudAction.qml hud/HudActions.qml; do
+for f in clock/ClockRoot.qml clock/DateBlock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml effects/AnimEngine.qml effects/qmldir effects/Sparks.qml effects/Burst.qml effects/StaggerText.qml login/LoginPanel.qml login/AuthFeedback.qml login/UserPicker.qml login/SessionPicker.qml hud/LangPicker.qml hud/HudAction.qml hud/HudActions.qml platform/VirtualCursor.qml; do
     if [[ -r "${THEME_DIR}/components/${f}" ]]; then
         ok "components/${f} present"
     else
@@ -190,8 +191,16 @@ else
     fail "i18n-probe failed"
 fi
 
-# --- 14. registration regressions ---
-echo "--- 14. registration regressions ---"
+# --- 14. virtual-cursor-probe ---
+echo "--- 14. virtual-cursor-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 12 "${RUNNER}" "${ROOT_DIR}/scripts/qa/virtual-cursor-probe.qml"; then
+    ok "virtual-cursor-probe passed (hidden off-Wayland + instant x/y)"
+else
+    fail "virtual-cursor-probe failed"
+fi
+
+# --- 15. registration regressions ---
+echo "--- 15. registration regressions ---"
 for _bad in "userModel.data(" "smoothHand" "currentIndex"; do
     if rg -F -l --glob "*.qml" "$_bad" theme/onyx/components/clock/; then
         echo "FAIL: forbidden token '$_bad' present in clock components" >&2

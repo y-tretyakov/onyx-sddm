@@ -1,9 +1,11 @@
 import QtQuick
+import QtQuick.Window
 import "translations.js" as Tr
 import "components/clock" as Clock
 import "components/effects" as Effects
 import "components/hud" as Hud
 import "components/login" as Login
+import "components/platform" as Platform
 
 Rectangle {
     id: root
@@ -24,6 +26,8 @@ Rectangle {
         s: root.s
         fontFamily: outfitFont.status === FontLoader.Ready ? outfitFont.name : "Sans Serif"
     }
+
+    readonly property var _win: Window.window
 
     property string language: Tr.detectLanguage(Qt.locale().name)
     readonly property var curT: Tr.translations[language] || Tr.translations["en"]
@@ -116,6 +120,16 @@ Rectangle {
         color: state.blastColor
         opacity: engine.boomOpacity
         visible: opacity > 0
+    }
+
+    Platform.VirtualCursor {
+        id: cursor
+        s: root.s
+        themeState: state
+        cursorX: root._win ? root._win.cursorPosition.x : 0
+        cursorY: root._win ? root._win.cursorPosition.y : 0
+        uiReady: engine.uiOpacity > 0.99
+        z: 9998
     }
 
     NumberAnimation {

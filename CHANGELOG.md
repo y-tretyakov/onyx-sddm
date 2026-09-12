@@ -5,6 +5,72 @@
 
 ---
 
+## [0.2.0-alpha.8] — stage 2.8 · Wayland Virtual Cursor ✦ · 2026-09-12
+
+**Версия:** `0.2.0-alpha.8` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [x] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [x] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [x] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [x] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8` ✅ THIS
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.8 — Wayland Virtual Cursor ✦** закрыт.
+  VirtualCursor.qml (глиф ✦ по `Window.window.cursorPosition`, без Behavior —
+  мгновенно; только Wayland `isWayland`, на X11 скрыт; без полноэкранного
+  hover-слоя), ThemeState.isWayland (`Qt.platform.pluginName`), wiring в Main
+  (z 9998), virtual-cursor-probe в секцию 14 (registration → 15).
+  Следующее — Alpha 2.9 Alpha Freeze (ревизия всей Alpha, полный verify,
+  bump 0.2.9-alpha).
+- Подготовить до старта 2.9: ревизия Alpha-этапов 2.1–2.8, визуальная QA
+  VirtualCursor на CachyOS/Weston (живой Wayland-глиф), переносится долг из
+  ранних этапов (CR-F9/CR-F10/F-1.4-b/ADR-2.4-1).
+- Блокеры: нет.
+
+### Детали изменений
+
+- theme/onyx/ThemeState.qml:25 — `readonly property bool isWayland`
+  (`Qt.platform.pluginName.toLowerCase().indexOf("wayland") >= 0`; НЕ `Qt.platform.name`
+  — qmllint 6.4.2 не знает это свойство и отвечает exit 255; pluginName — то же
+  рантайм-значение QQmlPlatform, проходил CI-gate).
+- theme/onyx/components/platform/VirtualCursor.qml — лист: `cursorX`/`cursorY`/
+  `uiReady`, `active = isWayland && uiReady`, `gx`/`gy` центрирование,
+  Text ✦ 18·s, НЕТ Behavior/MouseArea.
+- theme/onyx/Main.qml:97-104 — VirtualCursor: cursorX/Y из
+  `Window.window.cursorPosition` с guard через `readonly property var _win`
+  (qmllint 6.4 не знает `cursorPosition` на QQuickWindow и отвечает exit 255 —
+  доступ через var-алиас обходит тип-check и даёт то же рантайм-значение),
+  `uiReady: engine.uiOpacity > 0.99`,
+  z 9998 (под boomOverlay z 9999). Строка `onSessionIndexChanged: {}` не тронута.
+- scripts/qa/virtual-cursor-probe.qml — скрыт на offscreen; мгновенная привязка
+  x/y проверяется в тот же тик; контракт `VIRTUAL-CURSOR-PROBE: OK`.
+- scripts/verify-theme.sh — секция 14 virtual-cursor-probe, registration → 15,
+  `platform/VirtualCursor.qml` добавлен в структуру.
+
+**Тех. долг:** нет.
+
+**Принятые решения:**
+
+- ADR-2.8-1: прямая привязка x/y без Behavior (твердое требование спеки о
+  нулевой задержке).
+- ADR-2.8-2: курсор — неинтерактивный Text, полноэкранного hover-слоя нет →
+  hover/click не воруются (приёмка «с первого касания»).
+- ADR-2.8-3: детект Wayland через
+  `Qt.platform.pluginName.toLowerCase().indexOf("wayland")` (та же семантика, что
+  `Qt.platform.name` эталона ryoku:94, но qmllint 6.4 знает pluginName и не знает
+  name → exit 255); всё остальное → false.
+
+---
+
 ## [0.2.0-alpha.7] — stage 2.7 · i18n Core (en + ru + uk) · 2026-09-12
 
 **Версия:** `0.2.0-alpha.7` — PATCH-bump внутри milestone Alpha (stage, не веха).
