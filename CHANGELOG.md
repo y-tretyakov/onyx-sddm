@@ -27,7 +27,7 @@
 - Сделано: **stage 2.8 — Wayland Virtual Cursor ✦** закрыт.
   VirtualCursor.qml (глиф ✦ по `Window.window.cursorPosition`, без Behavior —
   мгновенно; только Wayland `isWayland`, на X11 скрыт; без полноэкранного
-  hover-слоя), ThemeState.isWayland (`Qt.platform.name`), wiring в Main
+  hover-слоя), ThemeState.isWayland (`Qt.platform.pluginName`), wiring в Main
   (z 9998), virtual-cursor-probe в секцию 14 (registration → 15).
   Следующее — Alpha 2.9 Alpha Freeze (ревизия всей Alpha, полный verify,
   bump 0.2.9-alpha).
@@ -39,7 +39,9 @@
 ### Детали изменений
 
 - theme/onyx/ThemeState.qml:25 — `readonly property bool isWayland`
-  (`Qt.platform.name.toLowerCase().indexOf("wayland") >= 0`).
+  (`Qt.platform.pluginName.toLowerCase().indexOf("wayland") >= 0`; НЕ `Qt.platform.name`
+  — qmllint 6.4.2 не знает это свойство и отвечает exit 255; pluginName — то же
+  рантайм-значение QQmlPlatform, проходил CI-gate).
 - theme/onyx/components/platform/VirtualCursor.qml — лист: `cursorX`/`cursorY`/
   `uiReady`, `active = isWayland && uiReady`, `gx`/`gy` центрирование,
   Text ✦ 18·s, НЕТ Behavior/MouseArea.
@@ -59,8 +61,10 @@
   нулевой задержке).
 - ADR-2.8-2: курсор — неинтерактивный Text, полноэкранного hover-слоя нет →
   hover/click не воруются (приёмка «с первого касания»).
-- ADR-2.8-3: детект через `Qt.platform.name.toLowerCase().indexOf("wayland")`
-  (эталон строчка 94); всё остальное → false.
+- ADR-2.8-3: детект Wayland через
+  `Qt.platform.pluginName.toLowerCase().indexOf("wayland")` (та же семантика, что
+  `Qt.platform.name` эталона ryoku:94, но qmllint 6.4 знает pluginName и не знает
+  name → exit 255); всё остальное → false.
 
 ---
 
