@@ -13,11 +13,12 @@ Item {
     readonly property int selectedIndex: picker._selectedIndex
 
     property string _selectedName: ""
+    property string fallbackName: "SESSION"
 
     readonly property string currentName: {
         if (picker._selectedName !== "")
             return picker._selectedName
-        return "SESSION"
+        return picker.fallbackName
     }
 
     function holdRoles(inName) {
