@@ -51,6 +51,8 @@ Rectangle {
             id: loginPanel
             s: root.s
             themeState: state
+            sessionIndex: (typeof sessionPicker !== "undefined") ? sessionPicker.selectedIndex : 0
+            onSessionIndexChanged: {} // noop для стабильности binding
             anchors.right: parent.right
             anchors.rightMargin: root.marginR
             anchors.bottom: parent.bottom
@@ -64,6 +66,17 @@ Rectangle {
             anchors.right: loginPanel.right
             anchors.bottom: loginPanel.top
             anchors.bottomMargin: 12 * root.s
+        }
+
+        Login.SessionPicker {
+            id: sessionPicker
+            s: root.s
+            themeState: state
+            anchors.right: parent.right
+            anchors.rightMargin: root.marginR
+            anchors.top: parent.top
+            anchors.topMargin: 50 * root.s
+            z: 100
         }
     }
 

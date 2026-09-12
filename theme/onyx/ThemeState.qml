@@ -39,6 +39,7 @@ QtObject {
     readonly property color inputWaitColor: "#333333"
     readonly property color orbitalTickColor: "#FFFFFF"
     readonly property color orbitalTextColor: "#CCCCCC"
+    readonly property color userItemInactiveColor: "#444444"
     readonly property color errorColor: "#FF4444"
 
 }
