@@ -4,6 +4,7 @@ import "components/clock" as Clock
 import "components/effects" as Effects
 import "components/hud" as Hud
 import "components/login" as Login
+import "components/platform" as Platform
 
 Rectangle {
     id: root
@@ -116,6 +117,16 @@ Rectangle {
         color: state.blastColor
         opacity: engine.boomOpacity
         visible: opacity > 0
+    }
+
+    Platform.VirtualCursor {
+        id: cursor
+        s: root.s
+        themeState: state
+        cursorX: Window.window ? Window.window.cursorPosition.x : 0
+        cursorY: Window.window ? Window.window.cursorPosition.y : 0
+        uiReady: engine.uiOpacity > 0.99
+        z: 9998
     }
 
     NumberAnimation {
