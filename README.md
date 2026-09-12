@@ -1,6 +1,6 @@
 # Onyx SDDM Theme
 
-[![Version](https://img.shields.io/badge/version-0.2.9--alpha-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.10--alpha-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/y-tretyakov/onyx-sddm/ci.yml?branch=dev&label=CI)](https://github.com/y-tretyakov/onyx-sddm/actions)
 [![OS](https://img.shields.io/badge/OS-Arch%7CCachyOS%7CFedora%7CNobara%7CUbuntu%7CDebian%7CopenSUSE%7CRHEL9-41CD52.svg?style=flat)](.github/workflows/ci.yml)
 [![Qt6](https://img.shields.io/badge/Qt-6-41CD52.svg?logo=qt&logoColor=white&style=flat)](https://doc.qt.io/qt-6/)
@@ -30,7 +30,7 @@ sparks + bursts (stage 2.3); tick feedback (flash + halo) при смене ми
 
 ## Текущий статус
 
-- **Версия:** `0.2.9-alpha` · Phase 2 / Alpha — [x] 2.1 (windup→boom), [x] 2.2 (tick feedback), [x] 2.3 (sparks + bursts), [x] 2.4 (date + weekday reveal), [x] 2.5 (user & session pickers), [x] 2.6 (HUD: power/reboot), [x] 2.7 (i18n core), [x] 2.8 (Wayland cursor), [x] 2.9 (Alpha freeze) закрыты.
+- **Версия:** `0.2.10-alpha` · Phase 2 / Alpha — [x] 2.1 (windup→boom), [x] 2.2 (tick feedback), [x] 2.3 (sparks + bursts), [x] 2.4 (date + weekday reveal), [x] 2.5 (user & session pickers), [x] 2.6 (HUD: power/reboot), [x] 2.7 (i18n core), [x] 2.8 (Wayland cursor), [x] 2.9 (Alpha freeze), [x] 2.10 (hotfix: greeter awake) закрыты.
 - **Что сделано:** на 2.9 — Alpha Freeze: regression sweep (validate exit 0;
   verify-theme 15/15 `[ OK ]`, registration PASS; probes i18n/virtual-cursor/
   user-session/hud OK; hygiene-скан без TODO/FIXME/DEBUG, VirtualCursor без
@@ -65,7 +65,7 @@ sparks + bursts (stage 2.3); tick feedback (flash + halo) при смене ми
   ветках stage — exit 0 на каждом этапе; 8-контейнерная матрица GitHub Actions
   зелёная на `dev` (по состоянию на stage 2.4).
 - **Следующий шаг:** Beta 3.1 — Full language set (9 languages) → `0.3.0-beta.1`.
-  Выпущено: `0.2.9-alpha` (тег + Release).
+  Выпущено: `0.2.9-alpha` (тег + Release); `0.2.10-alpha` (hotfix CR: greeter awake).
 - Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
 
 ## Установка (MVP)

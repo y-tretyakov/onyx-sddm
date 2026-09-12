@@ -5,7 +5,58 @@
 
 ---
 
-## [0.2.9-alpha] — stage 2.9 · Alpha Freeze · 2026-09-12
+## [0.2.10-alpha] — stage 2.10 · Hotfix: greeter always awake · 2026-09-12
+
+**Версия:** `0.2.10-alpha` — критический PATCH-hotfix после релиза вехи
+(CR регрессия живого greeter: no login panel, no HUD, frozen orbitals).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.9 Alpha freeze — `0.2.9-alpha`
+- [x] 2.10 Hotfix: remove `Window.active` gate — `0.2.10-alpha` ✅ THIS
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.10 — hotfix** закрыт. Root cause: stage 2.1 ввёл
+  `clockAwake = Window.active`; в preview (isPreview=true) форсится true —
+  поэтому все offscreen-пробы проходили. В реальном greeter (`isPreview=false`,
+  sddm реальный) `Window.active` остаётся false → `TimeProvider.smoothTimer`
+  (running: clockAwake) и `AnimEngine.tickTimer` (windup→boom→fade-in) мертвы:
+  орбитали замерли, `uiOpacity` не доходит до 1 → `uiLayer` (LoginPanel, HUD,
+  pickers) невидим. Фикс: `clockAwake: true` безусловно; импорт QtQuick.Window
+  из ThemeState.qml удалён (не использовался).
+- Приёмка: verify-theme.sh 15/15 `[ OK ]`, `[ OK ] verify OK`, PR #39 → dev
+  (squash `--admin`, base protected), dev=`aa5cc0d`.
+- Следующее: **переустановить тему в live SDDM** (sudo, в терминал вводит Юрий)
+  и подтвердить: панель логина, HUD power/reboot, вращение орбиталей. Затем
+  PR dev→main (0.2.10-alpha), тег 0.2.9-alpha остаётся на вехе; далее Beta 3.1.
+- Блокеры: реальный live-апрув горящего фикса на пользователе.
+
+### Детали изменений (для агентов)
+
+- theme/onyx/ThemeState.qml:8-10 — `clockAwake` из блока `isPreview ? true :
+  Window.active` → безусловно `true`. CRITICAL: любое будущее «пробуждение»/sleep
+  greeter НЕ должно гейтиться через `Window.active` на QtObject в live-сцене.
+- theme/onyx/ThemeState.qml:1 — удалён `import QtQuick.Window`.
+- theme/onyx/metadata.desktop:7 — `Version=0.2.10-alpha`.
+- README.md — бейдж 0.2.10-alpha, статус hotfix.
+- CHANGELOG.md — запись 0.2.10-alpha.
+
+### Тех. долг
+
+- CR-F9 (HiDPI), CR-F10 (greeter-integration test), F-1.4-b, ADR-2.4-1 — в Beta.
+- НОВЫЙ: offscreen-пробы не тестируют real-greeter path (isPreview=false). Нужен
+  greeter-probe с реальным sddm-контекстом (CR-F10) — критично, именно здесь
+  баг жил незаметным. Переносится в Beta 3.3.
+
+### Принятые решения
+
+- **ADR-2.10-1 (greeter always awake):** удалить гейтинг `Window.active` —
+  greeter единственное окно, sleep-логику в него не тащим до Beta.
+- **ADR-2.10-2 (offline-проверка):** verify/probes НЕ покрывают live-greeter
+  path — live-апрув пользователя теперь обязательный gate перед main-merge.
+
+---
 
 **Версия:** `0.2.9-alpha` — финальный этап Alpha (freeze). Веха ЗАКРЫТА:
 merge dev→main (#36), git-tag `0.2.9-alpha` + GitHub Release
