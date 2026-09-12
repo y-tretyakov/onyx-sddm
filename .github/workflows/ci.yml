@@ -28,7 +28,8 @@ jobs:
             qml-qt6 \
             qml6-module-qtquick \
             qml6-module-qtqml \
-            qt6-svg-dev
+            qt6-svg-dev \
+            qml6-module-qt5compat-graphicaleffects
 
       - name: Validate theme (structural + qmllint hard)
         run: ./validate.sh
@@ -48,7 +49,7 @@ jobs:
       - name: Install Qt6 QML tooling (Arch)
         run: >
           pacman -Syu --noconfirm
-          git qt6-base qt6-declarative qt6-svg
+          git qt6-base qt6-declarative qt6-svg qt6-5compat
 
       - name: Validate theme (structural + qmllint hard)
         run: ./validate.sh
@@ -67,35 +68,35 @@ jobs:
         include:
           - distro: arch
             image: archlinux:latest
-            install: pacman -Syu --noconfirm git qt6-base qt6-declarative qt6-svg
+            install: pacman -Syu --noconfirm git qt6-base qt6-declarative qt6-svg qt6-5compat
           - distro: cachyos
             image: cachyos/cachyos:latest
-            install: pacman -Syu --noconfirm git qt6-base qt6-declarative qt6-svg
+            install: pacman -Syu --noconfirm git qt6-base qt6-declarative qt6-svg qt6-5compat
           - distro: fedora
             image: fedora:latest
-            install: dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg
+            install: dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg qt6-qt5compat
           # Nobara has no official container image; it is Fedora-derived and
           # shares package names. Runtime-specific QA (Wayland/gaming) is done
           # on physical hardware outside CI.
           - distro: nobara
             image: fedora:latest
-            install: dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg
+            install: dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg qt6-qt5compat
           - distro: ubuntu
             image: ubuntu:24.04
-            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qml6-module-qtqml qt6-svg-dev
+            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qml6-module-qtqml qt6-svg-dev qml6-module-qt5compat-graphicaleffects
           - distro: debian
             image: debian:bookworm
-            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qml6-module-qtqml qt6-svg-dev
+            install: apt-get update && apt-get install -y --no-install-recommends git qt6-declarative-dev qt6-declarative-dev-tools qt6-qmllint-plugins qml-qt6 qml6-module-qtquick qml6-module-qtqml qt6-svg-dev qml6-module-qt5compat-graphicaleffects
           # RHEL9-compatible (free): AlmaLinux 9 = binary RHEL9 rebuild with full
           # AppStream. Plain UBI9 cannot host EPEL qt6-qtbase-gui: its X11/xcb/GL
           # runtime libs (libxkbcommon-x11, xcb-util-*, libinput, mesa-libGL) are
           # absent from UBI AppStream/CRB even when enabled.
           - distro: rhel9
             image: almalinux:9
-            install: dnf install -y epel-release && dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg
+            install: dnf install -y epel-release && dnf install -y git qt6-qtbase qt6-qtdeclarative qt6-qtdeclarative-devel qt6-qtsvg qt6-qt5compat
           - distro: opensuse
             image: opensuse/tumbleweed:latest
-            install: zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive install git qt6-base-devel qt6-base-common-devel qt6-declarative-devel qt6-declarative-tools qt6-svg-devel
+            install: zypper --non-interactive --gpg-auto-import-keys refresh && zypper --non-interactive install git qt6-base-devel qt6-base-common-devel qt6-declarative-devel qt6-declarative-tools qt6-svg-devel qt6-qt5compat-imports
     container:
       image: ${{ matrix.image }}
     steps:
