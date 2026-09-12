@@ -5,6 +5,68 @@
 
 ---
 
+## [0.2.9-alpha] — stage 2.9 · Alpha Freeze · 2026-09-12
+
+**Версия:** `0.2.9-alpha` — финальный этап Alpha (freeze). Тег/release НЕ ставились —
+ожидает апрува пользователя (next: PR dev→main, tag 0.2.9-alpha + GitHub Release,
+далее Beta 3.1).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [x] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [x] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [x] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [x] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [x] 2.9 Alpha freeze — `0.2.9-alpha` ✅ THIS
+
+- [x] Milestone: Alpha (0.2.x-alpha) — релиз-тег ожидает апрува
+- [ ] 3.1 Full language set (9 languages) — `0.3.0-beta.1`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.9 — Alpha freeze** закрыт. Regression sweep PASS (validate
+  exit 0; verify-theme 15/15 `[ OK ]`, registration PASS, EXIT 0; probes
+  i18n/virtual-cursor/user-session/hud OK; hygiene-скан без TODO/FIXME/DEBUG,
+  VirtualCursor без Behavior/MouseArea). Visual QA 1920×1080 и 2560×1440 через
+  Xvfb PASS (размеры PNG >20 KB; s=H/768 → marginR 112.5/150 px; контракт
+  pill→panel сохранён).
+- Следующее: **апрув Юрия** (manual-gate: живой Wayland-глиф VirtualCursor на
+  CachyOS/Weston, реальный auth/login-цикл, 1080/1440 на мониторе) → затем PR
+  dev→main, tag 0.2.9-alpha, GitHub Release; далее Beta 3.1 (9 языков).
+- Подготовить к Beta: закрыть CR-F9 (HiDPI scale), CR-F10 (greeter-integration
+  test), F-1.4-b (`pragma ComponentBehavior`, Qt≥6.6), ADR-2.4-1.
+- Блокеры: нет (апрув — не блокер, а ветка flow).
+
+### Детали изменений (для агентов)
+
+- (no functional code changed — freeze stage)
+- theme/onyx/metadata.desktop — `Version=0.2.9-alpha`.
+- README.md — бейдж + статус freeze.
+- CHANGELOG.md — запись 0.2.9-alpha; тик-лист Alpha полностью `[x]`.
+
+### Тех. долг
+
+- CR-F9 (HiDPI scale) — открыт, переносится в Beta 3.8.
+- CR-F10 (реальный login integration) — открыт, переносится в Beta 3.3.
+- F-1.4-b (`pragma ComponentBehavior`) — ждёт Qt≥6.6 в CI.
+- ADR-2.4-1 (StaggerText own component) — переносится в Beta.
+- Manual-gate реального greeter (Wayland cursor, auth-цикл) — на пользователе.
+
+### Принятые решения
+
+- **ADR-2.9-1 (freeze):** этап без новых фич; правки — только фиксы из QA
+  (не найдено ни одного — чистый freeze).
+- **ADR-2.9-2 (milestone tag):** тег 0.2.9-alpha + GitHub Release НЕ ставятся в
+  этом stage — ждёт апрува пользователя (AGENTS.md §3 rule 7; merge dev→main).
+- **ADR-2.9-3 (debt transfer):** CR-F9/CR-F10/F-1.4-b/ADR-2.4-1 — в Beta;
+  freeze не тянет долг за собой в main.
+
+---
+
 ## [0.2.0-alpha.8] — stage 2.8 · Wayland Virtual Cursor ✦ · 2026-09-12
 
 **Версия:** `0.2.0-alpha.8` — PATCH-bump внутри milestone Alpha (stage, не веха).
