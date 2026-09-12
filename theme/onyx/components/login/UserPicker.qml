@@ -12,20 +12,28 @@ Item {
 
     readonly property int selectedIndex: picker._selectedIndex
 
+    property string _selectedName: ""
+    property string _selectedLogin: ""
+
     readonly property string currentName: {
-        if (userHelper.currentItem && userHelper.currentItem.uName)
-            return userHelper.currentItem.uName
+        if (picker._selectedName !== "")
+            return picker._selectedName
         if (typeof userModel !== "undefined" && userModel.lastUser)
             return userModel.lastUser
         return themeState.isPreview ? "preview" : "user"
     }
 
     readonly property string currentLogin: {
-        if (userHelper.currentItem && userHelper.currentItem.uLogin)
-            return userHelper.currentItem.uLogin
+        if (picker._selectedLogin !== "")
+            return picker._selectedLogin
         if (typeof userModel !== "undefined" && userModel.lastUser)
             return userModel.lastUser
         return ""
+    }
+
+    function holdRoles(inName, inLogin) {
+        picker._selectedName = inName
+        picker._selectedLogin = inLogin
     }
 
     signal selected(var index, var login, var name)
@@ -41,8 +49,12 @@ Item {
         currentIndex: picker.selectedIndex
         model: typeof userModel !== "undefined" ? userModel : null
         delegate: Item {
-            property string uName: model.realName || model.name || ""
-            property string uLogin: model.name || ""
+            required property var model
+            required property int index
+            readonly property string uName: model.realName || model.name || ""
+            readonly property string uLogin: model.name || ""
+            readonly property bool active: picker.selectedIndex === index
+            onActiveChanged: if (active) picker.holdRoles(uName, uLogin)
         }
     }
 

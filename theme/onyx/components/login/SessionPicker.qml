@@ -12,10 +12,16 @@ Item {
 
     readonly property int selectedIndex: picker._selectedIndex
 
+    property string _selectedName: ""
+
     readonly property string currentName: {
-        if (sessionHelper.currentItem && sessionHelper.currentItem.sName)
-            return sessionHelper.currentItem.sName
+        if (picker._selectedName !== "")
+            return picker._selectedName
         return "SESSION"
+    }
+
+    function holdRoles(inName) {
+        picker._selectedName = inName
     }
 
     signal selected(var index)
@@ -31,7 +37,11 @@ Item {
         currentIndex: picker.selectedIndex
         model: typeof sessionModel !== "undefined" ? sessionModel : null
         delegate: Item {
-            property string sName: model.name || ""
+            required property var model
+            required property int index
+            readonly property string sName: model.name || ""
+            readonly property bool active: picker.selectedIndex === index
+            onActiveChanged: if (active) picker.holdRoles(sName)
         }
     }
 
