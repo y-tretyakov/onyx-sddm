@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Window
 
 QtObject {
     id: themeState
@@ -9,10 +8,7 @@ QtObject {
 
     readonly property bool isPreview: typeof sddm === "undefined" || sddm.hostName === undefined
 
-    readonly property bool clockAwake: {
-        if (isPreview) return true
-        return typeof Window !== "undefined" ? Window.active : true
-    }
+    readonly property bool clockAwake: true
 
     readonly property bool windupEnabled: {
         if (typeof config !== "undefined" && config.enableWindup !== undefined)
