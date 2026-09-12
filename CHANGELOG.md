@@ -5,6 +5,121 @@
 
 ---
 
+## [0.2.0-alpha.5] — stage 2.5 · User & Session Pickers · 2026-09-12
+
+**Версия:** `0.2.0-alpha.5` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [x] 2.5 User & Session pickers — `0.2.0-alpha.5` ✅ THIS
+- [ ] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.5 — User & Session Pickers** закрыт. Два dropdown'а выбора
+  пользователя и сессии из `userModel`/`sessionModel`, влияющие на
+  `sddm.login(...)`. `components/login/UserPicker.qml` — внутри LoginPanel
+  (меню открывается ВВЕРХ от trigger, z 5100). `components/login/
+  SessionPicker.qml` — hud-компонент в правом верхнем углу (меню вниз). Оба
+  читают role-поля через helper-ListView (width/height 1, opacity 0,
+  currentIndex) без `userModel.data()`; `LoginPanel._submit()` использует
+  выбранные user/session (приоритет user: `currentLoginName` →
+  `UserPicker.currentLogin` → `userModel.lastUser`; сессия — `sessionIndex`
+  из SessionPicker через binding в Main).
+  gate-прогоны: validate exit 0, smoke exit 0, verify-theme.sh exit 0
+  (секции 1–12, включая новый user-session-probe).
+- Следующее: **stage 2.6 — HUD (power / reboot)** (`0.2.0-alpha.6`).
+- Подготовить до старта 2.6: визуальная QA pickers на 1080p/1440p (см.
+  Тех. долг); hudRow финализация при добавлении power/reboot; переносится
+  долг из 2.4/2.5 (CR-F9/CR-F10/F-1.4-b/ADR-2.4-1).
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- НОВЫЙ `theme/onyx/components/login/UserPicker.qml` — dropdown пользователя.
+  required `s`/`themeState`; `open` (≡ userMenuOpen), `selectedIndex`
+  (init `userModel.lastIndex` ?? 0), `currentName` (helper uName
+  `realName||name` → `lastUser` → «preview»/«user»), `currentLogin`
+  (helper uLogin `name` → `lastUser` → ""), `signal selected(index, login,
+  name)`, `select(index)` (set + close + emit). Trigger 32·s, label 18·s Bold
+  ls 8·s, color hover/open mainText : dimText (Behavior 200), ✦ 12·s
+  opacity hover/open (Behavior 200), MouseArea toggle. Меню вверх:
+  `anchors.bottom: trigger.top; anchors.bottomMargin: 15*s`, width 280·s,
+  z 5100, clip, height = rows·26·s + gap·6·s + 20·s (Behavior 400 OutExpo),
+  Column right/bottom; делегаты 260×26·s, текст 13·s ls 2·s, color
+  active/hover mainText : `userItemInactiveColor` (Behavior 200), rightMargin
+  hover 30·s:10·s (Behavior 200), ✦ 10·s active/hover (Behavior 200), клик →
+  `select(index)`.
+- НОВЫЙ `theme/onyx/components/login/SessionPicker.qml` — dropdown сессии
+  (hud-зона). Тот же helper-паттерн (`sessionHelper` + `sName` role).
+  `currentName` = helper sName ?? "SESSION" (заглушка до i18n 2.7); `select`
+  floor: set + close + `signal selected(index)`. Trigger width label+30·s,
+  height 15·s, z 100; label 10·s ls 3·s, ✦ 8·s; меню ВНИЗ: `x: parent.width -
+  width`, `y: parent.height + 8*s`, width 300·s, z 900, делегаты 300×26·s,
+  текст 12·s ls 2·s, ✦ 10·s. Поведения (color/rightMargin/opacity 200ms,
+  height 350 OutExpo) — как эталон Main.qml:663-674/711-735.
+- `theme/onyx/ThemeState.qml:43` — `readonly property color
+  userItemInactiveColor: "#444444"` (эталон `userItemInactive`).
+- `theme/onyx/components/login/LoginPanel.qml` — userLabel заменён на
+  `UserPicker { id: pickerInstance }` + `property alias userPicker:
+  pickerInstance`; +`property int sessionIndex` (default
+  `sessionModel.lastIndex` ?? 0); `currentLoginName` стал изменяемым
+  (`onSelected` пишет выбранный login; `currentUserName` readonly сохранён);
+  `_submit()` (LoginPanel.qml:36-54): user `currentLoginName` →
+  `userPicker.currentLogin` → `userModel.lastUser`; session `sessionIndex`
+  (если < 0 — `sessionModel.lastIndex`); PAM empty-guard сохранён.
+- `theme/onyx/Main.qml:50-68` — `loginPanel.sessionIndex` связан с
+  `sessionPicker.selectedIndex` (forward-binding по id, декларация LoginPanel
+  раньше SessionPicker валидна); `Login.SessionPicker { id: sessionPicker }`
+  в uiLayer, правый верх (rightMargin `root.marginR`, topMargin 50·s, z 100).
+- НОВЫЙ `scripts/qa/user-session-probe.qml` — автономный probe: Window-root,
+  `property var userModel/sessionModel` (ListModel), инстансы LoginPanel +
+  SessionPicker без sddm. Poll-стадийный (offscreen throttles таймеры, как
+  sparks-burst-probe: 40ms/poll, stall>25 = FAIL). Проверяет: currentName из
+  userModel; `select(1)` → currentLogin «bob», selectedIndex 1; `select(2)` →
+  session «NIRI»; `panel.sessionIndex` default 0 + assign; `open` toggle.
+  Контракт: exit 0 = `USER-SESSION-PROBE: OK`, exit 1 = `FAIL: <reason>`.
+- `scripts/verify-theme.sh` — секция 1: +`login/UserPicker.qml`,
+  +`login/SessionPicker.qml`; НОВАЯ секция 11 «user-session-probe»
+  (offscreen, 12s); секция 12 — registration regressions: прежний цикл по
+  `clock/` + новый ADR-1.8-1-гейт на токен `userModel.data(` в `login/` +
+  `theme/onyx/Main.qml`.
+
+### Тех. долг
+
+- F-2.4-1 закрыт в 2.4 (Burst.pixelSize; отмечание перенесено). Перенос из
+  2.4/2.5: CR-F9 (HiDPI), CR-F10 (greeter-integration), F-1.4-b
+  (`pragma ComponentBehavior`), ADR-2.4-1, pillWindowHiding defensive на
+  secRing.
+- Новый: «клавиатурная навигация (Ctrl+↑/↓ по user, Ctrl+←/→ по session), как
+  в эталоне Main.qml:815-827 — перенос на Beta (3.5), в скоуп 2.5 не входит».
+- Новый: «hudRow финализация: pos-пересчёт/ревизия позиционирования
+  SessionPicker при добавлении lang/power в hud в 2.6».
+- Новый: «визуальная QA user/session pickers на 1080p/1440p (открытие меню,
+  hover-поведения, ✦-индикаторы) — токен в план Beta; в offscreen меню
+  рендерится корректно (probe стабилен), на реальном GPU/X11/Wayland не
+  проверяли».
+
+### Принятые решения
+
+- **ADR-2.5-1 (helper-ListView для ролей):** UserPicker/SessionPicker получают
+  role-поля (uName/uLogin/sName) через helper-ListView (width/height 1,
+  opacity 0, currentIndex) — общий паттерн пикеров, ADR-1.8-1 продолжен;
+  `userModel.data()` не используется, verify-theme гейтит токен по `login/`.
+- **ADR-2.5-2 (сессия по умолчанию):** дефолт сессии — `sessionModel.lastIndex`
+  (fallback 0); выбор в SessionPicker перезаписывает `loginPanel.sessionIndex`
+  через binding (`sessionIndex: sessionPicker.selectedIndex`) из Main.
+
+---
+
 ## [0.2.0-alpha.4] — stage 2.4 · Date + Weekday Reveal · 2026-09-10
 
 **Версия:** `0.2.0-alpha.4` — PATCH-bump внутри milestone Alpha (stage, не веха).
