@@ -12,3 +12,8 @@ License: GPL-3.0 (see LICENSE in repository root).
 Bundled font: Outfit-Black.ttf — SIL OFL-1.1, copied verbatim from the
 original Ryoku theme (author: Darkkal44) to match the reference 1-to-1.
 License: SIL Open Font License 1.1 (https://scripts.sil.org/OFL).
+
+Bundled icons: power.svg, reboot.svg — Material Design icons
+(Apache-2.0, https://fonts.google.com/icons), copied verbatim from the
+original Ryoku theme (author: Darkkal44) to match the reference 1-to-1.
+License: Apache License 2.0.

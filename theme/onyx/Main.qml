@@ -1,6 +1,7 @@
 import QtQuick
 import "components/clock" as Clock
 import "components/effects" as Effects
+import "components/hud" as Hud
 import "components/login" as Login
 
 Rectangle {
@@ -68,15 +69,29 @@ Rectangle {
             anchors.bottomMargin: 12 * root.s
         }
 
-        Login.SessionPicker {
-            id: sessionPicker
-            s: root.s
-            themeState: state
+        Item {
+            id: hudContainer
             anchors.right: parent.right
             anchors.rightMargin: root.marginR
             anchors.top: parent.top
             anchors.topMargin: 50 * root.s
-            z: 100
+
+            Row {
+                id: hudRow
+                spacing: 25 * root.s
+
+                Login.SessionPicker {
+                    id: sessionPicker
+                    s: root.s
+                    themeState: state
+                }
+
+                Hud.HudActions {
+                    id: hudActions
+                    s: root.s
+                    themeState: state
+                }
+            }
         }
     }
 

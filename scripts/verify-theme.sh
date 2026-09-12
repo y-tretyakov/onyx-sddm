@@ -20,7 +20,8 @@ End-to-end validation of the Onyx SDDM theme (local checks only):
     9. sparks-burst-probe.qml — offscreen sparks intensity/burst probe
    10. date-reveal-probe.qml — offscreen date+weekday stagger reveal probe
    11. user-session-probe.qml — offscreen pickers + sddm.login wiring probe
-   12. registration regressions (forbidden tokens)
+  12. hud-probe.qml — offscreen reboot/power click-through + hover surface probe
+   13. registration regressions (forbidden tokens)
 
 Every check prints [ OK ] or [ FAIL ]; any [ FAIL ] exits 1 immediately.
 Final success line: [ OK ] verify OK. Exit 0 = all passed.
@@ -59,7 +60,7 @@ else
     fail "theme/onyx/icons/ empty"
 fi
 
-for f in clock/ClockRoot.qml clock/DateBlock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml effects/AnimEngine.qml effects/qmldir effects/Sparks.qml effects/Burst.qml effects/StaggerText.qml login/LoginPanel.qml login/AuthFeedback.qml login/UserPicker.qml login/SessionPicker.qml; do
+for f in clock/ClockRoot.qml clock/DateBlock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml effects/AnimEngine.qml effects/qmldir effects/Sparks.qml effects/Burst.qml effects/StaggerText.qml login/LoginPanel.qml login/AuthFeedback.qml login/UserPicker.qml login/SessionPicker.qml hud/HudAction.qml hud/HudActions.qml; do
     if [[ -r "${THEME_DIR}/components/${f}" ]]; then
         ok "components/${f} present"
     else
@@ -172,8 +173,16 @@ else
     fail "user-session-probe failed"
 fi
 
-# --- 12. registration regressions ---
-echo "--- 12. registration regressions ---"
+# --- 12. hud-probe ---
+echo "--- 12. hud-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 12 "${RUNNER}" "${ROOT_DIR}/scripts/qa/hud-probe.qml"; then
+    ok "hud-probe passed (reboot/power click-through + hover surface)"
+else
+    fail "hud-probe failed"
+fi
+
+# --- 13. registration regressions ---
+echo "--- 13. registration regressions ---"
 for _bad in "userModel.data(" "smoothHand" "currentIndex"; do
     if rg -F -l --glob "*.qml" "$_bad" theme/onyx/components/clock/; then
         echo "FAIL: forbidden token '$_bad' present in clock components" >&2
