@@ -5,6 +5,822 @@
 
 ---
 
+## [0.2.9-alpha] — stage 2.9 · Alpha Freeze · 2026-09-12
+
+**Версия:** `0.2.9-alpha` — финальный этап Alpha (freeze). Тег/release НЕ ставились —
+ожидает апрува пользователя (next: PR dev→main, tag 0.2.9-alpha + GitHub Release,
+далее Beta 3.1).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [x] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [x] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [x] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [x] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [x] 2.9 Alpha freeze — `0.2.9-alpha` ✅ THIS
+
+- [x] Milestone: Alpha (0.2.x-alpha) — релиз-тег ожидает апрува
+- [ ] 3.1 Full language set (9 languages) — `0.3.0-beta.1`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.9 — Alpha freeze** закрыт. Regression sweep PASS (validate
+  exit 0; verify-theme 15/15 `[ OK ]`, registration PASS, EXIT 0; probes
+  i18n/virtual-cursor/user-session/hud OK; hygiene-скан без TODO/FIXME/DEBUG,
+  VirtualCursor без Behavior/MouseArea). Visual QA 1920×1080 и 2560×1440 через
+  Xvfb PASS (размеры PNG >20 KB; s=H/768 → marginR 112.5/150 px; контракт
+  pill→panel сохранён).
+- Следующее: **апрув Юрия** (manual-gate: живой Wayland-глиф VirtualCursor на
+  CachyOS/Weston, реальный auth/login-цикл, 1080/1440 на мониторе) → затем PR
+  dev→main, tag 0.2.9-alpha, GitHub Release; далее Beta 3.1 (9 языков).
+- Подготовить к Beta: закрыть CR-F9 (HiDPI scale), CR-F10 (greeter-integration
+  test), F-1.4-b (`pragma ComponentBehavior`, Qt≥6.6), ADR-2.4-1.
+- Блокеры: нет (апрув — не блокер, а ветка flow).
+
+### Детали изменений (для агентов)
+
+- (no functional code changed — freeze stage)
+- theme/onyx/metadata.desktop — `Version=0.2.9-alpha`.
+- README.md — бейдж + статус freeze.
+- CHANGELOG.md — запись 0.2.9-alpha; тик-лист Alpha полностью `[x]`.
+
+### Тех. долг
+
+- CR-F9 (HiDPI scale) — открыт, переносится в Beta 3.8.
+- CR-F10 (реальный login integration) — открыт, переносится в Beta 3.3.
+- F-1.4-b (`pragma ComponentBehavior`) — ждёт Qt≥6.6 в CI.
+- ADR-2.4-1 (StaggerText own component) — переносится в Beta.
+- Manual-gate реального greeter (Wayland cursor, auth-цикл) — на пользователе.
+
+### Принятые решения
+
+- **ADR-2.9-1 (freeze):** этап без новых фич; правки — только фиксы из QA
+  (не найдено ни одного — чистый freeze).
+- **ADR-2.9-2 (milestone tag):** тег 0.2.9-alpha + GitHub Release НЕ ставятся в
+  этом stage — ждёт апрува пользователя (AGENTS.md §3 rule 7; merge dev→main).
+- **ADR-2.9-3 (debt transfer):** CR-F9/CR-F10/F-1.4-b/ADR-2.4-1 — в Beta;
+  freeze не тянет долг за собой в main.
+
+---
+
+## [0.2.0-alpha.8] — stage 2.8 · Wayland Virtual Cursor ✦ · 2026-09-12
+
+**Версия:** `0.2.0-alpha.8` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [x] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [x] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [x] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [x] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8` ✅ THIS
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.8 — Wayland Virtual Cursor ✦** закрыт.
+  VirtualCursor.qml (глиф ✦ по `Window.window.cursorPosition`, без Behavior —
+  мгновенно; только Wayland `isWayland`, на X11 скрыт; без полноэкранного
+  hover-слоя), ThemeState.isWayland (`Qt.platform.pluginName`), wiring в Main
+  (z 9998), virtual-cursor-probe в секцию 14 (registration → 15).
+  Следующее — Alpha 2.9 Alpha Freeze (ревизия всей Alpha, полный verify,
+  bump 0.2.9-alpha).
+- Подготовить до старта 2.9: ревизия Alpha-этапов 2.1–2.8, визуальная QA
+  VirtualCursor на CachyOS/Weston (живой Wayland-глиф), переносится долг из
+  ранних этапов (CR-F9/CR-F10/F-1.4-b/ADR-2.4-1).
+- Блокеры: нет.
+
+### Детали изменений
+
+- theme/onyx/ThemeState.qml:25 — `readonly property bool isWayland`
+  (`Qt.platform.pluginName.toLowerCase().indexOf("wayland") >= 0`; НЕ `Qt.platform.name`
+  — qmllint 6.4.2 не знает это свойство и отвечает exit 255; pluginName — то же
+  рантайм-значение QQmlPlatform, проходил CI-gate).
+- theme/onyx/components/platform/VirtualCursor.qml — лист: `cursorX`/`cursorY`/
+  `uiReady`, `active = isWayland && uiReady`, `gx`/`gy` центрирование,
+  Text ✦ 18·s, НЕТ Behavior/MouseArea.
+- theme/onyx/Main.qml:97-104 — VirtualCursor: cursorX/Y из
+  `Window.window.cursorPosition` с guard через `readonly property var _win`
+  (qmllint 6.4 не знает `cursorPosition` на QQuickWindow и отвечает exit 255 —
+  доступ через var-алиас обходит тип-check и даёт то же рантайм-значение),
+  `uiReady: engine.uiOpacity > 0.99`,
+  z 9998 (под boomOverlay z 9999). Строка `onSessionIndexChanged: {}` не тронута.
+- scripts/qa/virtual-cursor-probe.qml — скрыт на offscreen; мгновенная привязка
+  x/y проверяется в тот же тик; контракт `VIRTUAL-CURSOR-PROBE: OK`.
+- scripts/verify-theme.sh — секция 14 virtual-cursor-probe, registration → 15,
+  `platform/VirtualCursor.qml` добавлен в структуру.
+
+**Тех. долг:** нет.
+
+**Принятые решения:**
+
+- ADR-2.8-1: прямая привязка x/y без Behavior (твердое требование спеки о
+  нулевой задержке).
+- ADR-2.8-2: курсор — неинтерактивный Text, полноэкранного hover-слоя нет →
+  hover/click не воруются (приёмка «с первого касания»).
+- ADR-2.8-3: детект Wayland через
+  `Qt.platform.pluginName.toLowerCase().indexOf("wayland")` (та же семантика, что
+  `Qt.platform.name` эталона ryoku:94, но qmllint 6.4 знает pluginName и не знает
+  name → exit 255); всё остальное → false.
+
+---
+
+## [0.2.0-alpha.7] — stage 2.7 · i18n Core (en + ru + uk) · 2026-09-12
+
+**Версия:** `0.2.0-alpha.7` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [x] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [x] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [x] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7` ✅ THIS
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.7 — i18n Core (en + ru + uk)** закрыт.
+  `translations.js` с тремя языками (en/ru/uk) — `.pragma library`,
+  `languageOrder`/`languageNames`, `detectLanguage()` (split на `_`/`-`,
+  lowercase, fallback `"en"`), `t()` (fallback на английский). Main.qml
+  держит `language` (`Tr.detectLanguage(Qt.locale().name)`) и `curT`
+  (текущий словарь). `components/hud/LangPicker.qml` — dropdown в hudRow
+  (порядок LangPicker | SessionPicker | HudActions), signal `selected`.
+  `SessionPicker.fallbackName` привязан к `curT["session"]`. Offscreen
+  `i18n-probe` (проверяет detectLanguage, переключение языка, English
+  fallback) — секция 13 verify-theme (registration → 14). Следующее —
+  Alpha 2.8 Wayland Virtual Cursor (курсор-✦ привязан к
+  `Window.window.cursorPosition`, без Behavior, X11 нативный).
+- Подготовить до старта 2.8: продумать cursor-✦ (Wayland only), не блокирующий
+  клики; переносится долг из ранних этапов (CR-F9/CR-F10/F-1.4-b/ADR-2.4-1).
+- Блокеры: нет.
+
+### Детали изменений
+
+- theme/onyx/translations.js — `.pragma library`, `languageOrder`, `languageNames`,
+  3 словаря (en/ru/uk), `detectLanguage()`, `t()` fallback.
+- theme/onyx/components/hud/LangPicker.qml — props `languageOrder`/`languageNames`/
+  `currentLang`, signal `selected`, dropdown 200·s (маркер ✦, Behavior 200ms).
+- theme/onyx/components/login/SessionPicker.qml:16 — `property string fallbackName: "SESSION"`,
+  `currentName` binding использует `picker.fallbackName`.
+- theme/onyx/Main.qml:27-28 — `language`, `curT` properties; hudRow порядок
+  LangPicker | SessionPicker | HudActions; LangPicker получает `s`/`themeState`
+  + явные языковые props; SessionPicker получает `fallbackName: root.curT["session"]`.
+- scripts/qa/i18n-probe.qml — detectLanguage, переключение языка, English fallback,
+  контракт `I18N-PROBE: OK`.
+- scripts/verify-theme.sh — новая секция 13 i18n-probe, registration → секция 14,
+  `hud/LangPicker.qml` добавлен в структуру.
+
+**Тех. долг:** нет.
+
+**Принятые решения:**
+
+- ADR-2.7-1: `detectLanguage` split на `_`/`-`, lowercase, проверка по
+  `languageOrder`, default `"en"`. Без country-гранулярности — языков всего 3,
+  простота здесь корректна.
+- ADR-2.7-2: языковое состояние живёт в Main (`language`, `curT`); компоненты
+  получают данные явными props (`languageOrder`, `languageNames`, `currentLang`,
+  `fallbackName`) — без неявных `Tr.*` внутри дочерних компонентов, сохраняя
+  чистоту qmllint 6.4.
+
+---
+
+## [0.2.0-alpha.6] — stage 2.6 · HUD (Power / Reboot) · 2026-09-12
+
+**Версия:** `0.2.0-alpha.6` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [x] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [x] 2.6 HUD (power / reboot) — `0.2.0-alpha.6` ✅ THIS
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.6 — HUD (power / reboot)** закрыт. В hud-зону добавлены
+  power/reboot-кнопки (`components/hud/HudAction.qml` — лист-кнопка:
+  публичный `active` (bind к hover), scale 1.12 + ColorOverlay-перекраска,
+  signal `clicked()`; `components/hud/HudActions.qml` — строка `[reboot |
+  power]` с разделителем), вызывающие `sddm.reboot()` / `sddm.powerOff()`
+  под `typeof sddm` guard. `Main.qml`: `hudContainer`/`hudRow` (порядок
+  [SessionPicker, HudActions], right marginR, top 50·s, spacing 25·s).
+  Иконки `icons/power.svg` + `reboot.svg` (Material, Apache-2.0,
+  PROVENANCE дополнен). Offscreen `hud-probe` — click-through + hover
+  проверка — секция 12 verify-theme (registration переименована в 13).
+  gate-прогоны: validate exit 0, verify-theme.sh exit 0 (секции 1–13,
+  включая 12 hud-probe и 13 registration).
+- Следующее: **stage 2.7 — i18n Core (en + ru + uk)** (`0.2.0-alpha.7`).
+- Подготовить до старта 2.7: визуальная QA HUD power/reboot на 1080p/1440p;
+  продумать встраивание language-selector в hudContainer рядом с
+  SessionPicker/HudActions; переносится долг из ранних этапов
+  (CR-F9/CR-F10/F-1.4-b/ADR-2.4-1).
+- Блокеры: нет.
+
+### Детали изменений
+
+- theme/onyx/components/hud/HudAction.qml — лист-кнопка: `active`
+  (публичный, JS-присваиваемый для probe), scale 1.12 hover,
+  ColorOverlay-перекраска, signal clicked().
+- theme/onyx/components/hud/HudActions.qml:15-31 — reboot → `sddm.reboot()`,
+  power → `sddm.powerOff()`, hoverColor #4a9eff / #ff5c5c,
+  разделитель pillDividerColor.
+- theme/onyx/Main.qml:46-69 — hudContainer/hudRow позиционирование
+  (right marginR, top 50·s, spacing 25·s), порядок [SessionPicker, HudActions].
+- scripts/qa/hud-probe.qml — break «кнопки работают» и «есть hover» через
+  sddm-стаб и public active.
+- Иконки: Material (Apache-2.0), копия из Ryoku 1-to-1, PROVENANCE.txt дополнен.
+
+**Тех. долг:** нет.
+
+**Принятые решения:**
+
+- ADR-2.6-1: hover-состояние моделируется публичным property `active`
+  (bind к containsMouse) — даёт offline-проверку hover без SDDM.
+- ADR-2.6-2: иконки копируются verbatim из эталона (1-to-1 визуально),
+  PROVENANCE фиксирует Apache-2.0.
+
+---
+
+## [0.2.0-alpha.5] — stage 2.5 · User & Session Pickers · 2026-09-12
+
+**Версия:** `0.2.0-alpha.5` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [x] 2.5 User & Session pickers — `0.2.0-alpha.5` ✅ THIS
+- [ ] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.5 — User & Session Pickers** закрыт. Два dropdown'а выбора
+  пользователя и сессии из `userModel`/`sessionModel`, влияющие на
+  `sddm.login(...)`. `components/login/UserPicker.qml` — внутри LoginPanel
+  (меню открывается ВВЕРХ от trigger, z 5100). `components/login/
+  SessionPicker.qml` — hud-компонент в правом верхнем углу (меню вниз). Оба
+  читают role-поля через helper-ListView (width/height 1, opacity 0,
+  currentIndex) без `userModel.data()`; `LoginPanel._submit()` использует
+  выбранные user/session (приоритет user: `currentLoginName` →
+  `UserPicker.currentLogin` → `userModel.lastUser`; сессия — `sessionIndex`
+  из SessionPicker через binding в Main).
+  gate-прогоны: validate exit 0, smoke exit 0, verify-theme.sh exit 0
+  (секции 1–12, включая новый user-session-probe).
+- Следующее: **stage 2.6 — HUD (power / reboot)** (`0.2.0-alpha.6`).
+- Подготовить до старта 2.6: визуальная QA pickers на 1080p/1440p (см.
+  Тех. долг); hudRow финализация при добавлении power/reboot; переносится
+  долг из 2.4/2.5 (CR-F9/CR-F10/F-1.4-b/ADR-2.4-1).
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- НОВЫЙ `theme/onyx/components/login/UserPicker.qml` — dropdown пользователя.
+  required `s`/`themeState`; `open` (≡ userMenuOpen), `selectedIndex`
+  (init `userModel.lastIndex` ?? 0), `currentName` (helper uName
+  `realName||name` → `lastUser` → «preview»/«user»), `currentLogin`
+  (helper uLogin `name` → `lastUser` → ""), `signal selected(index, login,
+  name)`, `select(index)` (set + close + emit). Trigger 32·s, label 18·s Bold
+  ls 8·s, color hover/open mainText : dimText (Behavior 200), ✦ 12·s
+  opacity hover/open (Behavior 200), MouseArea toggle. Меню вверх:
+  `anchors.bottom: trigger.top; anchors.bottomMargin: 15*s`, width 280·s,
+  z 5100, clip, height = rows·26·s + gap·6·s + 20·s (Behavior 400 OutExpo),
+  Column right/bottom; делегаты 260×26·s, текст 13·s ls 2·s, color
+  active/hover mainText : `userItemInactiveColor` (Behavior 200), rightMargin
+  hover 30·s:10·s (Behavior 200), ✦ 10·s active/hover (Behavior 200), клик →
+  `select(index)`.
+- НОВЫЙ `theme/onyx/components/login/SessionPicker.qml` — dropdown сессии
+  (hud-зона). Тот же helper-паттерн (`sessionHelper` + `sName` role).
+  `currentName` = helper sName ?? "SESSION" (заглушка до i18n 2.7); `select`
+  floor: set + close + `signal selected(index)`. Trigger width label+30·s,
+  height 15·s, z 100; label 10·s ls 3·s, ✦ 8·s; меню ВНИЗ: `x: parent.width -
+  width`, `y: parent.height + 8*s`, width 300·s, z 900, делегаты 300×26·s,
+  текст 12·s ls 2·s, ✦ 10·s. Поведения (color/rightMargin/opacity 200ms,
+  height 350 OutExpo) — как эталон Main.qml:663-674/711-735.
+- `theme/onyx/ThemeState.qml:43` — `readonly property color
+  userItemInactiveColor: "#444444"` (эталон `userItemInactive`).
+- `theme/onyx/components/login/LoginPanel.qml` — userLabel заменён на
+  `UserPicker { id: pickerInstance }` + `property alias userPicker:
+  pickerInstance`; +`property int sessionIndex` (default
+  `sessionModel.lastIndex` ?? 0); `currentLoginName` стал изменяемым
+  (`onSelected` пишет выбранный login; `currentUserName` readonly сохранён);
+  `_submit()` (LoginPanel.qml:36-54): user `currentLoginName` →
+  `userPicker.currentLogin` → `userModel.lastUser`; session `sessionIndex`
+  (если < 0 — `sessionModel.lastIndex`); PAM empty-guard сохранён.
+- `theme/onyx/Main.qml:50-68` — `loginPanel.sessionIndex` связан с
+  `sessionPicker.selectedIndex` (forward-binding по id, декларация LoginPanel
+  раньше SessionPicker валидна); `Login.SessionPicker { id: sessionPicker }`
+  в uiLayer, правый верх (rightMargin `root.marginR`, topMargin 50·s, z 100).
+- НОВЫЙ `scripts/qa/user-session-probe.qml` — автономный probe: Window-root,
+  `property var userModel/sessionModel` (ListModel), инстансы LoginPanel +
+  SessionPicker без sddm. Poll-стадийный (offscreen throttles таймеры, как
+  sparks-burst-probe: 40ms/poll, stall>25 = FAIL). Проверяет: currentName из
+  userModel; `select(1)` → currentLogin «bob», selectedIndex 1; `select(2)` →
+  session «NIRI»; `panel.sessionIndex` default 0 + assign; `open` toggle.
+  Контракт: exit 0 = `USER-SESSION-PROBE: OK`, exit 1 = `FAIL: <reason>`.
+- `scripts/verify-theme.sh` — секция 1: +`login/UserPicker.qml`,
+  +`login/SessionPicker.qml`; НОВАЯ секция 11 «user-session-probe»
+  (offscreen, 12s); секция 12 — registration regressions: прежний цикл по
+  `clock/` + новый ADR-1.8-1-гейт на токен `userModel.data(` в `login/` +
+  `theme/onyx/Main.qml`.
+
+### Тех. долг
+
+- F-2.4-1 закрыт в 2.4 (Burst.pixelSize; отмечание перенесено). Перенос из
+  2.4/2.5: CR-F9 (HiDPI), CR-F10 (greeter-integration), F-1.4-b
+  (`pragma ComponentBehavior`), ADR-2.4-1, pillWindowHiding defensive на
+  secRing.
+- Новый: «клавиатурная навигация (Ctrl+↑/↓ по user, Ctrl+←/→ по session), как
+  в эталоне Main.qml:815-827 — перенос на Beta (3.5), в скоуп 2.5 не входит».
+- Новый: «hudRow финализация: pos-пересчёт/ревизия позиционирования
+  SessionPicker при добавлении lang/power в hud в 2.6».
+- Новый: «визуальная QA user/session pickers на 1080p/1440p (открытие меню,
+  hover-поведения, ✦-индикаторы) — токен в план Beta; в offscreen меню
+  рендерится корректно (probe стабилен), на реальном GPU/X11/Wayland не
+  проверяли».
+
+### Принятые решения
+
+- **ADR-2.5-1 (helper-ListView для ролей):** UserPicker/SessionPicker получают
+  role-поля (uName/uLogin/sName) через helper-ListView (width/height 1,
+  opacity 0, currentIndex) — общий паттерн пикеров, ADR-1.8-1 продолжен;
+  `userModel.data()` не используется, verify-theme гейтит токен по `login/`.
+- **ADR-2.5-2 (сессия по умолчанию):** дефолт сессии — `sessionModel.lastIndex`
+  (fallback 0); выбор в SessionPicker перезаписывает `loginPanel.sessionIndex`
+  через binding (`sessionIndex: sessionPicker.selectedIndex`) из Main.
+
+---
+
+## [0.2.0-alpha.4] — stage 2.4 · Date + Weekday Reveal · 2026-09-10
+
+**Версия:** `0.2.0-alpha.4` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4` ✅ THIS
+- [ ] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [ ] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.4 — Date + Weekday Reveal** закрыт. Дата и день недели
+  собираются посимвольно сразу после ветрапа (один раз при старте, после boom и
+  fade-in): `AnimEngine.fadeInFinished` (новый сигнал) → `Main`
+  `onFadeInFinished: clock.startDateReveal()` → `ClockRoot.startDateReveal()` →
+  `DateBlock.startReveal()`. StaggerText — переиспользуемый per-char ревил
+  (master progress NumberAnimation, duration `320 + len*28`, per-char
+  opacity/scale/translateY через easedFor с easeOutBack c1=1.70158; charW =
+  `stPixelSize*0.72`, шрифт из `themeState.fontFamily`). Дата стартует сразу
+  (`dateAnimActive`), день недели — через `weekdayDelayTimer` 420ms
+  (`weekdayAnimActive`); вся пара строк мягко blur→sharp: `dateBlurR` 7→0 за
+  800ms через GaussianBlur (samples 16) на двух per-line Item layer-слоях.
+  Закрыт follow-up ревью 2.3 **F-2.4-1**: `Burst.pixelSize` параметром — sec
+  30·s / min 54·s / hour 110·s (30·s остаётся дефолтом компонента).
+  gate-прогоны: validate exit 0, smoke exit 0, windup-probe exit 0,
+  tickfeedback-probe exit 0, sparks-burst-probe exit 0, date-reveal-probe
+  exit 0, verify-theme.sh exit 0 (секции 1–11).
+- Следующее: **stage 2.5 — User & Session pickers** (`0.2.0-alpha.5`).
+- Подготовить до старта 2.5: визуальная QA date reveal на 1080p/1440p
+  (см. Тех. долг); переносится долг CR-F9/CR-F10/F-1.4-b.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- НОВЫЙ `theme/onyx/components/effects/StaggerText.qml` — per-char reveal.
+  required `text`/`s`/`themeState`; `stPixelSize` (default `13*s`),
+  `stLetterSpacing`, `stColor`, `stWeight`, `staggerActive`, `progress`; readonly
+  `charW = stPixelSize*0.72`, `stDuration = 320 + text.length*28`. На
+  `staggerActive` → `progress=0`, restart master (`StaggerText.qml:30-36`).
+  `easedFor(i)` — easeOutBack (c1=1.70158, `1 + c3*(raw-1)^3 + c1*(raw-1)^2`),
+  на прогресс мапается `t*(N+1)` (`StaggerText.qml:41-49`). Row+Repeater:
+  `opacity: e`, `scale: 1-(1-e)*0.08`, `Translate.y: (1-e)*stPixelSize*0.8`
+  (`StaggerText.qml:55-73`). Импорт `"../.."` — берёт `themeState` напрямую,
+  без root-скоупа.
+- `theme/onyx/components/effects/qmldir` — `StaggerText 1.0 StaggerText.qml`.
+- `theme/onyx/components/clock/DateBlock.qml` — переписан на StaggerText
+  (`DateBlock.qml:3-4` импорт `Qt5Compat.GraphicalEffects` + `"../effects"`).
+  Публичные props: `dateAnimActive`/`weekdayAnimActive`/`dateBlurR`
+  (`DateBlock.qml:11-13`); `startReveal()` (`DateBlock.qml:27-31`) — `dateBlurR=7`,
+  `dateAnimActive=true`, `dateBlurAnim.restart()` (from:7→to:0, 800ms),
+  `weekdayDelayTimer.restart()` (420ms). Две строки обёрнуты в Item с
+  `layer.enabled: dateBlurR>0.01` + `layer.effect: GaussianBlur{radius: dateBlurR;
+  samples: 16}` (per-line, `DateBlock.qml:43-50,63-70`). Дата: 13·s subColor,
+  ls 4·s (`stLetterSpacing`); weekday: 18·s mainText Bold, ls 8·s.
+  `width: Math.max(dW.implicitWidth, wW.implicitWidth)`,
+  `height: dW.height + wW.height + 5*s` — не изменены.
+- `theme/onyx/components/effects/AnimEngine.qml:17` — `signal fadeInFinished`;
+  emit в `_tick()` фаза 2, когда `fdt >= fadeInDuration`, после `uiOpacity = 1`,
+  перед `isWindup = false` (`AnimEngine.qml:96-97`).
+- `theme/onyx/components/clock/ClockRoot.qml:12` — `property alias dateBlock:
+  dateBlk`; `function startDateReveal() { dateBlk.startReveal() }`
+  (`ClockRoot.qml:136`). Три `Effects.Burst` получили `pixelSize`: sec
+  `30*clockRoot.s`, min `54*clockRoot.s`, hour `110*clockRoot.s`.
+- `theme/onyx/components/effects/Burst.qml:12` — `property real pixelSize:
+  30*burst.s` (F-2.4-1); оба Text используют `burst.pixelSize`.
+- `theme/onyx/Main.qml:31` — `onFadeInFinished: clock.startDateReveal()`.
+- НОВЫЙ `scripts/qa/date-reveal-probe.qml` — poll-based (offscreen render loop
+  лагает NumberAnimation и 420ms-таймер против валл-тайма, как в 2.3).
+  В `Component.onCompleted`: заморозка живых ticker'ов, ручной
+  `clockRoot.startDateReveal()`. Фаза 1 (poll до 500ms): `dateAnimActive` +
+  `dateBlurR > 0` + гейт `!weekdayAnimActive` (weekday ещё не стартовал);
+  фаза 2 (poll до 2s): `weekdayAnimActive === true` (420ms-задержка отдала);
+  фаза 3 (poll до 3s): `dateBlurR === 0` && `dateAnimActive`. Контракт:
+  exit 0 = `DATE-REVEAL-PROBE: OK` / exit 1 = `FAIL: <reason>`.
+- `scripts/verify-theme.sh` — секция 1: +`effects/StaggerText.qml`; секция 10
+  «date-reveal-probe» (offscreen, 18s); секция 11 — registration regressions
+  (перенумерована из 10).
+
+### Тех. долг
+
+- F-2.4-1 закрыт. Перенос из 2.3: CR-F9 (HiDPI), CR-F10 (greeter-integration),
+  F-1.4-b (`pragma ComponentBehavior`), ADR-2.2-2 (boom-scale parity),
+  pillWindowHiding defensive на secRing.
+- Новый: «GaussianBlur layer на DateBlock — следить за перфомансом на слабых
+  GPU в Beta (аналог замечания sparks 60×16ms): 2 Item-слоя активны только пока
+  `dateBlurR > 0.01`, после reveal layer отключается».
+- Новый: «визуальная QA 1080p/1440p date reveal (посимвольная сборка, blur
+  sharpen, задержка weekday) — токен в план Beta». В offscreen-GaussianBlur
+  рендерится корректно (smoke + probe стабильны), на реальном GPU не проверяли.
+
+### Принятые решения
+
+- **ADR-2.4-1 (StaggerText — собственный компонент):** per-char reveal вынесен
+  в `effects/StaggerText.qml` (не инлайн component как в оригинале) — компонент
+  переиспользуем и не зависит от root-скоупа (`themeState` качается через
+  required property, импорт `"../.."`). Blur применён на **per-line** Item-слоях,
+  а не на Column — приклейка GaussianBlur к двум строкам раздельно, чтобы строки
+  не blur-или друг друга через общий слой и чтобы layer включался точечно.
+
+---
+
+## [0.2.0-alpha.3] — stage 2.3 · Sparks + Bursts · 2026-09-10
+
+**Версия:** `0.2.0-alpha.3` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3` ✅ THIS
+- [ ] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [ ] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [ ] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.3 — Sparks + Bursts** закрыт. Sparks — частицы
+  (`effects/Sparks.qml`, z:50, центр cx/cy): 60 частиц, жизнь 600–1000ms
+  OutQuad-fade, позиция по жизни, интенсивность = `Math.max(sparkWindup,
+  sparkImpulse)`; в момент каждого burst `sparkBurst++` перезапускает инстанциатор.
+  Bursts — клоны цифры (`effects/Burst.qml`, z:20, white + accent 0.65, 30·s
+  Bold): scale 1→2.2 450ms OutCubic + opacity 0.9→0 450ms OutQuad
+  (ParallelAnimation) для сек (pill.secCenter), минут (pill.minCenter) и часов
+  (центр hourText). Триггеры `maybeSecBurst`/`maybeMinBurst`/`maybeHourBurst`
+  (dedupe по lastSec/Min/Hour) + `sparkImpulseAnim` 0→0.8 200ms OutCubic → 0
+  500ms OutCubic. Гейт `clockAwake`: при `false` все burst-анимации стопятся,
+  opacity/sparkImpulse обнуляются, новые burst не стартуют. Секундная орбиталь
+  больше НЕ мерцает при смене секунды (только feedback на минуту). Закрыт
+  follow-up ревью 2.2 **F-2.3-1** (одинарный гейт triggerTickFeedback,
+  tickFlash только на minute ring). gate-прогоны: validate exit 0, smoke exit 0,
+  tickfeedback-probe exit 0, sparks-burst-probe exit 0 (6× стабильно),
+  verify-theme.sh exit 0 (секции 1–10).
+- Следующее: **stage 2.4 — Date + weekday reveal** (`0.2.0-alpha.4`).
+- Подготовить до старта 2.4: ADR-2.2-2 (boom-scale parity) — оформить токеном в
+  план; проверить визуально sparks/burst на 1440p (плотность частиц, размер
+  клона) — зафиксировать в план 2.4 как визуальную QA-задачу.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- НОВЫЙ `theme/onyx/components/effects/Sparks.qml` — particle-слой (z:50),
+  центр `centerX/centerY`, `sparkIntensity` — целевая интенсивность,
+  `burstTick` — счётчик рестартов. Логика: Repeater 60 частиц; каждая частица
+  имеет скорость/направление от центра, жизнь 600–1000ms; контейнер
+  `IntensityGroup` двигает opacity = `sparkIntensity` (capped), на `burstTick`
+  частицы перезапускаются с новой случайной скоростью. Формулы распределения —
+  своя компонентная реализация в духе эталона (не копия): см.
+  `docs/superpowers/plans/2026-09-10-stage-2.3-sparks-bursts.md` №2.
+- НОВЫЙ `theme/onyx/components/effects/Burst.qml` — клон цифры. required
+  `text`/`s`/`themeState`; ширина/высота 1 (размер числа задаёт clockRoot);
+  `z:20`; `visible: opacity > 0.01`; цвет white с под-слоем accent 0.65;
+  `font.pixelSize: 30 * s`, Bold, family `themeState.fontFamily`. Позиция/scale/
+  opacity управляются снаружи (x/y/scale/opacity) — писать внутрь компонента
+  self-binding нельзя (binding loop), см. Note ниже.
+- `theme/onyx/components/effects/qmldir` — module Effects: добавлены
+  `Sparks 1.0 Sparks.qml`, `Burst 1.0 Burst.qml`.
+- `theme/onyx/components/clock/ClockRoot.qml` — триггеры bursts и sparks-веб:
+  props (`ClockRoot.qml:22-46`): `sparkWindup`, `sparkBurst: Int`, `sparkImpulse`,
+  `lastSec/Min/Hour`, `secBurst{Scale,Opacity,Text,X,Y}`, ...hour...;
+  `sparkImpulseAnim` Sequential 0→0.8 200ms OutCubic → 0 500ms OutCubic
+  (`ClockRoot.qml:102-106`); три `ParallelAnimation` burst (`108-124`): scale
+  1→2.2 450ms OutCubic + opacity 0.9→0 450ms OutQuad (ParallelAnimation, а НЕ
+  Sequential — Sequential оставил бы цифру невидимой первые 450ms и сломал бы
+  timing probe); `onClockAwakeChanged` (`126-133`) стопает анимации и обнуляет
+  opacity/sparkImpulse при `!clockAwake`; `maybeSecBurst/Min/Hour`
+  (`143-186`) — гейт `clockRoot.clockAwake`, dedupe по last*, coords через
+  `pill.mapToItem(clockRoot, …)` / центр `hourText`, `restart()` анимации +
+  `sparkBurst++` + `sparkImpulseAnim.restart()`; `Connections` (`188-193`) на
+  `_time.curS/curM/curH` (curM — feedback+burst). `Effects.Sparks`
+  (`258-267`): `sparkIntensity: Math.max(sparkWindup, sparkImpulse)`,
+  `burstTick: sparkBurst`. Три `Effects.Burst` (`308-336`).
+- `theme/onyx/Main.qml` — `clockAwake` (не readonly, ставится из state;
+  `clockAwake: state.clockAwake` в Main) + гейт `sparkWindup`:
+  `engine.isWindup && windupProgress > 0.2 ? (windupProgress - 0.2) * 2.2 : 0` —
+  для sparkIntensity (план хотел `windupProgress` напрямую, но после windup
+  прогресс навсегда 1.0; без гейта sparks висели бы на 1.76 вечно).
+- `theme/onyx/components/clock/IndicatorPill.qml` — readonly `minCenterX/Y`,
+  `secCenterX/Y` (центр блоков минут/секунд pill) для позиционирования burst.
+- `theme/onyx/components/clock/OrbitalRing.qml` (ringSec в ClockRoot) — убран
+  `tickFlash`-проброс на seconds ring (частично было на 2.2, F-2.3-1 финализирует);
+  feedback живёт только на minute ring.
+- НОВЫЙ `scripts/qa/sparks-burst-probe.qml` — автономный probe (Window 480x200 +
+  ThemeState{s:1} + ClockRoot{s:1, clockAwake:true}). Детерминизм: в
+  `Component.onCompleted` стопаются живые тикеры (`timeProvider.clockAwake =
+  false`, `timeProvider.tickTimer.stop()`), время гонится вручную curS "01"→"02".
+  Poll-based (не жёсткие тайминги — offscreen render loop тормозит NumberAnimation):
+  полл «burst стартовал» (opacity>0 && impulse>0, budget 300ms), полл «faded»
+  (opacity<0.1 && scale>=2.1 && impulse<0.05, budget 1.5s), затем ручные
+  curM="42"/curH="07" → minBurstOpacity>0 && hourBurstOpacity>0 && sparkBurst>=3,
+  затем гейт: `clockAwake=false` + curS="03" + `maybeSecBurst()` → opacity и
+  impulse <0.01. Контракт: exit 0 = OK / exit 1 = FAIL. Запуск:
+  `QT_QPA_PLATFORM=offscreen qml6 scripts/qa/sparks-burst-probe.qml`.
+- `scripts/verify-theme.sh` — структура секции 1: +`effects/Sparks.qml`,
+  +`effects/Burst.qml`; новая секция 9 «sparks-burst-probe», секция 10 —
+  registration regressions (перенумерована из 9).
+- Note (почему нет self-binding в Burst): свойства x/y/scale/opacity у Item —
+  это встроенные свойства трансформации; привязка `x: burst.x` внутри
+  компонента, инстанцированного как `burst.x: …`, образует цикл (сказ.
+  binding loop). Правильная структура — позиция/масштаб/прозрачность текут из
+  clockRoot (мастер-точка), Burst хранит НЕ клоны этих свойств, а
+  семантику (text/s/themeState).
+
+### Тех. долг
+
+- F-2.3-1 закрыт. ADR-2.2-2 (boom-scale parity) — перенесён токеном в план 2.4.
+- Визуальная QA на реальном greeter (1080p/1440p): плотность sparks,
+  размер/позиция burst-клона, поведение при wake — делать на 2.4 до её кода.
+- sparks в state preview (Main.qml вне greeter) — проверить, что при
+  `testmode`/темах без runSparks sparks не выстреливают (гейт clockAwake уже
+  покрывает lock-сценарий; preview-проверка — часть 2.4 QA).
+
+### Принятые решения
+
+- **Параллельность burst-анимаций (ParallelAnimation) вместо Sequential** из
+  снипета плана: эталон и собственный probe-контракт плана требуют одновременного
+  скейла и fade (450/450ms). Sequential ломал оба.
+- **gate `isWindup`** для `sparkWindup`: `windupProgress` после windup = 1.0
+  навсегда; гейт держит sparks-интенсивность честной (0 вне windup).
+- **Burst-x/y отказ от self-binding** — см. Note: coords из clockRoot.
+- **Poll-based probe**: из-за ограничений offscreen render loop валл-тайм
+  и тайминг NumberAnimation расходятся (наблюдалось: opacity>0.1 на 550ms);
+  жёсткие тайминги давали флаки (2/6 прогонов). Полл стабилен 6/6.
+
+---
+
+## [0.2.0-alpha.2] — stage 2.2 · Tick Feedback (Flash + Halo) · 2026-09-10
+
+**Версия:** `0.2.0-alpha.2` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2` ✅ THIS
+- [ ] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [ ] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [ ] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [ ] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.2 — Tick Feedback (flash + halo)** закрыт. При смене минуты
+  major-тики обеих орбиталей вспыхивают (`tickFlash` 1→0 за 140ms OutQuad:
+  alpha `cap 1.0` +0.55·flash, scale `1+0.04·flash`, spotlight-тики не трогаем),
+  вокруг центра циферблата расширяется тонкий бордер-ореол (`tickHaloR`
+  `16·s→110·s` за 480ms OutCubic, `tickHaloOpacity` `0.5→0` за 480ms OutQuad,
+  border `1.5·s` mainText, z:5, центр cx/cy колец). Всё живёт в ClockRoot
+  (владелец minute-триггера), триггер — `onCurMChanged` → `triggerTickFeedback()`
+  с гейтом `themeState.clockAwake`. Закрыт follow-up ревью 2.1 **F-2.2-1**:
+  `AnimEngine.boomFinished` вместо хрупкой привязки curtain к
+  `onUiOpacityChanged`. gate-прогоны: validate exit 0, smoke exit 0, windup-probe
+  exit 0, tickfeedback-probe exit 0, verify-theme.sh exit 0 (секции 1–9).
+- Следующее: **stage 2.3 — Sparks + sec/min/hour bursts** (`0.2.0-alpha.3`):
+  `sparkIntensity`/particle-эффекты в момент feedback.
+- Подготовить до старта 2.3: ADR-2.2-2 (boom-scale parity) — оформить токеном
+  в план 2.3 или Beta; проверить масштаб ореола на 1440p визуально.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- `theme/onyx/components/clock/ClockRoot.qml` — владелец tick-фида
+  (`ClockRoot.qml:15-17`): `tickFlash` / `tickHaloR` / `tickHaloOpacity` (default 0).
+  Анимации `tickFlashAnim` 140ms OutQuad 1→0; `tickHaloAnim` SequentialAnimation
+  → `tickHaloR` 16·s→110·s 480ms OutCubic; `tickHaloOpacityAnim` 0.5→0 480ms
+  OutQuad (значения из эталона Main.qml:194-201). Публичная точка:
+  `triggerTickFeedback()` (`ClockRoot.qml:44-52`) — ранний return если
+  `!themeState.clockAwake` (единый источник гейта; preview-safe = true вне
+  greeter). Halo-круг (`ClockRoot.qml:112-124`): z:5 (кольца 10, pill 1),
+  transparent + border `1.5·s` mainText, `visible: tickHaloOpacity > 0.01`,
+  радиус = `tickHaloR`, центр `cx/cy` — ореол не пересекает pill
+  (`cx+230·s`) и login-панель (геометрия). Flash подключён в оба OrbitalRing
+  (`tickFlash: clockRoot.tickFlash`). Триггер — `Connections { target: _time;
+  function onCurMChanged() { clockRoot.triggerTickFeedback() } }`.
+- `theme/onyx/components/clock/OrbitalRing.qml` — `property real tickFlash: 0`
+  (`OrbitalRing.qml:19`). Тик-Rectangle: opacity `cap 1.0`
+  (`spotlight ? 1.0 : min(1.0, base + isMajor·flash·0.55)`), scale
+  `isMajor ? 1.0 + flash·0.04 : 1.0` (`OrbitalRing.qml:84-86`) — transformOrigin
+  не задаём (дефолт Rectangle = Center). Формулы = оригинал Main.qml:470-471.
+- `theme/onyx/components/effects/AnimEngine.qml` — `signal boomFinished`
+  (`AnimEngine.qml:15`), emit после `boomScale = 35` в конце boom-фазы
+  (`AnimEngine.qml:86-87`) перед `_phase = 2`. F-2.2-1 закрыт.
+- `theme/onyx/Main.qml` — curtain: удалён хрупкий блок
+  `onUiOpacityChanged { if (uiOpacity === 1.0 && boomOverlay.opacity > 0)
+  curtainOut.start() }`; вместо него `onBoomFinished: curtainOut.start()`
+  (`Main.qml:26-30`). `curtainOut` target `boomOverlay` без изменений.
+- `scripts/qa/windup-probe.qml` — счётчик `boomFinishedCount` + `Connections`
+  на `engine.onBoomFinished`; `Timer tBoomBtn` 1850ms → `checkBoomFinished()`
+  (`count >= 1`, иначе `WINDUP-PROBE: FAIL: boomFinished not emitted`).
+- `scripts/qa/tickfeedback-probe.qml` — НОВЫЙ автономный probe (Window +
+  ThemeState{s:1} + ClockRoot{s:1}): ручной вызов `triggerTickFeedback()` в
+  `Component.onCompleted`, таймлайн 80/550/700ms (flash>0, haloR>16·s,
+  haloOpacity>0 → haloR≥105·s, haloOpacity<0.1, flash<0.05 → flash≈0, haloR≈max,
+  haloOpacity≈0). Контракт: exit 0 = OK / exit 1 = FAIL.
+- `scripts/verify-theme.sh` — секция 8 «tickfeedback-probe» (offscreen, 12s);
+  секция 9 — registration regressions (перенумерована из 8).
+- Критично для следующих агентов: гейт clockAwake в probe НЕ тестируется
+  (readonly, см. Тех. долг) — покрыт ревью; `tickHaloOpacityAnim` и
+  `tickHaloAnim` не имеют `running`-привязки к clockAwake — они инициируются
+  только из гейтнутого `triggerTickFeedback()`; AnimEngine остаётся глобальным
+  движком стартовой последовательности (вкус фида — НЕ в нём).
+
+### Тех. долг
+
+- 🟡 **CR-F9 (отложено; НЕ трогать сейчас):** `s = Screen.height / 768` — на
+  перепроверку stage 3.8 (HiDPI & multi-monitor). Переносится.
+- 🟡 **CR-F10 (отложено):** реальный SDDM greeter integration test — на
+  пользователе. Переносится.
+- 🟡 **F-1.4-b (остаётся):** `pragma ComponentBehavior: Bound` — ждёт Qt ≥6.6
+  в CI (unqualified-шум безвреден). Переносится.
+- 🟡 **F-2.2-3 (гейт clockAwake вне auto-test):** `triggerTickFeedback()` гейт
+  `!themeState.clockAwake` НЕ покрыт probe'ом — `clockAwake` readonly, ломать
+  ThemeState ради теста нельзя; покрыт qt-qml-review. Не блокирует acceptance,
+  чинится при появлении test-harness с моком ThemeState.
+- 🟡 **F-2.2-2 (boom scale parity, из ревью 2.1):** `boomScale 1→35` вычисляется,
+  но не применяется к `boomOverlay` (опасити-только). При parity-этапе взять
+  scale или зафиксировать. Follow-up в план Beta.
+- 🟡 **Перенос из 0.2.0-alpha.1:** `pillWindowHiding: true` на secRing без
+  pillWin* (defensive, без визуального эффекта). Переносится.
+- **Sparks / `sparkIntensity`** — по плану в 2.3 (ADR-2.2-3 подтверждает).
+- Новых долгов stage 2.2, кроме перечисленных, нет.
+
+### Принятые решения
+
+- **ADR-2.2-1 (tick feedback живёт в ClockRoot):** flash/halo-properties и
+  триггер — в ClockRoot (владелец minute-триггера `_time` и halo-декорации),
+  а не в AnimEngine: это свойство clock-модуля, а не глобальной стартовой
+  последовательности. AnimEngine остаётся движком windup/boom/fade-in.
+  F-2.2-1 (`boomFinished`) закрыт в 2.2.
+- **ADR-2.2-2 (boom — только opacity):** `boomScale 1→35` вычисляется, но не
+  применяется (анимация шторки opacity-only). Зафиксировано из замечаний ревью
+  2.1; при parity-этапе (Beta) взять scale или зафиксировать (см. Тех. долг).
+- **ADR-2.2-3 (sparks → 2.3):** sparks/`sparkIntensity` осознанно вне 2.2 —
+  этап 2.2 = flash + halo по спеке; частицы — 2.3 (Sparks + bursts).
+- **ADR-2.2-4 (гейт — единый источник):** `themeState.clockAwake` — единственный
+  источник для UI-анимаций (`triggerTickFeedback()` гейтится им); двойная
+  проверка `&& !_time.clockAwake` в функции — страховка, не второй источник.
+
+---
+
+## [0.2.0-alpha.1] — stage 2.1 · Windup → Boom Sequence · 2026-09-10
+
+**Версия:** `0.2.0-alpha.1` — вход в milestone Alpha (MINOR MVP→Alpha).
+Тег/release НЕ ставились — это stage, не веха (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1` ✅ THIS
+- [ ] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [ ] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [ ] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [ ] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [ ] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [ ] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7`
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.1 — Windup → Boom Sequence** закрыт. При появлении greeter'а
+  орбитали «заводятся» (windup ≤ ~1600ms, Easing.InQuint, windupOffset 0→150000),
+  затем scale+opacity boom, затем fade-in UI (`uiOpacity` 0→1). Реализовано через
+  собственный AnimEngine (QtObject + 16ms tick), который уважает
+  `clockAwake` / `windupEnabled`. validate/smoke PASS, windup-probe (MockMain)
+  exit 0, verify-theme.sh PASS (секция 7).
+- Следующее: **stage 2.2 — Tick feedback (flash + halo)** (`0.2.0-alpha.2`):
+  трещины/halo/эмулированные детали по спеке (`docs/SPECS/01-alpha.md`);
+  AnimEngine переиспользуется.
+- Подготовить до старта 2.2: никакие.
+- Блокеры: нет.
+
+### Детали изменений (для агентов)
+
+- `theme/onyx/components/effects/AnimEngine.qml` — НОВЫЙ QtObject-движок
+  reveal-последовательности. Публичный API: `startReveal()` / `abort()`;
+  фазовый 16ms `_tick()` (`AnimEngine.qml:31-37,64-98`): фаза 0 — windup
+  (`windupOffset = eased(0,150000,t,_easeInQuint)`, `windupDegMin = offset*5`,
+  `windupDegSec = offset*10`); фаза 1 — boom (`boomScale 1→35`,
+  `boomOpacity 0→1`); фаза 2 — fade-in (`uiOpacity 0→1`, Easing.OutCubic,
+  350ms). Гейт `clockAwake`: `running: engine.isWindup && engine.clockAwake`
+  + ранний return в `_tick()`.
+- `theme/onyx/components/effects/qmldir` — модуль `Effects`, `AnimEngine 1.0`.
+- `theme/onyx/Main.qml` — `Effects.AnimEngine:26-34`, проводка
+  `windupDegMin`/`windupDegSec` в ClockRoot и `clockAwake: state.clockAwake`
+  в TimeProvider (`Main.qml:36-43`); `uiLayer` opacity = `engine.uiOpacity`:46-48;
+  `boomOverlay` (z:9999, `state.blastColor`, opacity = `engine.boomOpacity`):70-77;
+  `curtainOut` 180ms NumberAnimation (снятие boom-шторки):79-87;
+  `Component.onCompleted` → `engine.startReveal()`:95-100.
+- `theme/onyx/components/clock/ClockRoot.qml:12-13,45,67` — пропсы `windupDegMin`
+  / `windupDegSec`; `positionDeg` вычитает windup-кик:
+  `-(float/60)*360 - windupDeg*` (минутное/секундное кольцо).
+- `theme/onyx/ThemeState.qml:12-23` — `clockAwake` (isPreview→true, иначе
+  `Window.active`), `windupEnabled` (читает `config.enableWindup`, default true),
+  `blastColor "#FFFFFF"`.
+- `theme/onyx/components/clock/TimeProvider.qml:24` — `smoothTimer`
+  `running: provider.clockAwake` — закрывает долг 0.1.11 «clockAwake gating
+  16ms таймера».
+- `theme/onyx/theme.conf` — `enableWindup=true`.
+- `scripts/qa/windup-probe.qml` — MockMain live-проверка: startReveal →
+  проверки `windupOffset > 0` (560ms/1300ms), boom, fade-in (`uiOpacity = 1`),
+  ring-mix (`windupDegMin`/`windupDegSec` попадают на кольца). exit 0.
+- `scripts/verify-theme.sh:130-135` — секция 7 «windup-probe» (offscreen, 18s).
+- Критично для следующих агентов: AnimEngine НЕ использует NumberAnimation —
+  весь reveal на 16ms tick (см. ADR ниже); `clockAwake` гейтит и TimeProvider,
+  и AnimEngine; `windupEnabled=false` → `uiOpacity=1` мгновенно (без анимации).
+
+### Тех. долг
+
+- 🟡 **CR-F9 (отложено; НЕ трогать сейчас):** `s = Screen.height / 768` — на
+  перепроверку stage 3.8 (HiDPI & multi-monitor). Переносится.
+- 🟡 **CR-F10 (отложено):** реальный SDDM greeter integration test — на
+  пользователе. Переносится.
+- 🟡 **F-1.4-b (остаётся):** `pragma ComponentBehavior: Bound` — ждёт Qt ≥6.6
+  в CI (unqualified-шум безвреден). Переносится.
+- 🟡 **Перенос из 0.1.11:** `pillWindowHiding: true` на secRing без pillWin*
+  (defensive, без визуального эффекта).
+- Follow-up'ы: в записи 0.1.11 F-записей не было; тех. долг 0.1.10
+  (CR-F9/F10/F-1.4-b) перенесён выше. Долг 0.1.11 «clockAwake gating 16ms
+  таймера» — ЗАКРЫТ в stage 2.1 (`TimeProvider.qml:24`).
+- Новых тех. долгов в stage 2.1 нет.
+
+### Принятые решения
+
+- **ADR-2.1-1 (AnimEngine, а не NumberAnimation):** windup/boom/fade-in
+  реализованы через собственный движок (QtObject + 16ms tick), а не через
+  NumberAnimation — ради гейта `clockAwake` (анимации обязаны «спать», когда
+  окно неактивно) и переиспользования движка в следующих alpha-эффектах
+  (2.2 tick feedback, 2.3 sparks/bursts).
+
+---
+
 ## [0.1.11-mvp] — stage 1.8 · Nobara P0 regression fix · 2026-09-10
 
 **Версия:** `0.1.11-mvp` — PATCH-bump внутри MVP (bugfix/regression fix).

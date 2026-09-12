@@ -13,8 +13,17 @@ End-to-end validation of the Onyx SDDM theme (local checks only):
   2. metadata.desktop — Version= and X-SDDM-ThemeName= present
   3. theme.conf — readable, has key=value pairs
   4. validate.sh — full validation pass (repo root)
-  5. smoke.sh — headless load test, SMOKE_SECS=12
-  6. auth-feedback-probe.qml — offscreen probe (qml6 / qml)
+5. smoke.sh — headless load test, SMOKE_SECS=12
+   6. auth-feedback-probe.qml — offscreen probe (qml6 / qml)
+   7. windup-probe.qml — offscreen windup/boom/fade-in + ring-mix probe
+8. tickfeedback-probe.qml — offscreen tick feedback flash/halo probe
+    9. sparks-burst-probe.qml — offscreen sparks intensity/burst probe
+   10. date-reveal-probe.qml — offscreen date+weekday stagger reveal probe
+   11. user-session-probe.qml — offscreen pickers + sddm.login wiring probe
+12. hud-probe.qml — offscreen reboot/power click-through + hover surface probe
+   13. i18n-probe.qml — language detection + translation switch + fallback probe
+   14. virtual-cursor-probe.qml — cursor hidden on non-Wayland + instant x/y binding probe
+   15. registration regressions (forbidden tokens)
 
 Every check prints [ OK ] or [ FAIL ]; any [ FAIL ] exits 1 immediately.
 Final success line: [ OK ] verify OK. Exit 0 = all passed.
@@ -53,7 +62,7 @@ else
     fail "theme/onyx/icons/ empty"
 fi
 
-for f in clock/ClockRoot.qml clock/DateBlock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml login/LoginPanel.qml login/AuthFeedback.qml; do
+for f in clock/ClockRoot.qml clock/DateBlock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml effects/AnimEngine.qml effects/qmldir effects/Sparks.qml effects/Burst.qml effects/StaggerText.qml login/LoginPanel.qml login/AuthFeedback.qml login/UserPicker.qml login/SessionPicker.qml hud/LangPicker.qml hud/HudAction.qml hud/HudActions.qml platform/VirtualCursor.qml; do
     if [[ -r "${THEME_DIR}/components/${f}" ]]; then
         ok "components/${f} present"
     else
@@ -126,14 +135,83 @@ else
     fail "auth-feedback-probe failed"
 fi
 
-# --- 7. registration regressions ---
-echo "--- 7. registration regressions ---"
+# --- 7. windup-probe ---
+echo "--- 7. windup-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 18 "${RUNNER}" "${ROOT_DIR}/scripts/qa/windup-probe.qml"; then
+    ok "windup-probe passed (windup→boom→fadeIn + ring windup mix)"
+else
+    fail "windup-probe failed"
+fi
+
+# --- 8. tickfeedback-probe ---
+echo "--- 8. tickfeedback-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 12 "${RUNNER}" "${ROOT_DIR}/scripts/qa/tickfeedback-probe.qml"; then
+    ok "tickfeedback-probe passed (flash + halo live values)"
+else
+    fail "tickfeedback-probe failed"
+fi
+
+# --- 9. sparks-burst-probe ---
+echo "--- 9. sparks-burst-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 12 "${RUNNER}" "${ROOT_DIR}/scripts/qa/sparks-burst-probe.qml"; then
+    ok "sparks-burst-probe passed (intensity spike + sec/min/hour bursts)"
+else
+    fail "sparks-burst-probe failed"
+fi
+
+# --- 10. date-reveal-probe ---
+echo "--- 10. date-reveal-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 18 "${RUNNER}" "${ROOT_DIR}/scripts/qa/date-reveal-probe.qml"; then
+    ok "date-reveal-probe passed (date/weekday stagger + blur sharpen)"
+else
+    fail "date-reveal-probe failed"
+fi
+
+# --- 11. user-session-probe ---
+echo "--- 11. user-session-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 12 "${RUNNER}" "${ROOT_DIR}/scripts/qa/user-session-probe.qml"; then
+    ok "user-session-probe passed (UserPicker/SessionPicker selection wiring)"
+else
+    fail "user-session-probe failed"
+fi
+
+# --- 12. hud-probe ---
+echo "--- 12. hud-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 12 "${RUNNER}" "${ROOT_DIR}/scripts/qa/hud-probe.qml"; then
+    ok "hud-probe passed (reboot/power click-through + hover surface)"
+else
+    fail "hud-probe failed"
+fi
+
+# --- 13. i18n-probe ---
+echo "--- 13. i18n-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 12 "${RUNNER}" "${ROOT_DIR}/scripts/qa/i18n-probe.qml"; then
+    ok "i18n-probe passed (language detect + switch + fallback)"
+else
+    fail "i18n-probe failed"
+fi
+
+# --- 14. virtual-cursor-probe ---
+echo "--- 14. virtual-cursor-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 12 "${RUNNER}" "${ROOT_DIR}/scripts/qa/virtual-cursor-probe.qml"; then
+    ok "virtual-cursor-probe passed (hidden off-Wayland + instant x/y)"
+else
+    fail "virtual-cursor-probe failed"
+fi
+
+# --- 15. registration regressions ---
+echo "--- 15. registration regressions ---"
 for _bad in "userModel.data(" "smoothHand" "currentIndex"; do
     if rg -F -l --glob "*.qml" "$_bad" theme/onyx/components/clock/; then
         echo "FAIL: forbidden token '$_bad' present in clock components" >&2
         exit 1
     fi
 done
+# ADR-1.8-1: pickers read roles via helper-ListView, never userModel.data().
+if rg -F -l --glob "*.qml" "userModel.data(" theme/onyx/components/login/ theme/onyx/Main.qml; then
+    echo "FAIL: forbidden token 'userModel.data(' present in login components" >&2
+    exit 1
+fi
 echo "registration regressions: PASS"
 
 echo "[ OK ] verify OK"

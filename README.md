@@ -1,6 +1,6 @@
 # Onyx SDDM Theme
 
-[![Version](https://img.shields.io/badge/version-0.1.11--mvp-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.9--alpha-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/y-tretyakov/onyx-sddm/ci.yml?branch=dev&label=CI)](https://github.com/y-tretyakov/onyx-sddm/actions)
 [![OS](https://img.shields.io/badge/OS-Arch%7CCachyOS%7CFedora%7CNobara%7CUbuntu%7CDebian%7CopenSUSE%7CRHEL9-41CD52.svg?style=flat)](.github/workflows/ci.yml)
 [![Qt6](https://img.shields.io/badge/Qt-6-41CD52.svg?logo=qt&logoColor=white&style=flat)](https://doc.qt.io/qt-6/)
@@ -15,21 +15,57 @@
 оригинальной темы *clockwork/orbital* (Ryoku / Darkkal44), но с полностью
 переработанной архитектурой, чистым кодом и чёткой дорожной картой.
 
-Статус: **MVP в процессе** (Phase 1). Уже реализовано: цифровые часы +
-indicator pill на орбитально-часовом фоне, валидировано на 8 дистрибутивах
-в CI.
+Статус: **Alpha закрыта** (Phase 2, freeze 2.9; релиз-тег ждёт апрува). Уже реализовано: Wayland Virtual Cursor ✦
+(глиф по `Window.window.cursorPosition` без Behavior, только Wayland, stage 2.8);
+i18n Core (трехъязычные
+словари en/ru/uk, auto-detect `Qt.locale().name`, LangPicker в HUD,
+stage 2.7); HUD power/reboot
+(иконки-кнопки reboot + power в hudContainer, hover-состояние, sddm.wiring,
+stage 2.6); user & session pickers
+(два dropdown'а из userModel/sessionModel, влияют на `sddm.login`, stage 2.5);
+date + weekday reveal (посимвольная сборка после windup→boom→fade-in, stage 2.4);
+sparks + bursts (stage 2.3); tick feedback (flash + halo) при смене минуты
+(stage 2.2); windup → boom → fade-in sequence при появлении greeter'а (stage 2.1);
+весь MVP (1.1–1.8) закрыт.
 
 ## Текущий статус
 
-- **Версия:** `0.1.11-mvp` · Phase 1 / MVP — stage 1.1–1.8 закрыты (P0 regression fix).
-- **Что сделано:** P0 regression fix после real install на Nobara 44: username
-  теперь виден (helper-ListView с delegate-roles), Enter/NumpadEnter работают
-  (`_submit` с empty-guard → `sddm.login`), non-original rotating hand удалён,
-  обе орбитали вращаются против часовой стрелки (мин — 1 об/час, сек — 1 об/мин)
-  через `positionDeg` из непрерывных float-значений.
-- **CI:** полная 8-контейнерная матрица зелёная.
-- **Следующий шаг:** manual-gate на живой Nobara 44 VM (логин-цикл
-  DENIED/GRANTED, повторный login, focus/Enter), затем Alpha 2.1 (windup→boom).
+- **Версия:** `0.2.9-alpha` · Phase 2 / Alpha — [x] 2.1 (windup→boom), [x] 2.2 (tick feedback), [x] 2.3 (sparks + bursts), [x] 2.4 (date + weekday reveal), [x] 2.5 (user & session pickers), [x] 2.6 (HUD: power/reboot), [x] 2.7 (i18n core), [x] 2.8 (Wayland cursor), [x] 2.9 (Alpha freeze) закрыты.
+- **Что сделано:** на 2.9 — Alpha Freeze: regression sweep (validate exit 0;
+  verify-theme 15/15 `[ OK ]`, registration PASS; probes i18n/virtual-cursor/
+  user-session/hud OK; hygiene-скан без TODO/FIXME/DEBUG, VirtualCursor без
+  Behavior/MouseArea), visual QA 1920×1080 + 2560×1440 (Xvfb, PNG >20 KB),
+  bump `0.2.9-alpha`; функционального кода не менялось.
+  `components/platform/VirtualCursor.qml` (лист-глиф ✦, привязка x/y к
+  `Window.window.cursorPosition` напрямую, без Behavior — мгновенно; только
+  Wayland, на X11 скрыт; без полноэкранного hover-слоя), wiring в Main
+  (z 9998, между интерактивом и boomOverlay), offscreen
+  `virtual-cursor-probe` — секция 14 verify-theme (registration → 15).
+  На 2.7 — i18n Core: `translations.js` (`.pragma library`,
+  словари en/ru/uk + `detectLanguage()` + `t()`-fallback), `language`/
+  `curT`-состояние в Main (`Tr.detectLanguage(Qt.locale().name)`),
+  `components/hud/LangPicker.qml` (dropdown в hudRow, signal `selected`),
+  SessionPicker `fallbackName` привязан к `curT["session"]`; offscreen
+  `i18n-probe` — секция 13 verify-theme (registration → 14).
+  На 2.6 — HUD power/reboot: два icon-кнопки в hudContainer
+  (`components/hud/HudAction.qml` — лист-кнопка с hover: scale 1.12 +
+  ColorOverlay-перекраска; `components/hud/HudActions.qml` — строка
+  `[reboot | power]` с разделителем), вызывают `sddm.reboot()` /
+  `sddm.powerOff()` под `typeof sddm` guard; иконки `icons/{power,reboot}.svg`
+  (Material, Apache-2.0, PROVENANCE дополнен); offscreen `hud-probe`
+  (click-through + hover) — секция 12 verify-theme (registration → 13).
+  На 2.5 — два новых dropdown'а в стиле орбитального clockwork:
+  `components/login/UserPicker.qml` (внутри LoginPanel, меню открывается вверх от
+  trigger) и `components/login/SessionPicker.qml` (самостоятельный компонент в
+  верхней правой hud-зоне, меню вниз). Оба читают роли через helper-ListView
+  без `userModel.data()` (ADR-1.8-1), выбор пользователя/сессии влияет на
+  `sddm.login(user, pass, sessionIndex)` через `LoginPanel._submit`; добавлен
+  автономный `user-session-probe` в verify-theme.
+- **CI:** локальная фулл-gate («validate + smoke + verify-theme секции 1–15») на
+  ветках stage — exit 0 на каждом этапе; 8-контейнерная матрица GitHub Actions
+  зелёная на `dev` (по состоянию на stage 2.4).
+- **Следующий шаг:** после апрува freeze (dev→main, tag `0.2.9-alpha` + GitHub
+  Release) — Beta 3.1 — Full language set (9 languages).
 - Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
 
 ## Установка (MVP)
