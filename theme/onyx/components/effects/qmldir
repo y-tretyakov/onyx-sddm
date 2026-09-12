@@ -2,3 +2,4 @@ module Effects
 AnimEngine 1.0 AnimEngine.qml
 Sparks 1.0 Sparks.qml
 Burst  1.0 Burst.qml
+StaggerText 1.0 StaggerText.qml

@@ -9,6 +9,7 @@ Item {
     required property ThemeState themeState
 
     property alias timeProvider: _time
+    property alias dateBlock: dateBlk
 
     property real windupDegMin: 0
     property real windupDegSec: 0
@@ -131,6 +132,8 @@ Item {
             sparkImpulseAnim.stop(); clockRoot.sparkImpulse = 0
         }
     }
+
+    function startDateReveal() { dateBlk.startReveal() }
 
     function triggerTickFeedback() {
         if (!themeState.clockAwake)
@@ -309,6 +312,7 @@ Item {
         text: clockRoot.secBurstText
         s: clockRoot.s
         themeState: clockRoot.themeState
+        pixelSize: 30 * clockRoot.s
         x: clockRoot.secBurstX
         y: clockRoot.secBurstY
         scale: clockRoot.secBurstScale
@@ -319,6 +323,7 @@ Item {
         text: clockRoot.minBurstText
         s: clockRoot.s
         themeState: clockRoot.themeState
+        pixelSize: 54 * clockRoot.s
         x: clockRoot.minBurstX
         y: clockRoot.minBurstY
         scale: clockRoot.minBurstScale
@@ -329,6 +334,7 @@ Item {
         text: clockRoot.hourBurstText
         s: clockRoot.s
         themeState: clockRoot.themeState
+        pixelSize: 110 * clockRoot.s
         x: clockRoot.hourBurstX
         y: clockRoot.hourBurstY
         scale: clockRoot.hourBurstScale

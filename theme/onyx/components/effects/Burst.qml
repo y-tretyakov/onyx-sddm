@@ -8,6 +8,8 @@ Item {
     required property real s
     required property ThemeState themeState
 
+    property real pixelSize: 30 * burst.s
+
     width: 1
     height: 1
     z: 20
@@ -18,7 +20,7 @@ Item {
         text: burst.text
         color: burst.themeState.mainTextColor
         font.family: burst.themeState.fontFamily
-        font.pixelSize: 30 * burst.s
+        font.pixelSize: burst.pixelSize
         font.weight: Font.Bold
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
@@ -30,7 +32,7 @@ Item {
         color: burst.themeState.tickAccentColor
         opacity: 0.65
         font.family: burst.themeState.fontFamily
-        font.pixelSize: 30 * burst.s
+        font.pixelSize: burst.pixelSize
         font.weight: Font.Bold
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter

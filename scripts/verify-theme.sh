@@ -16,9 +16,10 @@ End-to-end validation of the Onyx SDDM theme (local checks only):
 5. smoke.sh — headless load test, SMOKE_SECS=12
    6. auth-feedback-probe.qml — offscreen probe (qml6 / qml)
    7. windup-probe.qml — offscreen windup/boom/fade-in + ring-mix probe
-   8. tickfeedback-probe.qml — offscreen tick feedback flash/halo probe
-   9. sparks-burst-probe.qml — offscreen sparks intensity/burst probe
-   10. registration regressions (forbidden tokens)
+8. tickfeedback-probe.qml — offscreen tick feedback flash/halo probe
+    9. sparks-burst-probe.qml — offscreen sparks intensity/burst probe
+   10. date-reveal-probe.qml — offscreen date+weekday stagger reveal probe
+   11. registration regressions (forbidden tokens)
 
 Every check prints [ OK ] or [ FAIL ]; any [ FAIL ] exits 1 immediately.
 Final success line: [ OK ] verify OK. Exit 0 = all passed.
@@ -57,7 +58,7 @@ else
     fail "theme/onyx/icons/ empty"
 fi
 
-for f in clock/ClockRoot.qml clock/DateBlock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml effects/AnimEngine.qml effects/qmldir effects/Sparks.qml effects/Burst.qml login/LoginPanel.qml login/AuthFeedback.qml; do
+for f in clock/ClockRoot.qml clock/DateBlock.qml clock/IndicatorPill.qml clock/OrbitalRing.qml clock/TimeProvider.qml effects/AnimEngine.qml effects/qmldir effects/Sparks.qml effects/Burst.qml effects/StaggerText.qml login/LoginPanel.qml login/AuthFeedback.qml; do
     if [[ -r "${THEME_DIR}/components/${f}" ]]; then
         ok "components/${f} present"
     else
@@ -154,8 +155,16 @@ else
     fail "sparks-burst-probe failed"
 fi
 
-# --- 10. registration regressions ---
-echo "--- 10. registration regressions ---"
+# --- 10. date-reveal-probe ---
+echo "--- 10. date-reveal-probe ---"
+if QT_QPA_PLATFORM=offscreen timeout 18 "${RUNNER}" "${ROOT_DIR}/scripts/qa/date-reveal-probe.qml"; then
+    ok "date-reveal-probe passed (date/weekday stagger + blur sharpen)"
+else
+    fail "date-reveal-probe failed"
+fi
+
+# --- 11. registration regressions ---
+echo "--- 11. registration regressions ---"
 for _bad in "userModel.data(" "smoothHand" "currentIndex"; do
     if rg -F -l --glob "*.qml" "$_bad" theme/onyx/components/clock/; then
         echo "FAIL: forbidden token '$_bad' present in clock components" >&2

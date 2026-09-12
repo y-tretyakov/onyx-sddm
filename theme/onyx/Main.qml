@@ -28,6 +28,7 @@ Rectangle {
         clockAwake: state.clockAwake
         animationEnabled: state.windupEnabled
         onBoomFinished: curtainOut.start()
+        onFadeInFinished: clock.startDateReveal()
     }
 
     Clock.ClockRoot {

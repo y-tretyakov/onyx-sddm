@@ -14,6 +14,7 @@ QtObject {
     property bool isWindup: false
 
     signal boomFinished
+    signal fadeInFinished
 
     readonly property real windupDegMin: windupOffset * 5
     readonly property real windupDegSec: windupOffset * 10
@@ -94,6 +95,7 @@ QtObject {
             uiOpacity = _eased(0, 1, ft, _easeOutCubic)
             if (fdt >= fadeInDuration) {
                 uiOpacity = 1
+                fadeInFinished()
                 isWindup = false
                 _phase = 3
                 _tick.stop()

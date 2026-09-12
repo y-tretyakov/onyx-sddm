@@ -1,6 +1,6 @@
 # Onyx SDDM Theme
 
-[![Version](https://img.shields.io/badge/version-0.2.0--alpha.3-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0--alpha.4-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/y-tretyakov/onyx-sddm/ci.yml?branch=dev&label=CI)](https://github.com/y-tretyakov/onyx-sddm/actions)
 [![OS](https://img.shields.io/badge/OS-Arch%7CCachyOS%7CFedora%7CNobara%7CUbuntu%7CDebian%7CopenSUSE%7CRHEL9-41CD52.svg?style=flat)](.github/workflows/ci.yml)
 [![Qt6](https://img.shields.io/badge/Qt-6-41CD52.svg?logo=qt&logoColor=white&style=flat)](https://doc.qt.io/qt-6/)
@@ -15,27 +15,27 @@
 оригинальной темы *clockwork/orbital* (Ryoku / Darkkal44), но с полностью
 переработанной архитектурой, чистым кодом и чёткой дорожной картой.
 
-Статус: **Alpha в процессе** (Phase 2). Уже реализовано: tick feedback (flash + halo)
-при смене минуты (stage 2.2); windup → boom → fade-in sequence при появлении
-greeter'а (stage 2.1); весь MVP (1.1–1.8) закрыт.
+Статус: **Alpha в процессе** (Phase 2). Уже реализовано: date + weekday reveal
+(посимвольная сборка после windup→boom→fade-in, stage 2.4); sparks + bursts
+(stage 2.3); tick feedback (flash + halo) при смене минуты (stage 2.2);
+windup → boom → fade-in sequence при появлении greeter'а (stage 2.1);
+весь MVP (1.1–1.8) закрыт.
 
 ## Текущий статус
 
-- **Версия:** `0.2.0-alpha.3` · Phase 2 / Alpha — [x] 2.1 (windup→boom), [x] 2.2 (tick feedback), [x] 2.3 (sparks + bursts) закрыты.
-- **Что сделано:** при смене минуты major-тики орбиталей вспыхивают (`tickFlash`
-  1→0 на 140ms, OutQuad — alpha cap 1.0, scale +4%), вокруг центра циферблата
-  расширяется тонкий круглый ореол (`tickHaloR` 16·s→110·s на 480ms OutCubic,
-  `tickHaloOpacity` 0.5→0 на 480ms OutQuad, border 1.5·s, z:5). Всё гейтится
-  `clockAwake`, живёт в ClockRoot (владелец minute-триггера); закрыт follow-up
-  F-2.2-1 (`boomFinished` из AnimEngine вместо `onUiOpacityChanged`). На 2.3 —
-  Sparks: 60 частиц, жизнь 600–1000ms OutQuad, интенсивность от windup и
-  tick-импульсов; Burst: клон цифры (white + accent 0.65) с burst-скейлом
-  1→2.2 / opacity 0.9→0 (450ms, ParallelAnimation) на каждой секунде/минуте/часе;
-  гейт `clockAwake` (исчезают при пробудлении после lock).
-- **CI:** локальная фулл-gate («validate + smoke + verify-theme секции 1–10») на
+- **Версия:** `0.2.0-alpha.4` · Phase 2 / Alpha — [x] 2.1 (windup→boom), [x] 2.2 (tick feedback), [x] 2.3 (sparks + bursts), [x] 2.4 (date + weekday reveal) закрыты.
+- **Что сделано:** на 2.4 — дата и день недели собираются посимвольно сразу после
+  ветрапа (`AnimEngine.fadeInFinished` → `clock.startDateReveal()`): строки даты
+  (13·s subText) и дня недели (18·s Bold mainText) показываются через новый
+  переиспользуемый `StaggerText` (per-char opacity/scale/translateY, easeOutBack),
+  дата стартует мгновенно, день недели — с задержкой 420ms; всё накрывается
+  мягким GaussianBlur `dateBlurR` 7→0 за 800ms (per-line Item layer, samples 16);
+  закрыт follow-up F-2.4-1 (Burst `pixelSize` параметром: sec 30·s / min 54·s /
+  hour 110·s).
+- **CI:** локальная фулл-gate («validate + smoke + verify-theme секции 1–11») на
   ветках stage — exit 0 на каждом этапе; 8-контейнерная матрица GitHub Actions
   зелёная на `dev` (по состоянию на stage 2.2).
-- **Следующий шаг:** Alpha 2.4 — Date + weekday reveal (`0.2.0-alpha.4`).
+- **Следующий шаг:** Alpha 2.5 — User & Session pickers (`0.2.0-alpha.5`).
 - Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
 
 ## Установка (MVP)
