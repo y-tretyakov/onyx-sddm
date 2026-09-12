@@ -1,6 +1,6 @@
 # Onyx SDDM Theme
 
-[![Version](https://img.shields.io/badge/version-0.2.0--alpha.7-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0--alpha.8-555555.svg?logo=changelog&logoColor=white&style=flat)](CHANGELOG.md)
 [![CI](https://img.shields.io/github/actions/workflow/status/y-tretyakov/onyx-sddm/ci.yml?branch=dev&label=CI)](https://github.com/y-tretyakov/onyx-sddm/actions)
 [![OS](https://img.shields.io/badge/OS-Arch%7CCachyOS%7CFedora%7CNobara%7CUbuntu%7CDebian%7CopenSUSE%7CRHEL9-41CD52.svg?style=flat)](.github/workflows/ci.yml)
 [![Qt6](https://img.shields.io/badge/Qt-6-41CD52.svg?logo=qt&logoColor=white&style=flat)](https://doc.qt.io/qt-6/)
@@ -15,7 +15,9 @@
 оригинальной темы *clockwork/orbital* (Ryoku / Darkkal44), но с полностью
 переработанной архитектурой, чистым кодом и чёткой дорожной картой.
 
-Статус: **Alpha в процессе** (Phase 2). Уже реализовано: i18n Core (трехъязычные
+Статус: **Alpha в процессе** (Phase 2). Уже реализовано: Wayland Virtual Cursor ✦
+(глиф по `Window.window.cursorPosition` без Behavior, только Wayland, stage 2.8);
+i18n Core (трехъязычные
 словари en/ru/uk, auto-detect `Qt.locale().name`, LangPicker в HUD,
 stage 2.7); HUD power/reboot
 (иконки-кнопки reboot + power в hudContainer, hover-состояние, sddm.wiring,
@@ -28,8 +30,14 @@ sparks + bursts (stage 2.3); tick feedback (flash + halo) при смене ми
 
 ## Текущий статус
 
-- **Версия:** `0.2.0-alpha.7` · Phase 2 / Alpha — [x] 2.1 (windup→boom), [x] 2.2 (tick feedback), [x] 2.3 (sparks + bursts), [x] 2.4 (date + weekday reveal), [x] 2.5 (user & session pickers), [x] 2.6 (HUD: power/reboot), [x] 2.7 (i18n core) закрыты.
-- **Что сделано:** на 2.7 — i18n Core: `translations.js` (`.pragma library`,
+- **Версия:** `0.2.0-alpha.8` · Phase 2 / Alpha — [x] 2.1 (windup→boom), [x] 2.2 (tick feedback), [x] 2.3 (sparks + bursts), [x] 2.4 (date + weekday reveal), [x] 2.5 (user & session pickers), [x] 2.6 (HUD: power/reboot), [x] 2.7 (i18n core), [x] 2.8 (Wayland cursor) закрыты.
+- **Что сделано:** на 2.8 — Wayland Virtual Cursor: `ThemeState.isWayland`,
+  `components/platform/VirtualCursor.qml` (лист-глиф ✦, привязка x/y к
+  `Window.window.cursorPosition` напрямую, без Behavior — мгновенно; только
+  Wayland, на X11 скрыт; без полноэкранного hover-слоя), wiring в Main
+  (z 9998, между интерактивом и boomOverlay), offscreen
+  `virtual-cursor-probe` — секция 14 verify-theme (registration → 15).
+  На 2.7 — i18n Core: `translations.js` (`.pragma library`,
   словари en/ru/uk + `detectLanguage()` + `t()`-fallback), `language`/
   `curT`-состояние в Main (`Tr.detectLanguage(Qt.locale().name)`),
   `components/hud/LangPicker.qml` (dropdown в hudRow, signal `selected`),
@@ -49,10 +57,10 @@ sparks + bursts (stage 2.3); tick feedback (flash + halo) при смене ми
   без `userModel.data()` (ADR-1.8-1), выбор пользователя/сессии влияет на
   `sddm.login(user, pass, sessionIndex)` через `LoginPanel._submit`; добавлен
   автономный `user-session-probe` в verify-theme.
-- **CI:** локальная фулл-gate («validate + smoke + verify-theme секции 1–14») на
+- **CI:** локальная фулл-gate («validate + smoke + verify-theme секции 1–15») на
   ветках stage — exit 0 на каждом этапе; 8-контейнерная матрица GitHub Actions
   зелёная на `dev` (по состоянию на stage 2.4).
-- **Следующий шаг:** Alpha 2.8 — Wayland Virtual Cursor (`0.2.0-alpha.8`).
+- **Следующий шаг:** Alpha 2.9 — Alpha Freeze (ревизия Alpha, bump `0.2.9-alpha`).
 - Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
 
 ## Установка (MVP)
