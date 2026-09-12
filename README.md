@@ -15,7 +15,7 @@
 оригинальной темы *clockwork/orbital* (Ryoku / Darkkal44), но с полностью
 переработанной архитектурой, чистым кодом и чёткой дорожной картой.
 
-Статус: **Alpha закрыта** (Phase 2, freeze 2.9; релиз-тег ждёт апрува). Уже реализовано: Wayland Virtual Cursor ✦
+Статус: **Alpha закрыта** (0.2.9-alpha, тег + Release на GitHub). Уже реализовано: Wayland Virtual Cursor ✦
 (глиф по `Window.window.cursorPosition` без Behavior, только Wayland, stage 2.8);
 i18n Core (трехъязычные
 словари en/ru/uk, auto-detect `Qt.locale().name`, LangPicker в HUD,
@@ -64,8 +64,8 @@ sparks + bursts (stage 2.3); tick feedback (flash + halo) при смене ми
 - **CI:** локальная фулл-gate («validate + smoke + verify-theme секции 1–15») на
   ветках stage — exit 0 на каждом этапе; 8-контейнерная матрица GitHub Actions
   зелёная на `dev` (по состоянию на stage 2.4).
-- **Следующий шаг:** после апрува freeze (dev→main, tag `0.2.9-alpha` + GitHub
-  Release) — Beta 3.1 — Full language set (9 languages).
+- **Следующий шаг:** Beta 3.1 — Full language set (9 languages) → `0.3.0-beta.1`.
+  Выпущено: `0.2.9-alpha` (тег + Release).
 - Полный учёт этапов и версий — в [CHANGELOG](CHANGELOG.md).
 
 ## Установка (MVP)

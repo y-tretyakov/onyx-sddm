@@ -7,9 +7,9 @@
 
 ## [0.2.9-alpha] — stage 2.9 · Alpha Freeze · 2026-09-12
 
-**Версия:** `0.2.9-alpha` — финальный этап Alpha (freeze). Тег/release НЕ ставились —
-ожидает апрува пользователя (next: PR dev→main, tag 0.2.9-alpha + GitHub Release,
-далее Beta 3.1).
+**Версия:** `0.2.9-alpha` — финальный этап Alpha (freeze). Веха ЗАКРЫТА:
+merge dev→main (#36), git-tag `0.2.9-alpha` + GitHub Release
+(https://github.com/y-tretyakov/onyx-sddm/releases/tag/0.2.9-alpha). Далее Beta 3.1.
 
 ### Тик-лист ROADMAP (Phase 2 — Alpha)
 
