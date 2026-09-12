@@ -5,6 +5,71 @@
 
 ---
 
+## [0.2.0-alpha.7] — stage 2.7 · i18n Core (en + ru + uk) · 2026-09-12
+
+**Версия:** `0.2.0-alpha.7` — PATCH-bump внутри milestone Alpha (stage, не веха).
+Тег/release НЕ ставились (релиз-тег Alpha — на freeze 2.9).
+
+### Тик-лист ROADMAP (Phase 2 — Alpha)
+
+- [x] 2.1 Windup → boom sequence — `0.2.0-alpha.1`
+- [x] 2.2 Tick feedback (flash + halo) — `0.2.0-alpha.2`
+- [x] 2.3 Sparks + sec/min/hour bursts — `0.2.0-alpha.3`
+- [x] 2.4 Date + weekday reveal — `0.2.0-alpha.4`
+- [x] 2.5 User & Session pickers — `0.2.0-alpha.5`
+- [x] 2.6 HUD (power / reboot) — `0.2.0-alpha.6`
+- [x] 2.7 i18n core (en + ru + uk) — `0.2.0-alpha.7` ✅ THIS
+- [ ] 2.8 Wayland virtual cursor ✦ — `0.2.0-alpha.8`
+- [ ] 2.9 Alpha freeze — `0.2.9-alpha`
+
+### Статус и следующий шаг
+
+- Сделано: **stage 2.7 — i18n Core (en + ru + uk)** закрыт.
+  `translations.js` с тремя языками (en/ru/uk) — `.pragma library`,
+  `languageOrder`/`languageNames`, `detectLanguage()` (split на `_`/`-`,
+  lowercase, fallback `"en"`), `t()` (fallback на английский). Main.qml
+  держит `language` (`Tr.detectLanguage(Qt.locale().name)`) и `curT`
+  (текущий словарь). `components/hud/LangPicker.qml` — dropdown в hudRow
+  (порядок LangPicker | SessionPicker | HudActions), signal `selected`.
+  `SessionPicker.fallbackName` привязан к `curT["session"]`. Offscreen
+  `i18n-probe` (проверяет detectLanguage, переключение языка, English
+  fallback) — секция 13 verify-theme (registration → 14). Следующее —
+  Alpha 2.8 Wayland Virtual Cursor (курсор-✦ привязан к
+  `Window.window.cursorPosition`, без Behavior, X11 нативный).
+- Подготовить до старта 2.8: продумать cursor-✦ (Wayland only), не блокирующий
+  клики; переносится долг из ранних этапов (CR-F9/CR-F10/F-1.4-b/ADR-2.4-1).
+- Блокеры: нет.
+
+### Детали изменений
+
+- theme/onyx/translations.js — `.pragma library`, `languageOrder`, `languageNames`,
+  3 словаря (en/ru/uk), `detectLanguage()`, `t()` fallback.
+- theme/onyx/components/hud/LangPicker.qml — props `languageOrder`/`languageNames`/
+  `currentLang`, signal `selected`, dropdown 200·s (маркер ✦, Behavior 200ms).
+- theme/onyx/components/login/SessionPicker.qml:16 — `property string fallbackName: "SESSION"`,
+  `currentName` binding использует `picker.fallbackName`.
+- theme/onyx/Main.qml:27-28 — `language`, `curT` properties; hudRow порядок
+  LangPicker | SessionPicker | HudActions; LangPicker получает `s`/`themeState`
+  + явные языковые props; SessionPicker получает `fallbackName: root.curT["session"]`.
+- scripts/qa/i18n-probe.qml — detectLanguage, переключение языка, English fallback,
+  контракт `I18N-PROBE: OK`.
+- scripts/verify-theme.sh — новая секция 13 i18n-probe, registration → секция 14,
+  `hud/LangPicker.qml` добавлен в структуру.
+
+**Тех. долг:** нет.
+
+**Принятые решения:**
+
+- ADR-2.7-1: `detectLanguage` split на `_`/`-`, lowercase, проверка по
+  `languageOrder`, default `"en"`. Без country-гранулярности — языков всего 3,
+  простота здесь корректна.
+- ADR-2.7-2: языковое состояние живёт в Main (`language`, `curT`); компоненты
+  получают данные явными props (`languageOrder`, `languageNames`, `currentLang`,
+  `fallbackName`) — без неявных `Tr.*` внутри дочерних компонентов, сохраняя
+  чистоту qmllint 6.4.
+
+---
+
 ## [0.2.0-alpha.6] — stage 2.6 · HUD (Power / Reboot) · 2026-09-12
 
 **Версия:** `0.2.0-alpha.6` — PATCH-bump внутри milestone Alpha (stage, не веха).

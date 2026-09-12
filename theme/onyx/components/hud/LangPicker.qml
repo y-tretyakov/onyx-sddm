@@ -7,50 +7,16 @@ Item {
     required property real s
     required property ThemeState themeState
 
+    property var languageOrder: []
+    property var languageNames: ({})
+    property string currentLang: "en"
+
+    signal selected(var langCode)
+
     property bool open: false
-    property int _selectedIndex: (typeof sessionModel !== "undefined" && sessionModel.lastIndex !== undefined) ? sessionModel.lastIndex : 0
 
-    readonly property int selectedIndex: picker._selectedIndex
-
-    property string _selectedName: ""
-    property string fallbackName: "SESSION"
-
-    readonly property string currentName: {
-        if (picker._selectedName !== "")
-            return picker._selectedName
-        return picker.fallbackName
-    }
-
-    function holdRoles(inName) {
-        picker._selectedName = inName
-    }
-
-    signal selected(var index)
-
-    width: sLabel.implicitWidth + 30 * picker.s
+    width: langLabelTxt.width + 30 * picker.s
     height: 15 * picker.s
-
-    ListView {
-        id: sessionHelper
-        width: 1
-        height: 1
-        opacity: 0
-        currentIndex: picker.selectedIndex
-        model: typeof sessionModel !== "undefined" ? sessionModel : null
-        delegate: Item {
-            required property var model
-            required property int index
-            readonly property string sName: model.name || ""
-            readonly property bool active: picker.selectedIndex === index
-            onActiveChanged: if (active) picker.holdRoles(sName)
-        }
-    }
-
-    function select(index) {
-        picker._selectedIndex = index
-        picker.open = false
-        picker.selected(index)
-    }
 
     Item {
         id: trigger
@@ -59,11 +25,11 @@ Item {
         property bool active: triggerMa.containsMouse || picker.open
 
         Text {
-            id: sLabel
+            id: langLabelTxt
             anchors.right: parent.right
             anchors.rightMargin: trigger.active ? 15 * picker.s : 0
             anchors.verticalCenter: parent.verticalCenter
-            text: picker.currentName.toUpperCase()
+            text: (picker.languageNames[picker.currentLang] || picker.currentLang).toUpperCase()
             font.family: picker.themeState.fontFamily
             font.pixelSize: 10 * picker.s
             font.letterSpacing: 3 * picker.s
@@ -73,9 +39,9 @@ Item {
         }
 
         Text {
-            anchors.left: sLabel.right
+            anchors.left: langLabelTxt.right
             anchors.leftMargin: 4 * picker.s
-            anchors.verticalCenter: sLabel.verticalCenter
+            anchors.verticalCenter: langLabelTxt.verticalCenter
             text: "\u2726"
             color: picker.themeState.mainTextColor
             opacity: trigger.active ? 1 : 0
@@ -96,14 +62,15 @@ Item {
     Item {
         id: menuContainer
         visible: picker.open
-        width: 300 * picker.s
+        width: 200 * picker.s
         z: 900
         clip: true
-        x: picker.width - width
-        y: picker.height + 8 * picker.s
+        anchors.right: trigger.right
+        anchors.top: trigger.bottom
+        anchors.topMargin: 8 * picker.s
 
-        readonly property int itemCount: (typeof sessionModel !== "undefined" && sessionModel) ? sessionModel.rowCount() : 0
-        height: menuContainer.itemCount > 0 ? (menuContainer.itemCount * 26 * picker.s + (menuContainer.itemCount - 1) * 6 * picker.s + 20 * picker.s) : 0
+        readonly property int itemCount: picker.languageOrder ? picker.languageOrder.length : 0
+        height: itemCount > 0 ? (itemCount * 26 * picker.s + (itemCount - 1) * 6 * picker.s + 20 * picker.s) : 0
         Behavior on height { NumberAnimation { duration: 350; easing.type: Easing.OutExpo } }
 
         Column {
@@ -112,47 +79,49 @@ Item {
             spacing: 6 * picker.s
 
             Repeater {
-                model: typeof sessionModel !== "undefined" ? sessionModel : null
+                model: picker.languageOrder
                 delegate: Item {
-                    id: item
-                    width: 300 * picker.s
+                    id: langItem
+                    width: 200 * picker.s
                     height: 26 * picker.s
-                    property bool itemHover: itemMa.containsMouse
-                    property bool itemActive: picker.selectedIndex === index
+                    property bool itemHover: langItemMa.containsMouse
 
                     Text {
-                        id: itemLabel
+                        id: langItemTxt
                         anchors.right: parent.right
-                        anchors.rightMargin: item.itemHover ? 30 * picker.s : 10 * picker.s
+                        anchors.rightMargin: langItem.itemHover ? 30 * picker.s : 10 * picker.s
                         anchors.verticalCenter: parent.verticalCenter
-                        text: (model.name || "").toUpperCase()
+                        text: (picker.languageNames[modelData] || modelData).toUpperCase()
                         font.family: picker.themeState.fontFamily
                         font.pixelSize: 12 * picker.s
                         font.letterSpacing: 2 * picker.s
-                        color: (item.itemActive || item.itemHover) ? picker.themeState.mainTextColor
-                                                                   : picker.themeState.userItemInactiveColor
+                        color: (picker.currentLang === modelData || langItem.itemHover) ? picker.themeState.mainTextColor
+                                                                                     : picker.themeState.userItemInactiveColor
                         Behavior on color { ColorAnimation { duration: 200 } }
                         Behavior on anchors.rightMargin { NumberAnimation { duration: 200 } }
                     }
 
                     Text {
-                        anchors.left: itemLabel.right
+                        anchors.left: langItemTxt.right
                         anchors.leftMargin: 8 * picker.s
-                        anchors.verticalCenter: itemLabel.verticalCenter
+                        anchors.verticalCenter: langItemTxt.verticalCenter
                         text: "\u2726"
                         color: picker.themeState.mainTextColor
-                        opacity: (item.itemActive || item.itemHover) ? 1 : 0
+                        opacity: (picker.currentLang === modelData || langItem.itemHover) ? 1 : 0
                         font.family: picker.themeState.fontFamily
                         font.pixelSize: 10 * picker.s
                         Behavior on opacity { NumberAnimation { duration: 200 } }
                     }
 
                     MouseArea {
-                        id: itemMa
+                        id: langItemMa
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: picker.select(index)
+                        onClicked: {
+                            picker.selected(modelData)
+                            picker.open = false
+                        }
                     }
                 }
             }

@@ -1,4 +1,5 @@
 import QtQuick
+import "translations.js" as Tr
 import "components/clock" as Clock
 import "components/effects" as Effects
 import "components/hud" as Hud
@@ -23,6 +24,9 @@ Rectangle {
         s: root.s
         fontFamily: outfitFont.status === FontLoader.Ready ? outfitFont.name : "Sans Serif"
     }
+
+    property string language: Tr.detectLanguage(Qt.locale().name)
+    readonly property var curT: Tr.translations[language] || Tr.translations["en"]
 
     Effects.AnimEngine {
         id: engine
@@ -80,10 +84,20 @@ Rectangle {
                 id: hudRow
                 spacing: 25 * root.s
 
+                Hud.LangPicker {
+                    s: root.s
+                    themeState: state
+                    languageOrder: Tr.languageOrder
+                    languageNames: Tr.languageNames
+                    currentLang: root.language
+                    onSelected: function(langCode) { root.language = langCode }
+                }
+
                 Login.SessionPicker {
                     id: sessionPicker
                     s: root.s
                     themeState: state
+                    fallbackName: root.curT["session"]
                 }
 
                 Hud.HudActions {
