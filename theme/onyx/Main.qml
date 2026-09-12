@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Window
 import "translations.js" as Tr
 import "components/clock" as Clock
 import "components/effects" as Effects
@@ -25,6 +26,8 @@ Rectangle {
         s: root.s
         fontFamily: outfitFont.status === FontLoader.Ready ? outfitFont.name : "Sans Serif"
     }
+
+    readonly property var _win: Window.window
 
     property string language: Tr.detectLanguage(Qt.locale().name)
     readonly property var curT: Tr.translations[language] || Tr.translations["en"]
@@ -123,8 +126,8 @@ Rectangle {
         id: cursor
         s: root.s
         themeState: state
-        cursorX: Window.window ? Window.window.cursorPosition.x : 0
-        cursorY: Window.window ? Window.window.cursorPosition.y : 0
+        cursorX: root._win ? root._win.cursorPosition.x : 0
+        cursorY: root._win ? root._win.cursorPosition.y : 0
         uiReady: engine.uiOpacity > 0.99
         z: 9998
     }

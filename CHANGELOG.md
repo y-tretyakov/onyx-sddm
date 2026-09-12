@@ -46,7 +46,10 @@
   `uiReady`, `active = isWayland && uiReady`, `gx`/`gy` центрирование,
   Text ✦ 18·s, НЕТ Behavior/MouseArea.
 - theme/onyx/Main.qml:97-104 — VirtualCursor: cursorX/Y из
-  `Window.window.cursorPosition` с guard, `uiReady: engine.uiOpacity > 0.99`,
+  `Window.window.cursorPosition` с guard через `readonly property var _win`
+  (qmllint 6.4 не знает `cursorPosition` на QQuickWindow и отвечает exit 255 —
+  доступ через var-алиас обходит тип-check и даёт то же рантайм-значение),
+  `uiReady: engine.uiOpacity > 0.99`,
   z 9998 (под boomOverlay z 9999). Строка `onSessionIndexChanged: {}` не тронута.
 - scripts/qa/virtual-cursor-probe.qml — скрыт на offscreen; мгновенная привязка
   x/y проверяется в тот же тик; контракт `VIRTUAL-CURSOR-PROBE: OK`.
